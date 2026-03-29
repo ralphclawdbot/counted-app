@@ -20,52 +20,70 @@ const C = {
   dotCurrent: '#ff5722',
 };
 
-// ── Dot grid for phone mockup ─────────────────────────────────
-function PhoneDotGrid({ total = 300, lived = 188 }: { total?: number; lived?: number }) {
-  const COLS = 18;
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, 5px)`, gap: '3px', padding: '0 8px' }}>
-      {Array.from({ length: total }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            width: 5, height: 5, borderRadius: '50%',
-            background: i < lived - 1 ? C.dotFilled : i === lived - 1 ? C.dotCurrent : C.dotEmpty,
-            boxShadow: i === lived - 1 ? `0 0 5px ${C.dotCurrent}` : 'none',
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+// ── Phone mockup — real frame + live wallpaper PNG ───────────
+// Frame: apple-iphone-15-pro-black-titanium-portrait.png
+// Native frame: 1419×2796  |  Screen bounds: left=120 top=120 right=1299 bottom=2676
+const FRAME_W = 1419, FRAME_H = 2796;
+const SCR_L = 120, SCR_T = 120, SCR_R = 1299, SCR_B = 2676;
 
-// ── Phone mockup ──────────────────────────────────────────────
+// Wallpaper params for the landing page hero demo
+const DEMO_WALLPAPER =
+  '/api/wallpaper?type=year&width=1179&height=2556' +
+  '&bg=050505&dotFilled=ffffff&dotEmpty=ffffff' +
+  '&dotCurrent=ff5722&dotFilledOpacity=88&dotEmptyOpacity=10' +
+  '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1';
+
 function PhoneMockup() {
-  return (
-    <div style={{ position: 'relative', width: 200, flexShrink: 0 }}>
-      {/* Glow */}
-      <div style={{ position: 'absolute', inset: -60, background: `radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 65%)`, pointerEvents: 'none', zIndex: 0 }} />
+  const DISPLAY_W = 220;
+  const scale     = DISPLAY_W / FRAME_W;
+  const DISPLAY_H = Math.round(FRAME_H * scale);         // 433px
+  const scrLeft   = Math.round(SCR_L * scale);           // 19px
+  const scrTop    = Math.round(SCR_T * scale);           // 19px
+  const scrW      = Math.round((SCR_R - SCR_L) * scale); // 183px
+  const scrH      = Math.round((SCR_B - SCR_T) * scale); // 396px
 
-      {/* Frame */}
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      {/* Glow behind phone */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 320, height: 320, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,87,34,0.18) 0%, transparent 68%)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
+
+      {/* Phone container */}
       <div style={{
         position: 'relative', zIndex: 1,
-        width: 200, aspectRatio: '9 / 19.5',
-        background: '#080808',
-        borderRadius: 38,
-        border: `1.5px solid #2a2a2a`,
-        overflow: 'hidden',
-        boxShadow: '0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px #1a1a1a',
+        width: DISPLAY_W, height: DISPLAY_H,
+        filter: 'drop-shadow(0 32px 64px rgba(0,0,0,0.8))',
       }}>
-        {/* Dynamic island */}
-        <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', width: 78, height: 22, background: '#000', borderRadius: 20, zIndex: 10 }} />
-
-        {/* Screen */}
-        <div style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 52 }}>
-          <div style={{ fontSize: 46, fontWeight: 300, color: C.text, letterSpacing: -1, lineHeight: 1 }}>9:41</div>
-          <div style={{ fontSize: 11, color: C.textMid, marginBottom: 16 }}>Sunday, March 29</div>
-          <PhoneDotGrid />
-          <div style={{ marginTop: 10, fontSize: 8, color: C.textLow, letterSpacing: 0.2 }}>1,456 weeks lived · 704 left</div>
-        </div>
+        {/* Wallpaper behind frame */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={DEMO_WALLPAPER}
+          alt="wallpaper preview"
+          style={{
+            position: 'absolute',
+            top: scrTop, left: scrLeft,
+            width: scrW, height: scrH,
+            borderRadius: 38,
+            objectFit: 'cover',
+            zIndex: 1,
+          }}
+        />
+        {/* Frame overlay — sits on top, screen area is transparent */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/frames/apple-iphone-15-pro-black-titanium-portrait.png"
+          alt=""
+          style={{
+            position: 'absolute', top: 0, left: 0,
+            width: DISPLAY_W, height: DISPLAY_H,
+            zIndex: 2, pointerEvents: 'none',
+          }}
+        />
       </div>
     </div>
   );
