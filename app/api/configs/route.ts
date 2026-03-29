@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put, list } from '@vercel/blob';
+import { put, list, head } from '@vercel/blob';
 import { nanoid } from 'nanoid';
 import { WallpaperConfig } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get('token');
+  if (!token) return NextResponse.json({ error: 'token required' }, { status: 400 });
+
+  try {
+    const blobMeta = await head(`configs/${token}.json`);
+    const res = await fetch(blobMeta.url);
+    if (!res.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const config = await res.json() as WallpaperConfig;
+    return NextResponse.json({ config });
+  } catch {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json() as { config: WallpaperConfig };

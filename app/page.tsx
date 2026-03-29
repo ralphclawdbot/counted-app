@@ -258,14 +258,36 @@ export default function EditorPage() {
   }, []);
   const preDragRef = useRef<WallpaperConfig | null>(null);
 
-  // Load token from localStorage
+  // On mount: load config from ?token= URL param (or fall back to localStorage token)
   useEffect(() => {
-    const token = localStorage.getItem('counted_token');
-    if (token) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-      setSaveState((s) => ({ ...s, token, url: `${appUrl}/api/w/${token}` }));
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    const localToken = localStorage.getItem('counted_token');
+    const token = urlToken || localToken;
+    if (!token) return;
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const editUrl = `${appUrl}/?token=${token}`;
+
+    if (urlToken) {
+      // Fetch saved config from blob and hydrate the editor
+      fetch(`/api/configs?token=${token}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.config) {
+            dispatch({ type: 'SET', state: { config: { ...DEFAULT_CONFIG, ...data.config } } });
+          }
+          setSaveState({ token, url: editUrl, saving: false, copied: false });
+          // Keep URL clean but preserve token for re-saves
+          window.history.replaceState({}, '', `/?token=${token}`);
+        })
+        .catch(() => {
+          setSaveState((s) => ({ ...s, token, url: editUrl }));
+        });
+    } else {
+      // Just restore the edit URL from localStorage token
+      setSaveState((s) => ({ ...s, token, url: editUrl }));
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -504,8 +526,12 @@ export default function EditorPage() {
       const data = await res.json();
 
       if (data.token) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+        const editUrl = `${appUrl}/?token=${data.token}`;
         localStorage.setItem('counted_token', data.token);
-        setSaveState({ token: data.token, url: data.url, saving: false, copied: false });
+        setSaveState({ token: data.token, url: editUrl, saving: false, copied: false });
+        // Update browser URL so the current tab IS the edit link
+        window.history.replaceState({}, '', `/?token=${data.token}`);
       } else {
         setSaveState((s) => ({ ...s, saving: false }));
       }
