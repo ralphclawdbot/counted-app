@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { WallpaperConfig, PhotoLayer } from '@/types';
+import { DEVICES } from '@/lib/devices';
 import DotGrid from './DotGrid';
 import CanvasLayer from './CanvasLayer';
 
@@ -25,19 +26,7 @@ interface CanvasProps {
   onDotClick?: (weekIndex: number) => void;
 }
 
-// Phone frame image: 1419×2796px
-// The iPhone screen (1179×2556) is embedded with a uniform 120px margin on all 4 sides:
-//   screen = (120,120) → (120+1179, 120+2556) = (1299, 2676)
-// NOTE: the alpha scan picked up the physical side-buttons (power/volume) as opaque pixels
-//       at x≈70-119 (left volume) and x≈1346 (right power button) — those are NOT screen edges.
-const FRAME_IMG_W  = 1419;
-const FRAME_IMG_H  = 2796;
-const SCREEN_PX_L  = 120;          // screen left  (uniform 120px margin)
-const SCREEN_PX_R  = 120 + 1179;   // = 1299
-const SCREEN_PX_T  = 120;          // screen top
-const SCREEN_PX_B  = 120 + 2556;   // = 2676
-
-// Display the frame at DISPLAY_FRAME_W css-px wide; everything else derived
+// Frame display width in CSS px — all other dimensions derived per-device
 const DISPLAY_FRAME_W = 350;
 
 export default function Canvas({
@@ -48,20 +37,26 @@ export default function Canvas({
   onDragEnd,
   onDotClick,
 }: CanvasProps) {
-  // Frame display dimensions — scale factor from native to CSS px
-  const frameW    = DISPLAY_FRAME_W;
-  const frameH    = Math.round(FRAME_IMG_H * (DISPLAY_FRAME_W / FRAME_IMG_W));
-  const displayScale = DISPLAY_FRAME_W / FRAME_IMG_W;
+  // Resolve the device frame — falls back to first device if not found
+  const device = useMemo(
+    () => DEVICES.find((d) => d.name === config.deviceName) ?? DEVICES[3],
+    [config.deviceName]
+  );
+  const frame = device.frame;
 
-  // Screen area in CSS px — derived directly from measured pixel positions
-  const bezelLeft = Math.round(SCREEN_PX_L * displayScale);
-  const bezelTop  = Math.round(SCREEN_PX_T * displayScale);
-  const screenW   = Math.round((SCREEN_PX_R - SCREEN_PX_L) * displayScale);
-  const screenH   = Math.round((SCREEN_PX_B - SCREEN_PX_T) * displayScale);
+  // Scale the frame image to DISPLAY_FRAME_W css-px wide
+  const displayScale = DISPLAY_FRAME_W / frame.fw;
+  const frameW   = DISPLAY_FRAME_W;
+  const frameH   = Math.round(frame.fh * displayScale);
 
-  // Canvas fills the screen WIDTH exactly; height follows the wallpaper aspect ratio.
-  // canvasHeight may slightly exceed screenH (wallpaper taller than frame screen) — that's
-  // fine, it gets clipped by overflow:hidden. Never shorter → no top/bottom gaps.
+  // Screen area in CSS px — directly from per-device pixel measurements
+  const bezelLeft = Math.round(frame.scl * displayScale);
+  const bezelTop  = Math.round(frame.sct * displayScale);
+  const screenW   = Math.round((frame.scr - frame.scl) * displayScale);
+  const screenH   = Math.round((frame.scb - frame.sct) * displayScale);
+
+  // Canvas fills the screen WIDTH exactly; height from wallpaper aspect ratio.
+  // If canvasHeight > screenH the overflow is clipped — no gaps.
   const canvasWidth  = screenW;
   const canvasScale  = canvasWidth / config.width;
   const canvasHeight = useMemo(
@@ -312,10 +307,10 @@ export default function Canvas({
           }} />
         </div>
 
-        {/* Real phone frame image — overlaid on top, non-interactive */}
+        {/* Phone frame — switches with the selected device */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/phone-frame.png"
+          src={frame.path}
           alt=""
           style={{
             position: 'absolute',

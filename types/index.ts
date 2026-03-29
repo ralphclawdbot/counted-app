@@ -87,4 +87,5 @@ export interface DeviceInfo {
   name: string;
   width: number;
   height: number;
+  frame: import('@/lib/devices').FrameInfo;
 }
