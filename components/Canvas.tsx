@@ -25,14 +25,17 @@ interface CanvasProps {
   onDotClick?: (weekIndex: number) => void;
 }
 
-// Phone frame image: 1419×2796px (pixel-exact measurements from alpha channel scan)
-// Screen area: starts at (120,120), ends at (1346,2724)
+// Phone frame image: 1419×2796px
+// The iPhone screen (1179×2556) is embedded with a uniform 120px margin on all 4 sides:
+//   screen = (120,120) → (120+1179, 120+2556) = (1299, 2676)
+// NOTE: the alpha scan picked up the physical side-buttons (power/volume) as opaque pixels
+//       at x≈70-119 (left volume) and x≈1346 (right power button) — those are NOT screen edges.
 const FRAME_IMG_W  = 1419;
 const FRAME_IMG_H  = 2796;
-const SCREEN_PX_L  = 120;   // screen left in frame px
-const SCREEN_PX_R  = 1346;  // screen right in frame px
-const SCREEN_PX_T  = 120;   // screen top in frame px
-const SCREEN_PX_B  = 2724;  // screen bottom in frame px
+const SCREEN_PX_L  = 120;          // screen left  (uniform 120px margin)
+const SCREEN_PX_R  = 120 + 1179;   // = 1299
+const SCREEN_PX_T  = 120;          // screen top
+const SCREEN_PX_B  = 120 + 2556;   // = 2676
 
 // Display the frame at DISPLAY_FRAME_W css-px wide; everything else derived
 const DISPLAY_FRAME_W = 350;
@@ -170,10 +173,10 @@ export default function Canvas({
             background: '#000', borderRadius: 12,
           }} />
 
-          {/* Time — centred at ~24% of screen, matching real iOS position */}
+          {/* Time — real iOS lock screen: clock top at ~20% of screen height */}
           <div style={{
             position: 'absolute',
-            top: '18%', width: '100%', textAlign: 'center',
+            top: '20%', width: '100%', textAlign: 'center',
             color: 'rgba(255,255,255,0.92)',
             fontSize: Math.round(canvasWidth * 0.20),
             fontWeight: 300,
@@ -184,10 +187,10 @@ export default function Canvas({
             {getTimeLabel()}
           </div>
 
-          {/* Date — at ~34%, just above the dot grid (38%) */}
+          {/* Date — real iOS: just below the clock, at ~30% of screen height */}
           <div style={{
             position: 'absolute',
-            top: '34%', width: '100%', textAlign: 'center',
+            top: '30%', width: '100%', textAlign: 'center',
             color: 'rgba(255,255,255,0.80)',
             fontSize: Math.round(canvasWidth * 0.042),
             fontWeight: 400,
