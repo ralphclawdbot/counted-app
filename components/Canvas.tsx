@@ -218,19 +218,16 @@ export default function Canvas({
             </div>
           </div>
 
-          {/* Lock icon — SF Symbol "lock.fill" style SVG, golden, centered */}
+          {/* Lock icon — simple white filled padlock (SF Symbol lock.fill) */}
           <div style={{
             position: 'absolute', top: '9%', width: '100%',
             display: 'flex', justifyContent: 'center',
           }}>
-            <svg width="15" height="18" viewBox="0 0 30 36" fill="none">
-              {/* Shackle */}
-              <path d="M7 16V10a8 8 0 0 1 16 0v6" stroke="#e8c547" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-              {/* Body */}
-              <rect x="2" y="16" width="26" height="18" rx="6" fill="#d4a827"/>
-              {/* Keyhole dot */}
-              <circle cx="15" cy="25" r="3" fill="rgba(0,0,0,0.35)"/>
-              <rect x="13.5" y="25" width="3" height="4.5" rx="1.5" fill="rgba(0,0,0,0.35)"/>
+            <svg width="14" height="17" viewBox="0 0 28 34" fill="none">
+              {/* Shackle arch */}
+              <path d="M6 14V9C6 4.6 9.6 1 14 1s8 3.6 8 8v5" stroke="rgba(255,255,255,0.9)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+              {/* Lock body */}
+              <rect x="1" y="14" width="26" height="19" rx="5" fill="rgba(255,255,255,0.9)"/>
             </svg>
           </div>
 
@@ -247,15 +244,15 @@ export default function Canvas({
             {getTodayLabel()}
           </div>
 
-          {/* Time — iOS 26 style: ultra-thin, fills ~85% of screen width */}
+          {/* Time — iOS 26: large, thin strokes, fills screen width */}
           <div style={{
             position: 'absolute',
             top: '17%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.94)',
-            fontSize: Math.round(canvasWidth * 0.40),
-            fontWeight: 100,
-            letterSpacing: -3,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
+            color: '#ffffff',
+            fontSize: Math.round(canvasWidth * 0.43),
+            fontWeight: 200,
+            letterSpacing: -4,
+            fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
             lineHeight: 1,
           }}>
             {getTimeLabel()}
@@ -277,15 +274,29 @@ export default function Canvas({
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {isFlash ? (
-                  /* Flashlight SF-symbol approximation */
-                  <svg width={btnSize * 0.44} height={btnSize * 0.44} viewBox="0 0 24 24" fill="none">
-                    <path d="M9 2l-1 8H4l7 12V14h4L9 2z" fill="rgba(255,255,255,0.9)" strokeLinejoin="round"/>
+                  /* flashlight.on.fill — torch body + angled head + glow tip */
+                  <svg width={btnSize * 0.40} height={btnSize * 0.48} viewBox="0 0 20 26" fill="white">
+                    {/* Glow head (wide trapezoid at top) */}
+                    <path d="M3 8 Q10 0 17 8 L15 12 L5 12 Z" />
+                    {/* Body cylinder */}
+                    <rect x="5.5" y="12" width="9" height="10" rx="2" />
+                    {/* End cap */}
+                    <rect x="6.5" y="22" width="7" height="3" rx="1.5" />
+                    {/* Lens dot */}
+                    <circle cx="10" cy="9" r="2" fill="rgba(0,0,0,0.25)" />
                   </svg>
                 ) : (
-                  /* Camera SF-symbol approximation */
-                  <svg width={btnSize * 0.46} height={btnSize * 0.46} viewBox="0 0 24 24" fill="none">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
-                    <circle cx="12" cy="13" r="4" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" fill="none"/>
+                  /* camera.fill — body + lens bump + circle */
+                  <svg width={btnSize * 0.48} height={btnSize * 0.40} viewBox="0 0 26 20" fill="white">
+                    {/* Viewfinder bump */}
+                    <rect x="9" y="0" width="8" height="4" rx="2" />
+                    {/* Camera body */}
+                    <rect x="0" y="3" width="26" height="17" rx="4" />
+                    {/* Lens ring (dark cutout) */}
+                    <circle cx="13" cy="11.5" r="5" fill="rgba(50,50,50,0.7)" />
+                    <circle cx="13" cy="11.5" r="3" fill="rgba(30,30,30,0.8)" />
+                    {/* Flash dot top right */}
+                    <circle cx="22" cy="7" r="1.5" fill="rgba(50,50,50,0.6)" />
                   </svg>
                 )}
               </div>
