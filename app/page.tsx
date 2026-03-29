@@ -231,27 +231,7 @@ export default function EditorPage() {
     copied: boolean;
   }>({ token: null, url: null, saving: false, copied: false });
   const [mobileTab, setMobileTab] = useState<'style' | 'layers'>('style');
-  const [mobileCanvasScale, setMobileCanvasScale] = useState(0.82);
   const preDragRef = useRef<WallpaperConfig | null>(null);
-
-  // Calculate mobile canvas scale — canvas capped at 38% viewport height so settings panel has room
-  useEffect(() => {
-    const recalc = () => {
-      if (window.innerWidth >= 768) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const MAX_CANVAS_H = vh * 0.38; // leave 62% for header + tabbar + settings
-      const availW = vw - 32;
-      const frameW = 398;
-      const frameH = Math.round(390 * (config.height / config.width)) + 48;
-      const scaleByW = availW / frameW;
-      const scaleByH = MAX_CANVAS_H / frameH;
-      setMobileCanvasScale(Math.min(scaleByW, scaleByH, 1));
-    };
-    recalc();
-    window.addEventListener('resize', recalc);
-    return () => window.removeEventListener('resize', recalc);
-  }, [config.width, config.height]);
 
   // Load token from localStorage
   useEffect(() => {
@@ -640,24 +620,40 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Canvas preview — scaled to fit available space, wrapper collapses to scaled height */}
+        {/* Preview strip — shows a quick-preview button instead of the full phone frame
+            (phone frame = same dimensions as the screen, can't meaningfully scale it) */}
         <div style={{
           flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 12,
+          padding: '10px 16px',
           background: '#0f0f0f',
-          // Wrapper height = scaled canvas height so it doesn't take up extra space
-          height: (Math.round(390 * config.height / config.width) + 48) * mobileCanvasScale,
-          overflow: 'hidden',
+          borderBottom: '1px solid #1a1a1a',
         }}>
-          <div style={{
-            transform: `scale(${mobileCanvasScale})`,
-            transformOrigin: 'top center',
-            flexShrink: 0,
-          }}>
-            {canvasEl}
+          <div style={{ flex: 1, fontSize: 12, color: '#555' }}>
+            {config.birthday ? `Life calendar · ${config.type}` : 'Set your birthday to preview your calendar'}
           </div>
+          <a
+            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 14px',
+              background: '#222',
+              color: '#aaa',
+              border: '1px solid #333',
+              borderRadius: 6,
+              fontSize: 13,
+              textDecoration: 'none',
+              flexShrink: 0,
+              minHeight: 36,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            👁 Preview PNG
+          </a>
         </div>
 
         {/* Saved URL strip */}
