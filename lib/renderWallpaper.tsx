@@ -142,9 +142,10 @@ export async function renderWallpaper(
   // Dynamic Island + time + date: top ~0–33%
   // Camera/flashlight buttons: bottom ~12–18%
   // Lock screen widgets (when enabled): extra ~13% strip above camera buttons
-  const safeTop = Math.round(height * 0.33);
-  const widgetExtra = config.widgetMode ? Math.round(height * 0.13) : 0;
-  const safeBot = Math.round(height * 0.12) + widgetExtra;
+  // Widget strip height = 13% of wallpaper height
+  const widgetH = Math.round(height * 0.13);
+  const safeTop = Math.round(height * 0.33) + (config.widgetPosition === 'top' ? widgetH : 0);
+  const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
 

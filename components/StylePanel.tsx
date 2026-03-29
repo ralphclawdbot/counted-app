@@ -353,15 +353,28 @@ export default function StylePanel({
               <input type="checkbox" checked={config.showQuote || false} onChange={(e) => onConfigChange({ showQuote: e.target.checked })} />
               Show Daily Quote
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#aaa', marginTop: 8, cursor: 'pointer' }}>
-              <input type="checkbox" checked={config.widgetMode || false} onChange={(e) => onConfigChange({ widgetMode: e.target.checked })} />
-              Lock Screen Widgets
-            </label>
-            {config.widgetMode && (
-              <p style={{ fontSize: 11, color: '#666', marginTop: 4, marginLeft: 24 }}>
-                Leaves extra space for iOS widgets below the dot grid.
-              </p>
-            )}
+            {/* Widget position */}
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Lock Screen Widgets</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {([['none', 'None'], ['bottom', 'Bottom'], ['top', 'Top (iOS 26)']] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => onConfigChange({ widgetPosition: val })}
+                    style={{
+                      flex: 1,
+                      padding: '6px 4px',
+                      background: (config.widgetPosition || 'none') === val ? '#2563eb' : '#1a1a1a',
+                      color: (config.widgetPosition || 'none') === val ? '#fff' : '#888',
+                      border: '1px solid #333',
+                      borderRadius: 6,
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >{label}</button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

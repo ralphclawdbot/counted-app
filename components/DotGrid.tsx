@@ -44,9 +44,9 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
       }
     }
 
-    const safeTop = Math.round(fullHeight * 0.33);
-    const widgetExtra = config.widgetMode ? Math.round(fullHeight * 0.13) : 0;
-    const safeBot = Math.round(fullHeight * 0.12) + widgetExtra;
+    const widgetH = Math.round(fullHeight * 0.13);
+    const safeTop = Math.round(fullHeight * 0.33) + (config.widgetPosition === 'top' ? widgetH : 0);
+    const safeBot = Math.round(fullHeight * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
     const statsAreaH = Math.round(fullHeight * 0.055);
     const usableH = fullHeight - safeTop - safeBot - statsAreaH;
 

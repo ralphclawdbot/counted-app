@@ -5,6 +5,17 @@ import { WallpaperConfig, PhotoLayer } from '@/types';
 import DotGrid from './DotGrid';
 import CanvasLayer from './CanvasLayer';
 
+// Build today's date string for the iOS overlay
+function getTodayLabel(): string {
+  const d = new Date();
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+function getTimeLabel(): string {
+  const d = new Date();
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
+}
+
 interface CanvasProps {
   config: WallpaperConfig;
   selectedLayerId: string | null;
@@ -124,6 +135,91 @@ export default function Canvas({
             canvasHeight={canvasHeight}
             onDotClick={onDotClick}
           />
+        </div>
+
+        {/* iOS lock screen UI overlay — makes preview match real lock screen */}
+        <div
+          style={{
+            position: 'absolute',
+            top: bezelTop,
+            left: bezelLeft,
+            width: canvasWidth,
+            height: screenH,
+            pointerEvents: 'none',
+            zIndex: 150,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Dynamic Island pill */}
+          <div style={{
+            position: 'absolute', top: 8, left: '50%',
+            transform: 'translateX(-50%)',
+            width: 80, height: 20,
+            background: '#000', borderRadius: 12,
+          }} />
+
+          {/* Time */}
+          <div style={{
+            position: 'absolute',
+            top: '17%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.92)',
+            fontSize: Math.round(canvasWidth * 0.22),
+            fontWeight: 300,
+            letterSpacing: -1,
+            textShadow: '0 1px 8px rgba(0,0,0,0.6)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+          }}>
+            {getTimeLabel()}
+          </div>
+
+          {/* Date */}
+          <div style={{
+            position: 'absolute',
+            top: '31%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.80)',
+            fontSize: Math.round(canvasWidth * 0.042),
+            fontWeight: 400,
+            textShadow: '0 1px 6px rgba(0,0,0,0.6)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+          }}>
+            {getTodayLabel()}
+          </div>
+
+          {/* Flashlight button (bottom left) */}
+          <div style={{
+            position: 'absolute', bottom: '5%', left: '10%',
+            width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ width: 3, height: 14, background: 'rgba(255,255,255,0.7)', borderRadius: 2 }} />
+          </div>
+
+          {/* Camera button (bottom right) */}
+          <div style={{
+            position: 'absolute', bottom: '5%', right: '10%',
+            width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{
+              width: 16, height: 14,
+              border: '2px solid rgba(255,255,255,0.7)',
+              borderRadius: 3,
+            }} />
+          </div>
+
+          {/* Home indicator */}
+          <div style={{
+            position: 'absolute', bottom: '1%', left: '50%',
+            transform: 'translateX(-50%)',
+            width: 60, height: 4,
+            background: 'rgba(255,255,255,0.4)', borderRadius: 3,
+          }} />
         </div>
 
         {/* Real phone frame image — overlaid on top, non-interactive */}

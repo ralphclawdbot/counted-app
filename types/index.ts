@@ -37,6 +37,7 @@ export interface LifeEvent {
 
 export type CalendarType = 'life' | 'year' | 'goal';
 export type DotRowAlign = 'left' | 'center' | 'right';
+export type WidgetPosition = 'none' | 'bottom' | 'top';
 export type DotShape = 'circle' | 'square' | 'rounded' | 'diamond';
 export type DotStyle = 'flat' | 'glow' | 'neon' | 'outlined';
 export type DotMode = 'standard' | 'emoji' | 'symbol';
@@ -67,8 +68,8 @@ export interface WallpaperConfig {
   bgDim?: number;
   dotRowAlign?: DotRowAlign;
   safeLayout?: boolean;
-  /** When true, leaves extra space at the bottom for iOS lock screen widgets */
-  widgetMode?: boolean;
+  /** Widget position on iOS lock screen: none | bottom (default) | top (iOS 26+) */
+  widgetPosition?: WidgetPosition;
   gradientMode?: boolean;
   gradientStart?: string;
   gradientEnd?: string;
