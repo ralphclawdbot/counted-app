@@ -14,6 +14,12 @@ interface CanvasProps {
   onDotClick?: (weekIndex: number) => void;
 }
 
+// Phone frame image (iPhone 15 Pro Black, ~780×1560px)
+// Screen area insets: 7% left/right, 5.5% top/bottom
+const FRAME_SCREEN_INSET_H = 0.07;  // left + right each
+const FRAME_SCREEN_INSET_V = 0.055; // top + bottom each
+const FRAME_ASPECT = 1560 / 780;    // height / width of the frame image
+
 export default function Canvas({
   config,
   selectedLayerId,
@@ -22,12 +28,20 @@ export default function Canvas({
   onDragEnd,
   onDotClick,
 }: CanvasProps) {
-  const canvasWidth = 390;
+  // Canvas content is 300px wide → frame is sized so its screen area = 300px wide
+  const canvasWidth = 300;
+  const canvasScale = canvasWidth / config.width;
   const canvasHeight = useMemo(
-    () => Math.round(390 * config.height / config.width),
+    () => Math.round(canvasWidth * config.height / config.width),
     [config.width, config.height]
   );
-  const canvasScale = 390 / config.width;
+
+  // Frame dimensions: screen area = canvasWidth → frame = canvasWidth / (1 - 2*inset_h)
+  const frameW = Math.round(canvasWidth / (1 - 2 * FRAME_SCREEN_INSET_H));
+  const frameH = Math.round(frameW * FRAME_ASPECT);
+  const bezelLeft = Math.round(frameW * FRAME_SCREEN_INSET_H);
+  const bezelTop  = Math.round(frameH * FRAME_SCREEN_INSET_V);
+  const screenH   = Math.round(frameH * (1 - 2 * FRAME_SCREEN_INSET_V));
 
   const sortedLayers = useMemo(() => {
     if (!config.layers) return [];
@@ -39,31 +53,20 @@ export default function Canvas({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* Phone frame */}
-      <div
-        style={{
-          width: canvasWidth + 8,
-          borderRadius: 40,
-          padding: 4,
-          background: '#1a1a1a',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-        }}
-      >
-        {/* Dynamic Island */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 4, background: `#${config.bg}`, borderRadius: '36px 36px 0 0' }}>
-          <div style={{ width: 120, height: 32, background: '#000', borderRadius: 20 }} />
-        </div>
+      {/* Phone mockup: real SwarmPost frame image, canvas inside the screen area */}
+      <div style={{ position: 'relative', width: frameW, height: frameH, flexShrink: 0 }}>
 
-        {/* Canvas */}
+        {/* Canvas content — positioned inside the screen area */}
         <div
           onClick={() => onSelectLayer(null)}
           style={{
-            position: 'relative',
+            position: 'absolute',
+            top: bezelTop,
+            left: bezelLeft,
             width: canvasWidth,
-            height: canvasHeight - 40,
+            height: screenH,
             background: `#${config.bg}`,
             overflow: 'hidden',
-            borderRadius: '0 0 36px 36px',
           }}
         >
           {/* Photo layers */}
@@ -122,6 +125,22 @@ export default function Canvas({
             onDotClick={onDotClick}
           />
         </div>
+
+        {/* Real phone frame image — overlaid on top, non-interactive */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/phone-frame.png"
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: frameW,
+            height: frameH,
+            pointerEvents: 'none',
+            zIndex: 200,
+          }}
+        />
       </div>
     </div>
   );

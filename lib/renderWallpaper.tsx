@@ -148,46 +148,45 @@ export async function renderWallpaper(
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
 
-  // ── Dynamic column count (year / goal) ──
-  // Life calendar: always 52 columns (1 year per row)
-  // Year / goal:  compute columns so that cellW ≈ cellH (square cells, equal gaps)
-  //   approxCols = sqrt(totalDots × availW / usableH)
-  //   then pick nearest integer that minimises |cellW − cellH|
+  // ── Equal-gap grid sizing ──
+  // Scan from large to small to find the biggest square cellSize that fits:
+  //   cols = floor(availW / cellSize), rows = ceil(totalDots / cols)
+  //   grid fits when rows * cellSize ≤ usableH
+  // Result: horizGap === vertGap === (cellSize - dotSize) — perfectly uniform spacing.
   let columns: number;
+  let cellSize: number;
+
   if (config.type === 'life') {
+    // Life calendar: fixed 52 cols (1 year per row); derive cellSize from the tighter axis
     columns = 52;
+    const cellByW = Math.floor(availW / columns);
+    const lifeTotalRows = Math.ceil(totalDots / columns);
+    const cellByH = Math.floor(usableH / lifeTotalRows);
+    cellSize = Math.min(cellByW, cellByH);
   } else {
-    const approxCols = Math.sqrt(totalDots * availW / usableH);
-    const candidates = [
-      Math.max(5, Math.floor(approxCols) - 1),
-      Math.max(5, Math.floor(approxCols)),
-      Math.ceil(approxCols),
-      Math.ceil(approxCols) + 1,
-    ];
-    let best = Math.round(approxCols);
-    let bestDelta = Infinity;
-    for (const c of candidates) {
-      const rows = Math.ceil(totalDots / c);
-      const cw = availW / c;
-      const ch = usableH / rows;
-      const delta = Math.abs(cw - ch);
-      if (delta < bestDelta) { bestDelta = delta; best = c; }
+    // Year / goal: find largest square cellSize where all dots fit in safe zone
+    const maxCs = Math.min(availW, usableH);
+    cellSize = 1;
+    for (let cs = maxCs; cs >= 1; cs--) {
+      const c = Math.floor(availW / cs);
+      if (c < 1) continue;
+      const r = Math.ceil(totalDots / c);
+      if (r * cs <= usableH) { cellSize = cs; break; }
     }
-    columns = best;
+    columns = Math.floor(availW / cellSize);
   }
 
   const totalRows = Math.ceil(totalDots / columns);
-  const cellW = availW / columns;
-  const cellH = usableH / totalRows;
-
-  // Use the smaller cell dimension for dot size → perfectly round dots
-  const cellSize = Math.min(cellW, cellH);
   const dotSize  = Math.floor(cellSize * 0.78);
-  const horizGap = cellW - dotSize;   // may be slightly wider than vertGap
-  const vertGap  = cellH - dotSize;   // row gap
+  const gap      = cellSize - dotSize;  // identical horizontal AND vertical gap
+  const horizGap = gap;
+  const vertGap  = gap;
 
-  const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;
-  const topOffset = safeTop + Math.max(0, Math.floor((usableH - gridH) / 2));
+  const gridW = columns * dotSize + (columns - 1) * gap;
+  const gridH = totalRows * dotSize + (totalRows - 1) * gap;
+  // Centre grid in available space
+  const topOffset  = safeTop  + Math.max(0, Math.floor((usableH  - gridH) / 2));
+  const leftOffset = hPad + Math.max(0, Math.floor((availW - gridW) / 2));
 
   // Build progress stats text
   let statsLine = '';
@@ -486,17 +485,15 @@ export async function renderWallpaper(
       {/* Photo layers */}
       {layerElements}
 
-      {/* Spacer for vertical offset */}
-      <div style={{ display: 'flex', height: topOffset }} />
-
-      {/* Dot grid */}
+      {/* Dot grid — absolutely positioned for pixel-perfect placement */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          position: 'absolute',
+          top: topOffset,
+          left: leftOffset,
           gap: vertGap,
-          position: 'relative',
         }}
       >
         {dotRows}

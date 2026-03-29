@@ -50,39 +50,38 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     const statsAreaH = Math.round(fullHeight * 0.055);
     const usableH = fullHeight - safeTop - safeBot - statsAreaH;
 
-    // Dynamic columns: life = 52; year/goal = auto for square cells (equal gaps)
+    // Equal-gap grid sizing: scan for largest square cellSize
+    // horizGap === vertGap === (cellSize - dotSize)
     let columns: number;
+    let cellSize: number;
+
     if (config.type === 'life') {
       columns = 52;
+      const cellByW = Math.floor(availW / columns);
+      const lifeTotalRows = Math.ceil(totalDots / columns);
+      const cellByH = Math.floor(usableH / lifeTotalRows);
+      cellSize = Math.min(cellByW, cellByH);
     } else {
-      const approxCols = Math.sqrt(totalDots * availW / usableH);
-      const candidates = [
-        Math.max(5, Math.floor(approxCols) - 1),
-        Math.max(5, Math.floor(approxCols)),
-        Math.ceil(approxCols),
-        Math.ceil(approxCols) + 1,
-      ];
-      let best = Math.round(approxCols);
-      let bestDelta = Infinity;
-      for (const c of candidates) {
-        const rows = Math.ceil(totalDots / c);
-        const cw = availW / c;
-        const ch = usableH / rows;
-        const delta = Math.abs(cw - ch);
-        if (delta < bestDelta) { bestDelta = delta; best = c; }
+      const maxCs = Math.min(availW, usableH);
+      cellSize = 1;
+      for (let cs = maxCs; cs >= 1; cs--) {
+        const c = Math.floor(availW / cs);
+        if (c < 1) continue;
+        const r = Math.ceil(totalDots / c);
+        if (r * cs <= usableH) { cellSize = cs; break; }
       }
-      columns = best;
+      columns = Math.floor(availW / cellSize);
     }
 
     const totalRows = Math.ceil(totalDots / columns);
-    const cellW = availW / columns;
-    const cellH = usableH / totalRows;
-    const cellSize = Math.min(cellW, cellH);
     const dotSize = Math.floor(cellSize * 0.78);
-    const horizGap = cellW - dotSize;
-    const vertGap = cellH - dotSize;
-    const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;
+    const gap = cellSize - dotSize; // same for both H and V
+    const horizGap = gap;
+    const vertGap = gap;
+    const gridW = columns * dotSize + (columns - 1) * gap;
+    const gridH = totalRows * dotSize + (totalRows - 1) * gap;
     const topOffset = safeTop + Math.max(0, Math.floor((usableH - gridH) / 2));
+    const leftOffset = hPad + Math.max(0, Math.floor((availW - gridW) / 2));
 
     // Event map
     const eventMap = new Map<number, string>();
@@ -95,20 +94,22 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
 
     return {
       columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
-      totalRows, topOffset, eventMap,
+      totalRows, topOffset, leftOffset, eventMap,
     };
   }, [config]);
 
   const {
     columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
-    totalRows, topOffset, eventMap,
+    totalRows, topOffset, leftOffset, eventMap,
   } = gridData;
 
   const cssDotSize = Math.max(1, Math.round(dotSize * canvasScale));
-  const cssHorizGap = Math.max(0.5, horizGap * canvasScale);
-  const cssVertGap = Math.max(0.5, vertGap * canvasScale);
-  const cssCellW = cssDotSize + cssHorizGap;
+  const cssGap = Math.max(0.5, horizGap * canvasScale); // same for H and V
+  const cssHorizGap = cssGap;
+  const cssVertGap = cssGap;
+  const cssCellW = cssDotSize + cssGap;
   const cssTopOffset = Math.round(topOffset * canvasScale);
+  const cssLeftOffset = Math.round(leftOffset * canvasScale);
   const hitTargetSize = Math.max(8, cssCellW);
 
   const EVENT_EMOJI: Record<string, string> = {
@@ -235,8 +236,7 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
 
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'none' }}>
-      <div style={{ height: cssTopOffset }} />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: cssVertGap, pointerEvents: 'auto' }}>
+      <div style={{ position: 'absolute', top: cssTopOffset, left: cssLeftOffset, display: 'flex', flexDirection: 'column', gap: cssVertGap, pointerEvents: 'auto' }}>
         {rows}
       </div>
     </div>
