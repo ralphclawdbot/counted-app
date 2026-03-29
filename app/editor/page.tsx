@@ -28,6 +28,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   dotShape: 'circle',
   dotStyle: 'flat',
   dotMode: 'standard',
+  platform: 'ios',
   widgetPosition: 'none',
   dotRowAlign: 'left',
   bgBlur: 0,

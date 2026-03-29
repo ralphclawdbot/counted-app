@@ -41,6 +41,7 @@ export type WidgetPosition = 'none' | 'bottom' | 'top';
 export type DotShape = 'circle' | 'square' | 'rounded' | 'diamond';
 export type DotStyle = 'flat' | 'glow' | 'neon' | 'outlined';
 export type DotMode = 'standard' | 'emoji' | 'symbol';
+export type Platform = 'ios' | 'android';
 
 // ── Full Wallpaper Config ──
 
@@ -78,6 +79,7 @@ export interface WallpaperConfig {
   goalName?: string;
   fontFamily?: string;
   dotGapScale?: number;   // gap multiplier: 0.5 (tight) → 1.0 (default) → 3.0 (spacious)
+  platform?: Platform;    // 'ios' (default) | 'android'
   lifeEvents?: LifeEvent[];
   layers?: PhotoLayer[];
 }
@@ -88,5 +90,5 @@ export interface DeviceInfo {
   name: string;
   width: number;
   height: number;
-  frame: import('@/lib/devices').FrameInfo;
+  frame: import('@/lib/devices').FrameInfo | null;
 }

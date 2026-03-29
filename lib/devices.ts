@@ -1,15 +1,21 @@
-import { DeviceInfo } from '@/types';
+import { DeviceInfo, Platform } from '@/types';
 
 // Frame image pixel measurements (alpha-channel scan of each mockuphone PNG):
 //   scl/sct = screen top-left in frame image pixels
 //   scr/scb = screen bottom-right in frame image pixels
 // All frames live in /public/frames/
 
-interface FrameInfo {
+export interface FrameInfo {
   path: string;
   fw: number; fh: number;          // frame image native size
   scl: number; sct: number;        // screen top-left
   scr: number; scb: number;        // screen bottom-right
+}
+
+export interface DeviceGroup {
+  platform: Platform;
+  label: string;
+  devices: DeviceInfo[];
 }
 
 // ── Frame presets ────────────────────────────────────────────────────────────
@@ -49,3 +55,15 @@ export const DEVICES: DeviceInfo[] = [
 ];
 
 export const DEFAULT_DEVICE = DEVICES[3]; // iPhone 16 (1179×2556)
+
+// ── Android devices (no frame — CSS generic frame in Canvas) ─────────────────
+export const ANDROID_DEVICES: DeviceInfo[] = [
+  { name: 'Samsung Galaxy S24 Ultra', width: 1440, height: 3088, frame: null as unknown as FrameInfo },
+  { name: 'Samsung Galaxy S24+',      width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  { name: 'Samsung Galaxy S24',       width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  { name: 'Google Pixel 9 Pro',       width: 1344, height: 2992, frame: null as unknown as FrameInfo },
+  { name: 'Google Pixel 9',           width: 1080, height: 2424, frame: null as unknown as FrameInfo },
+  { name: 'OnePlus 12',               width: 1440, height: 3168, frame: null as unknown as FrameInfo },
+];
+
+export const DEFAULT_ANDROID_DEVICE = ANDROID_DEVICES[2]; // Samsung Galaxy S24

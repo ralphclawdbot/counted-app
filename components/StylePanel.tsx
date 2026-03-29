@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { WallpaperConfig, CalendarType, DotShape, DotStyle, DotMode, LifeEvent } from '@/types';
-import { DEVICES } from '@/lib/devices';
+import { DEVICES, ANDROID_DEVICES, DEFAULT_ANDROID_DEVICE } from '@/lib/devices';
 import { THEME_PRESETS } from '@/lib/presets';
 import ColorPicker from './ColorPicker';
 import LayerPanel from './LayerPanel';
@@ -88,9 +88,11 @@ export default function StylePanel({
   hideLayers = false,
   hideSaveButton = false,
 }: StylePanelProps) {
-  const selectedDevice = DEVICES.find((d) => d.name === config.deviceName) ||
-    DEVICES.find((d) => d.width === config.width && d.height === config.height) ||
-    DEVICES[3];
+  const platform = config.platform || 'ios';
+  const deviceList = platform === 'android' ? ANDROID_DEVICES : DEVICES;
+  const selectedDevice = deviceList.find((d) => d.name === config.deviceName) ||
+    deviceList.find((d) => d.width === config.width && d.height === config.height) ||
+    deviceList[0];
 
   const isPresetActive = (p: typeof THEME_PRESETS[0]) =>
     config.bg === p.bg && config.dotFilled === p.dotFilled && config.dotEmpty === p.dotEmpty &&
@@ -176,18 +178,43 @@ export default function StylePanel({
         </div>
       )}
 
-      {/* Device */}
+      {/* Device — platform toggle + model selector */}
       <div style={separatorStyle}>
         <span style={sectionLabelStyle}>Device</span>
+
+        {/* iOS / Android toggle */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+          {(['ios', 'android'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => {
+                const newDevice = p === 'android' ? DEFAULT_ANDROID_DEVICE : DEVICES[3];
+                onConfigChange({ platform: p, width: newDevice.width, height: newDevice.height, deviceName: newDevice.name });
+              }}
+              style={{
+                flex: 1, padding: '7px 0', borderRadius: 8, cursor: 'pointer',
+                background: platform === p ? '#ff5722' : '#1a1a1a',
+                border: platform === p ? '1px solid #ff5722' : '1px solid #333',
+                color: platform === p ? '#fff' : '#888',
+                fontSize: 13, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              {p === 'ios' ? '🍎' : '🤖'} {p === 'ios' ? 'iPhone' : 'Android'}
+            </button>
+          ))}
+        </div>
+
+        {/* Model selector */}
         <select
           style={selectStyle}
           value={selectedDevice.name}
           onChange={(e) => {
-            const device = DEVICES.find((d) => d.name === e.target.value);
+            const device = deviceList.find((d) => d.name === e.target.value);
             if (device) onConfigChange({ width: device.width, height: device.height, deviceName: device.name });
           }}
         >
-          {DEVICES.map((d) => (
+          {deviceList.map((d) => (
             <option key={d.name} value={d.name}>{d.name} ({d.width}×{d.height})</option>
           ))}
         </select>

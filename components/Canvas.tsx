@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { WallpaperConfig, PhotoLayer } from '@/types';
-import { DEVICES } from '@/lib/devices';
+import { DEVICES, ANDROID_DEVICES } from '@/lib/devices';
 import { configToWallpaperParams } from '@/lib/buildConfig';
 import DotGrid from './DotGrid';
 import CanvasLayer from './CanvasLayer';
@@ -38,24 +38,31 @@ export default function Canvas({
   onDotClick,
   displayWidth = 350,
 }: CanvasProps) {
-  // Resolve the device frame — falls back to first device if not found
-  const device = useMemo(
-    () => DEVICES.find((d) => d.name === config.deviceName) ?? DEVICES[3],
-    [config.deviceName]
-  );
+  // Resolve the device frame — check both iOS and Android device lists
+  const isAndroid = (config.platform || 'ios') === 'android';
+  const device = useMemo(() => {
+    if (isAndroid) {
+      return ANDROID_DEVICES.find((d) => d.name === config.deviceName) ?? ANDROID_DEVICES[2];
+    }
+    return DEVICES.find((d) => d.name === config.deviceName) ?? DEVICES[3];
+  }, [config.deviceName, isAndroid]);
   const frame = device.frame;
 
   // Scale the frame image to displayWidth css-px wide
+  // For Android (no frame PNG), synthesize bezel/screen bounds from device aspect ratio
   const DISPLAY_FRAME_W = displayWidth;
-  const displayScale = DISPLAY_FRAME_W / frame.fw;
+  const ANDROID_BEZEL = Math.round(displayWidth * 0.04);
+  const displayScale  = frame ? DISPLAY_FRAME_W / frame.fw : 1;
   const frameW   = DISPLAY_FRAME_W;
-  const frameH   = Math.round(frame.fh * displayScale);
+  const frameH   = frame
+    ? Math.round(frame.fh * displayScale)
+    : Math.round(displayWidth * (config.height / config.width) + ANDROID_BEZEL * 2);
 
-  // Screen area in CSS px — directly from per-device pixel measurements
-  const bezelLeft = Math.round(frame.scl * displayScale);
-  const bezelTop  = Math.round(frame.sct * displayScale);
-  const screenW   = Math.round((frame.scr - frame.scl) * displayScale);
-  const screenH   = Math.round((frame.scb - frame.sct) * displayScale);
+  // Screen area in CSS px
+  const bezelLeft = frame ? Math.round(frame.scl * displayScale) : ANDROID_BEZEL;
+  const bezelTop  = frame ? Math.round(frame.sct * displayScale) : ANDROID_BEZEL;
+  const screenW   = frame ? Math.round((frame.scr - frame.scl) * displayScale) : (displayWidth - ANDROID_BEZEL * 2);
+  const screenH   = frame ? Math.round((frame.scb - frame.sct) * displayScale) : Math.round((displayWidth - ANDROID_BEZEL * 2) * (config.height / config.width));
 
   // Canvas fills the screen WIDTH exactly; height from wallpaper aspect ratio.
   // If canvasHeight > screenH the overflow is clipped — no gaps.
@@ -174,8 +181,49 @@ export default function Canvas({
           </div>
         </div>
 
-        {/* iOS lock screen UI overlay — makes preview match real lock screen */}
-        {(() => {
+        {/* Lock screen UI overlay — iOS or Android depending on platform */}
+        {isAndroid ? (() => {
+          // ── Android overlay: punch-hole camera, status bar, clock, gesture bar ──
+          const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
+          const dotStartPx  = Math.round(screenH * safeTopFrac);
+          const dateFontPx  = Math.round(canvasWidth * 0.052);
+          const timeFontPx  = Math.min(
+            Math.round(canvasWidth * 0.30),
+            Math.round((dotStartPx - Math.round(screenH * 0.08) - 4) * 0.55)
+          );
+          const timeTop = dotStartPx - timeFontPx - 4;
+          const dateTop = timeTop - dateFontPx - 5;
+          return (
+            <div style={{ position: 'absolute', top: bezelTop, left: bezelLeft, width: canvasWidth, height: screenH, pointerEvents: 'none', zIndex: 150, overflow: 'hidden' }}>
+              {/* Punch-hole camera */}
+              <div style={{ position: 'absolute', top: '1.5%', left: '50%', transform: 'translateX(-50%)', width: Math.round(canvasWidth * 0.035), height: Math.round(canvasWidth * 0.035), background: '#000', borderRadius: '50%' }} />
+              {/* Status bar */}
+              <div style={{ position: 'absolute', top: '1.5%', left: 0, right: 0, height: Math.round(screenH * 0.04), display: 'flex', alignItems: 'center', padding: `0 ${Math.round(canvasWidth * 0.05)}px` }}>
+                <span style={{ fontSize: Math.round(canvasWidth * 0.038), color: 'rgba(255,255,255,0.85)', fontWeight: 500, fontFamily: 'sans-serif' }}>{getTodayLabel().split(',')[0]}</span>
+                <div style={{ flex: 1 }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {[0.3,0.55,0.75,0.95].map((op, i) => <div key={i} style={{ width: 3, borderRadius: 1, height: 4 + i * 2, background: `rgba(255,255,255,${op})` }} />)}
+                  <svg width="12" height="9" viewBox="0 0 24 18" fill="none" style={{ marginLeft: 2 }}>
+                    <path d="M1 7 Q12 -1 23 7" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                    <path d="M5 12 Q12 6 19 12" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                    <circle cx="12" cy="17" r="2.5" fill="rgba(255,255,255,0.9)"/>
+                  </svg>
+                  <svg width="22" height="11" viewBox="0 0 44 22" fill="none" style={{ marginLeft: 2 }}>
+                    <rect x="1" y="1" width="37" height="20" rx="5" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
+                    <rect x="3" y="3" width="24" height="16" rx="3" fill="rgba(255,255,255,0.85)"/>
+                    <path d="M40 8 Q44 8 44 11 Q44 14 40 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              {/* Date */}
+              <div style={{ position: 'absolute', top: dateTop, width: '100%', textAlign: 'center', color: 'rgba(255,255,255,0.88)', fontSize: dateFontPx, fontWeight: 400, fontFamily: 'sans-serif' }}>{getTodayLabel()}</div>
+              {/* Time */}
+              <div style={{ position: 'absolute', top: timeTop, width: '100%', textAlign: 'center', color: '#fff', fontSize: timeFontPx, fontWeight: 300, letterSpacing: -1, lineHeight: 1, fontFamily: 'sans-serif' }}>{getTimeLabel()}</div>
+              {/* Gesture bar */}
+              <div style={{ position: 'absolute', bottom: '2%', left: '50%', transform: 'translateX(-50%)', width: Math.round(canvasWidth * 0.30), height: 4, background: 'rgba(255,255,255,0.5)', borderRadius: 3 }} />
+            </div>
+          );
+        })() : (() => {
           // ── Dynamic positioning: clock must sit above where the dots start ──
           // Mirror the same safeTop fraction used in DotGrid/renderWallpaper
           const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
@@ -334,21 +382,23 @@ export default function Canvas({
           );
         })()}
 
-        {/* Phone frame — switches with the selected device */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={frame.path}
-          alt=""
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: frameW,
-            height: frameH,
-            pointerEvents: 'none',
-            zIndex: 200,
-          }}
-        />
+        {/* Phone frame — iOS uses PNG, Android uses CSS generic frame */}
+        {frame ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={frame.path}
+            alt=""
+            style={{ position: 'absolute', top: 0, left: 0, width: frameW, height: frameH, pointerEvents: 'none', zIndex: 200 }}
+          />
+        ) : (
+          // Android: dark rounded rect with punch-hole camera cutout
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: frameW, height: frameH,
+            borderRadius: Math.round(frameW * 0.1), border: '2px solid #2a2a2a',
+            background: 'transparent', pointerEvents: 'none', zIndex: 200,
+            boxShadow: '0 0 0 2px #111 inset',
+          }} />
+        )}
       </div>
     </div>
   );
