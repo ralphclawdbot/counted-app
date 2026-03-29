@@ -344,7 +344,7 @@ export default function LandingPage() {
             padding: '4px 12px', borderRadius: 20, marginBottom: 24,
             textTransform: 'uppercase', letterSpacing: 0.8,
           }}>
-            ✦ Free · No sign-up · Works on iPhone
+            ✦ Free · No sign-up · iPhone & Android
           </div>
           <h1 style={{ fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 800, lineHeight: 1.03, letterSpacing: -2.5, marginBottom: 20 }}>
             Your life,<br />
@@ -400,7 +400,7 @@ export default function LandingPage() {
           {[
             { num: '01', icon: '🎨', title: 'Design your calendar', body: 'Pick life, year, or goal mode. Choose colors, photo layers, dot style, and theme. The canvas updates live — what you see is what hits your lock screen.' },
             { num: '02', icon: '🔗', title: 'Save your permanent link', body: 'Hit save and get a permanent URL. That link always returns your latest wallpaper, freshly generated every morning from your config.' },
-            { num: '03', icon: '⚡', title: 'Set up iOS Shortcut', body: 'One-tap setup. An automation fetches your URL at 6AM and sets it as your lock screen. No app download, no login, no friction.' },
+            { num: '03', icon: '⚡', title: 'Set up in 2 minutes', body: 'iOS Shortcuts or MacroDroid (Android). An automation fetches your URL at 6AM and sets it as your lock screen. No app, no login, no friction.' },
           ].map((s) => (
             <div key={s.num} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
               <div style={{ fontSize: 26, marginBottom: 12 }}>{s.icon}</div>
@@ -424,7 +424,7 @@ export default function LandingPage() {
           {[
             { icon: '📅', title: 'Three calendar modes', body: 'Life (every week from birth to 80), Year (days left this year), or Goal (custom countdown to any deadline). Each dot tells a different story.' },
             { icon: '🎨', title: 'Full visual editor', body: 'Color themes, photo backdrop layers, dot styles, gradient fills. Live PNG preview so you see exactly what your lock screen will look like.' },
-            { icon: '🔄', title: 'Auto-updates daily', body: 'Your dot count changes every single day. The iOS Shortcut pulls a fresh render at 6AM — your wallpaper is always accurate, always current.' },
+            { icon: '🔄', title: 'Auto-updates daily', body: 'Your dot count changes every single day. iOS Shortcuts or MacroDroid pulls a fresh render at 6AM — your wallpaper is always accurate, always current.' },
             { icon: '💬', title: 'Daily quotes', body: 'Optional rotating quote on your lock screen. A fresh line of perspective every day, sitting right between the flashlight and camera buttons.' },
           ].map((f) => (
             <div key={f.title} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
@@ -459,7 +459,7 @@ export default function LandingPage() {
           Start counting<br />your weeks.
         </h2>
         <p style={{ fontSize: 16, color: C.textMid, marginBottom: 36 }}>
-          Free. No account. Works on your iPhone, forever.
+          Free. No account. Works on iPhone & Android, forever.
         </p>
         <Link href="/editor" style={{
           display: 'inline-block',
