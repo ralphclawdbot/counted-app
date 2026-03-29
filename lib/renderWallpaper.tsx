@@ -525,19 +525,28 @@ export async function renderWallpaper(
     </div>
   ) : null;
 
-  // Quote element (shown above stats if enabled)
+  // Quote element — centered horizontally between the two lock-screen buttons,
+  // vertically centered in the button zone (mirrors Canvas overlay positioning)
   let quoteElement: React.ReactElement | null = null;
   if (config.showQuote) {
     const quote = getDailyQuote();
+    // Button geometry (matches Canvas.tsx overlay constants)
+    const btnSize   = Math.round(width * 0.155);
+    const btnMargin = Math.round(width * 0.07);
+    const btnGap    = Math.round(width * 0.025); // breathing room between btn edge and text
+    const btnBottom = Math.round(height * 0.09); // same bottom% as Canvas overlay
+    // Place quote centered vertically in the button zone
+    const quoteBottom = btnBottom + Math.round(btnSize / 2);
     quoteElement = (
       <div
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: Math.round(height * 0.11),
-          left: hPad,
-          right: hPad,
+          bottom: quoteBottom,
+          left:  btnMargin + btnSize + btnGap,
+          right: btnMargin + btnSize + btnGap,
           justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <div
