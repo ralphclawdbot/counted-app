@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { WallpaperConfig, PhotoLayer } from '@/types';
 import { DEVICES } from '@/lib/devices';
+import { configToWallpaperParams } from '@/lib/buildConfig';
 import DotGrid from './DotGrid';
 import CanvasLayer from './CanvasLayer';
 
@@ -72,6 +73,26 @@ export default function Canvas({
   // BG dim overlay
   const hasBgLayer = config.layers?.some((l) => l.type === 'bg' && l.visible);
 
+  // ── Live PNG preview — fetches actual /api/wallpaper with 400ms debounce ──
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewStale, setPreviewStale] = useState(false);
+
+  useEffect(() => {
+    setPreviewStale(true);
+    const timer = setTimeout(async () => {
+      try {
+        const params = configToWallpaperParams(config);
+        const res = await fetch(`/api/wallpaper?${params.toString()}`);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setPreviewUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return url; });
+      } catch { /* keep showing last good frame */ }
+      finally { setPreviewStale(false); }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [config]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Phone mockup: real SwarmPost frame image, canvas inside the screen area */}
@@ -90,7 +111,39 @@ export default function Canvas({
             overflow: 'hidden',
           }}
         >
-          {/* Photo layers */}
+          {/* ── Actual wallpaper PNG — exact match of the exported file ── */}
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt=""
+              style={{
+                position: 'absolute',
+                top: 0, left: 0,
+                width: canvasWidth,
+                height: canvasHeight,
+                objectFit: 'fill',
+                display: 'block',
+                pointerEvents: 'none',
+                opacity: previewStale ? 0.55 : 1,
+                transition: 'opacity 0.15s ease',
+                zIndex: 10,
+              }}
+            />
+          )}
+
+          {/* Loading shimmer while fetching first frame */}
+          {!previewUrl && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              background: 'rgba(255,255,255,0.04)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              pointerEvents: 'none', zIndex: 10,
+            }}>
+              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Loading…</span>
+            </div>
+          )}
+
+          {/* Photo layer interaction handles — on top of PNG for drag/resize */}
           {sortedLayers.map((layer) => (
             <CanvasLayer
               key={layer.id}
@@ -105,75 +158,19 @@ export default function Canvas({
             />
           ))}
 
-          {/* BG dim overlay */}
-          {hasBgLayer && config.bgDim && config.bgDim > 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: `rgba(0,0,0,${config.bgDim / 100})`,
-                zIndex: 50,
-                pointerEvents: 'none',
-              }}
+          {/* Invisible DotGrid — purely for dot-click interaction, PNG is the visual */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            opacity: 0, zIndex: 20, pointerEvents: 'auto',
+          }}>
+            <DotGrid
+              config={config}
+              canvasScale={canvasScale}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              onDotClick={onDotClick}
             />
-          )}
-
-          {/* BG blur visual indicator */}
-          {hasBgLayer && config.bgBlur && config.bgBlur > 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backdropFilter: `blur(${config.bgBlur * canvasScale}px)`,
-                zIndex: 49,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-
-          {/* Dot grid */}
-          <DotGrid
-            config={config}
-            canvasScale={canvasScale}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-            onDotClick={onDotClick}
-          />
-
-          {/* Daily quote — mirrors renderWallpaper.tsx placement */}
-          {config.showQuote && (() => {
-            const q = [
-              "Make it count.",
-              "Every day is a gift.",
-              "Live with intention.",
-              "Time is the only currency.",
-              "Be here now.",
-            ][new Date().getDate() % 5];
-            return (
-              <div style={{
-                position: 'absolute',
-                bottom: Math.round(canvasHeight * 0.11),
-                left: 0, right: 0,
-                display: 'flex', justifyContent: 'center',
-                pointerEvents: 'none',
-              }}>
-                <span style={{
-                  color: `rgba(255,255,255,0.65)`,
-                  fontSize: Math.round(canvasWidth * 0.028),
-                  fontStyle: 'italic',
-                  textAlign: 'center',
-                  padding: '0 12px',
-                  fontFamily: '-apple-system, sans-serif',
-                }}>{q}</span>
-              </div>
-            );
-          })()}
+          </div>
         </div>
 
         {/* iOS lock screen UI overlay — makes preview match real lock screen */}

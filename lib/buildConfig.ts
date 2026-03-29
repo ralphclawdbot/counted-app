@@ -1,6 +1,52 @@
 import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/types';
 
 /**
+ * Serialize a WallpaperConfig into URLSearchParams for the /api/wallpaper endpoint.
+ * Used by both the Canvas live preview and the download link in page.tsx.
+ * NOTE: photo layers are intentionally excluded — they're rendered via CSS CanvasLayer.
+ */
+export function configToWallpaperParams(config: WallpaperConfig): URLSearchParams {
+  const p = new URLSearchParams({
+    type: config.type,
+    width: String(config.width),
+    height: String(config.height),
+    bg: config.bg,
+    dotFilled: config.dotFilled,
+    dotEmpty: config.dotEmpty,
+    dotCurrent: config.dotCurrent,
+    dotFilledOpacity: String(config.dotFilledOpacity),
+    dotEmptyOpacity: String(config.dotEmptyOpacity),
+    dotShape: config.dotShape,
+    dotStyle: config.dotStyle,
+    dotMode: config.dotMode,
+  });
+  if (config.birthday)       p.set('birthday', config.birthday);
+  if (config.lifespan)       p.set('lifespan', String(config.lifespan));
+  if (config.deadline)       p.set('deadline', config.deadline);
+  if (config.goalStart)      p.set('goalStart', config.goalStart);
+  if (config.widgetPosition) p.set('widgetPosition', config.widgetPosition);
+  if (config.dotRowAlign)    p.set('dotRowAlign', config.dotRowAlign);
+  if (config.dotGapScale && config.dotGapScale !== 1) p.set('dotGapScale', String(config.dotGapScale));
+  if (config.showQuote)      p.set('showQuote', 'true');
+  if (config.goalName)       p.set('goalName', config.goalName);
+  if (config.fontFamily)     p.set('fontFamily', config.fontFamily);
+  if (config.emojiLived)     p.set('emojiLived', config.emojiLived);
+  if (config.emojiEmpty)     p.set('emojiEmpty', config.emojiEmpty);
+  if (config.dotSymbol)      p.set('dotSymbol', config.dotSymbol);
+  if (config.bgBlur)         p.set('bgBlur', String(config.bgBlur));
+  if (config.bgDim)          p.set('bgDim', String(config.bgDim));
+  if (config.gradientMode) {
+    p.set('gradientMode', 'true');
+    if (config.gradientStart) p.set('gradientStart', config.gradientStart);
+    if (config.gradientEnd)   p.set('gradientEnd', config.gradientEnd);
+  }
+  if (config.lifeEvents?.length) {
+    p.set('lifeEvents', config.lifeEvents.map((e) => `${e.date}:${e.icon}`).join(','));
+  }
+  return p;
+}
+
+/**
  * Parse URL search params into a WallpaperConfig object.
  */
 export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig {

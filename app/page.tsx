@@ -3,6 +3,7 @@
 import React, { useReducer, useCallback, useState, useEffect, useRef } from 'react';
 import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/types';
 import { DEFAULT_DEVICE } from '@/lib/devices';
+import { configToWallpaperParams } from '@/lib/buildConfig';
 import StylePanel from '@/components/StylePanel';
 import Canvas from '@/components/Canvas';
 import LayerPanel from '@/components/LayerPanel';
@@ -637,7 +638,7 @@ export default function EditorPage() {
             {config.birthday ? `Life calendar · ${config.type}` : 'Set your birthday to preview your calendar'}
           </div>
           <a
-            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}${config.showQuote ? '&showQuote=true' : ''}${config.goalName ? `&goalName=${encodeURIComponent(config.goalName)}` : ''}${config.fontFamily ? `&fontFamily=${encodeURIComponent(config.fontFamily)}` : ''}${config.dotGapScale && config.dotGapScale !== 1 ? `&dotGapScale=${config.dotGapScale}` : ''}`}
+            href={`/api/wallpaper?${configToWallpaperParams(config).toString()}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{
