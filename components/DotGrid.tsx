@@ -19,11 +19,9 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     const fullWidth = config.width;
     const fullHeight = config.height;
     const columns = config.type === 'life' ? 52 : 13;
-    const hPad = Math.round(fullWidth * 0.115);
+    const hPad = Math.round(fullWidth * 0.09);
     const availW = fullWidth - hPad * 2;
     const cellW = availW / columns;
-    const dotSize = Math.floor(cellW * 0.78);
-    const gap = cellW - dotSize;
 
     let totalDots = 0;
     let filledDots = 0;
@@ -49,12 +47,16 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     const totalRows = Math.ceil(totalDots / columns);
-    const statsAreaH = Math.round(fullHeight * 0.08);
-    const safeTop = Math.round(fullHeight * 0.12);
-    const safeBot = Math.round(fullHeight * 0.04);
-    const usable = fullHeight - safeTop - safeBot - statsAreaH;
-    const gridH = totalRows * dotSize + (totalRows - 1) * gap;
-    const topOffset = safeTop + Math.max(0, Math.floor((usable - gridH) / 2));
+    const safeTop = Math.round(fullHeight * 0.44);
+    const safeBot = Math.round(fullHeight * 0.14);
+    const statsAreaH = Math.round(fullHeight * 0.055);
+    const usableH = fullHeight - safeTop - safeBot - statsAreaH;
+    const cellH = usableH / totalRows;
+    const dotSize = Math.floor(Math.min(cellW, cellH) * 0.78);
+    const horizGap = cellW - dotSize;
+    const vertGap = cellH - dotSize;
+    const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;
+    const topOffset = safeTop + Math.max(0, Math.floor((usableH - gridH) / 2));
 
     // Event map
     const eventMap = new Map<number, string>();
@@ -66,19 +68,20 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     return {
-      columns, dotSize, gap, totalDots, filledDots, currentDot,
-      totalRows, topOffset, eventMap, cellW,
+      columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
+      totalRows, topOffset, eventMap,
     };
   }, [config]);
 
   const {
-    columns, dotSize, gap, totalDots, filledDots, currentDot,
-    totalRows, topOffset, eventMap, cellW,
+    columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
+    totalRows, topOffset, eventMap,
   } = gridData;
 
   const cssDotSize = Math.max(1, Math.round(dotSize * canvasScale));
-  const cssGap = Math.max(0.5, gap * canvasScale);
-  const cssCellW = Math.max(cssDotSize, Math.round(cellW * canvasScale));
+  const cssHorizGap = Math.max(0.5, horizGap * canvasScale);
+  const cssVertGap = Math.max(0.5, vertGap * canvasScale);
+  const cssCellW = cssDotSize + cssHorizGap;
   const cssTopOffset = Math.round(topOffset * canvasScale);
   const hitTargetSize = Math.max(8, cssCellW);
 
@@ -194,7 +197,7 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
       );
     }
     rows.push(
-      <div key={`row-${row}`} style={{ display: 'flex', flexDirection: 'row', gap: cssGap }}>
+      <div key={`row-${row}`} style={{ display: 'flex', flexDirection: 'row', gap: cssHorizGap }}>
         {dots}
       </div>
     );
@@ -207,7 +210,7 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'none' }}>
       <div style={{ height: cssTopOffset }} />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: cssGap, pointerEvents: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: cssVertGap, pointerEvents: 'auto' }}>
         {rows}
       </div>
     </div>

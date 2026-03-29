@@ -111,11 +111,11 @@ export async function renderWallpaper(
   // Year/goal: 13 cols → large bold dots (matches reference layout)
   // Life: 52 cols → 1 year per row (standard life-calendar layout)
   const columns = config.type === 'life' ? 52 : 13;
-  const hPad = Math.round(width * 0.115);
+
+  // Horizontal params — 9% padding each side
+  const hPad = Math.round(width * 0.09);
   const availW = width - hPad * 2;
   const cellW = availW / columns;
-  const dotSize = Math.floor(cellW * 0.78);
-  const gap = cellW - dotSize;
 
   // Compute total dots
   let totalDots = 0;
@@ -144,14 +144,26 @@ export async function renderWallpaper(
 
   const totalRows = Math.ceil(totalDots / columns);
 
-  // Vertical centering — reserve bottom area for progress text
-  const statsTextSize = Math.round(width * 0.028); // ~33px at 1179px
-  const statsAreaH = Math.round(height * 0.08); // space for stats text at bottom
-  const safeTop = Math.round(height * 0.12);
-  const safeBot = Math.round(height * 0.04);
-  const usable = height - safeTop - safeBot - statsAreaH;
-  const gridH = totalRows * dotSize + (totalRows - 1) * gap;
-  const topOffset = safeTop + Math.max(0, Math.floor((usable - gridH) / 2));
+  // iOS lock screen safe zones:
+  // Top 44% = Dynamic Island + time + date (avoid covering these)
+  // Bottom 14% = camera/flashlight + home indicator (avoid covering these)
+  // Grid lives in the 44%–86% band
+  const statsTextSize = Math.round(width * 0.028);
+  const safeTop = Math.round(height * 0.44);
+  const safeBot = Math.round(height * 0.14);
+  const statsAreaH = Math.round(height * 0.055);
+  const usableH = height - safeTop - safeBot - statsAreaH;
+
+  // Vertical cell size — size dots to fit the available height
+  const cellH = usableH / totalRows;
+
+  // Dot size = 78% of the smaller cell dimension so dots stay as circles
+  const dotSize = Math.floor(Math.min(cellW, cellH) * 0.78);
+  const horizGap = cellW - dotSize;   // horizontal spacing between dots
+  const vertGap  = cellH - dotSize;   // vertical spacing between rows
+
+  const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;
+  const topOffset = safeTop + Math.max(0, Math.floor((usableH - gridH) / 2));
 
   // Build progress stats text
   let statsLine = '';
@@ -299,7 +311,7 @@ export async function renderWallpaper(
         style={{
           display: 'flex',
           flexDirection: 'row',
-          gap,
+          gap: horizGap,
         }}
       >
         {dotsInRow}
@@ -384,7 +396,7 @@ export async function renderWallpaper(
       style={{
         display: 'flex',
         position: 'absolute',
-        bottom: Math.round(height * 0.035),
+        bottom: Math.round(height * 0.075),
         left: 0,
         right: 0,
         justifyContent: 'center',
@@ -459,7 +471,7 @@ export async function renderWallpaper(
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap,
+          gap: vertGap,
           position: 'relative',
         }}
       >
