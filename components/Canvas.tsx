@@ -174,126 +174,116 @@ export default function Canvas({
         </div>
 
         {/* iOS lock screen UI overlay — makes preview match real lock screen */}
-        <div
-          style={{
-            position: 'absolute',
-            top: bezelTop,
-            left: bezelLeft,
-            width: canvasWidth,
-            height: screenH,
-            pointerEvents: 'none',
-            zIndex: 150,
-            overflow: 'hidden',
-          }}
-        >
-          {/* ── iOS 26 Lock Screen — pixel-matched to reference screenshot ──
-               Layout: [DI pill] + [status bar right of DI] on same row
-                       lock icon → date → huge thin time → (content) → buttons      */}
+        {(() => {
+          // ── Dynamic positioning: clock must sit above where the dots start ──
+          // Mirror the same safeTop fraction used in DotGrid/renderWallpaper
+          const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
+          const dotStartPx  = Math.round(screenH * safeTopFrac);
 
-          {/* Top row: Dynamic Island centered + status bar to its right */}
-          <div style={{
-            position: 'absolute', top: '2%', left: 0, right: 0,
-            height: Math.round(screenH * 0.04),
-            display: 'flex', alignItems: 'center',
-            padding: `0 ${Math.round(canvasWidth * 0.04)}px`,
-          }}>
-            {/* Left spacer (mirror of status bar width) */}
-            <div style={{ flex: 1 }} />
+          // Clock area: from status bar bottom (~7% of screenH) to dotStartPx - 4px gap
+          const clockAreaTop = Math.round(screenH * 0.07);
+          const clockAreaH   = dotStartPx - clockAreaTop - 4;
 
-            {/* Dynamic Island pill */}
+          // Font sizes that fill the available area proportionally
+          const dateFontPx   = Math.round(canvasWidth * 0.052);
+          const timeFontPx   = Math.min(
+            Math.round(canvasWidth * 0.32),          // never wider than 32% of canvas
+            Math.round(clockAreaH * 0.55)            // fill ~55% of available clock area
+          );
+          const lockSize     = Math.max(13, Math.round(timeFontPx * 0.22));
+
+          // Stack upward from dotStartPx
+          const timeTop = dotStartPx - timeFontPx - 4;
+          const dateTop = timeTop - dateFontPx - 5;
+          const lockTop = dateTop - lockSize - 6;
+
+          const btnSize = Math.round(canvasWidth * 0.155);
+
+          return (
             <div style={{
-              width: Math.round(canvasWidth * 0.26),
-              height: Math.round(screenH * 0.032),
-              background: '#000', borderRadius: 99,
-              flexShrink: 0,
-            }} />
-
-            {/* Status bar — right of DI, vertically centered with pill */}
-            <div style={{
-              flex: 1, display: 'flex', alignItems: 'center',
-              justifyContent: 'flex-end', gap: 3,
-              paddingLeft: 6,
+              position: 'absolute',
+              top: bezelTop,
+              left: bezelLeft,
+              width: canvasWidth,
+              height: screenH,
+              pointerEvents: 'none',
+              zIndex: 150,
+              overflow: 'hidden',
             }}>
-              {/* Signal: 4 rounded bars increasing in height (SF-style) */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
-                {[0.25,0.45,0.65,0.85].map((op, i) => (
-                  <div key={i} style={{
-                    width: 3, borderRadius: 1,
-                    height: 4 + i * 2,
-                    background: `rgba(255,255,255,${op})`,
-                  }} />
-                ))}
-              </div>
-              {/* WiFi — 3 concentric arcs (SF Symbol style) */}
-              <svg width="12" height="9" viewBox="0 0 24 18" fill="none" style={{ marginLeft: 1 }}>
-                <path d="M1 7 Q12 -1 23 7" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                <path d="M5 12 Q12 6 19 12" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                <circle cx="12" cy="17" r="2.5" fill="rgba(255,255,255,0.9)"/>
-              </svg>
-              {/* Battery — outline + fill + nub */}
-              <svg width="22" height="11" viewBox="0 0 44 22" fill="none" style={{ marginLeft: 1 }}>
-                <rect x="1" y="1" width="37" height="20" rx="5" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
-                <rect x="3" y="3" width="24" height="16" rx="3" fill="rgba(255,255,255,0.85)"/>
-                <path d="M40 8 Q44 8 44 11 Q44 14 40 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-              </svg>
-            </div>
-          </div>
-
-          {/* Lock icon — simple white filled padlock (SF Symbol lock.fill) */}
-          <div style={{
-            position: 'absolute', top: '9%', width: '100%',
-            display: 'flex', justifyContent: 'center',
-          }}>
-            <svg width="14" height="17" viewBox="0 0 28 34" fill="none">
-              {/* Shackle arch */}
-              <path d="M6 14V9C6 4.6 9.6 1 14 1s8 3.6 8 8v5" stroke="rgba(255,255,255,0.9)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-              {/* Lock body */}
-              <rect x="1" y="14" width="26" height="19" rx="5" fill="rgba(255,255,255,0.9)"/>
-            </svg>
-          </div>
-
-          {/* Date — centered, above time (~12% from top) */}
-          <div style={{
-            position: 'absolute',
-            top: '13%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.88)',
-            fontSize: Math.round(canvasWidth * 0.052),
-            fontWeight: 400,
-            letterSpacing: 0.1,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
-          }}>
-            {getTodayLabel()}
-          </div>
-
-          {/* Time — smaller + heavier weight, solid clean numerals */}
-          <div style={{
-            position: 'absolute',
-            top: '16%', width: '100%', textAlign: 'center',
-            color: '#ffffff',
-            fontSize: Math.round(canvasWidth * 0.32),
-            fontWeight: 400,
-            letterSpacing: -1,
-            fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
-            lineHeight: 1,
-          }}>
-            {getTimeLabel()}
-          </div>
-
-          {/* Flashlight + Camera buttons — frosted glass, bottom */}
-          {(['left','right'] as const).map((side) => {
-            const btnSize = Math.round(canvasWidth * 0.155);
-            const isFlash = side === 'left';
-            return (
-              <div key={side} style={{
-                position: 'absolute',
-                bottom: '9%',
-                [side]: Math.round(canvasWidth * 0.07),
-                width: btnSize, height: btnSize, borderRadius: '50%',
-                background: 'rgba(80,80,80,0.55)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              {/* DI + status bar row */}
+              <div style={{
+                position: 'absolute', top: '2%', left: 0, right: 0,
+                height: Math.round(screenH * 0.04),
+                display: 'flex', alignItems: 'center',
+                padding: `0 ${Math.round(canvasWidth * 0.04)}px`,
               }}>
+                <div style={{ flex: 1 }} />
+                <div style={{
+                  width: Math.round(canvasWidth * 0.26),
+                  height: Math.round(screenH * 0.032),
+                  background: '#000', borderRadius: 99, flexShrink: 0,
+                }} />
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, paddingLeft: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
+                    {[0.25,0.45,0.65,0.85].map((op, i) => (
+                      <div key={i} style={{ width: 3, borderRadius: 1, height: 4 + i * 2, background: `rgba(255,255,255,${op})` }} />
+                    ))}
+                  </div>
+                  <svg width="12" height="9" viewBox="0 0 24 18" fill="none" style={{ marginLeft: 1 }}>
+                    <path d="M1 7 Q12 -1 23 7" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                    <path d="M5 12 Q12 6 19 12" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                    <circle cx="12" cy="17" r="2.5" fill="rgba(255,255,255,0.9)"/>
+                  </svg>
+                  <svg width="22" height="11" viewBox="0 0 44 22" fill="none" style={{ marginLeft: 1 }}>
+                    <rect x="1" y="1" width="37" height="20" rx="5" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
+                    <rect x="3" y="3" width="24" height="16" rx="3" fill="rgba(255,255,255,0.85)"/>
+                    <path d="M40 8 Q44 8 44 11 Q44 14 40 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Lock icon — stacked above date */}
+              <div style={{ position: 'absolute', top: lockTop, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <svg width={lockSize} height={Math.round(lockSize * 1.2)} viewBox="0 0 28 34" fill="none">
+                  <path d="M6 14V9C6 4.6 9.6 1 14 1s8 3.6 8 8v5" stroke="rgba(255,255,255,0.9)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+                  <rect x="1" y="14" width="26" height="19" rx="5" fill="rgba(255,255,255,0.9)"/>
+                </svg>
+              </div>
+
+              {/* Date */}
+              <div style={{
+                position: 'absolute', top: dateTop, width: '100%', textAlign: 'center',
+                color: 'rgba(255,255,255,0.88)',
+                fontSize: dateFontPx, fontWeight: 400, letterSpacing: 0.1,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
+              }}>
+                {getTodayLabel()}
+              </div>
+
+              {/* Time — sized to fill available space above dots */}
+              <div style={{
+                position: 'absolute', top: timeTop, width: '100%', textAlign: 'center',
+                color: '#ffffff', fontSize: timeFontPx, fontWeight: 400,
+                letterSpacing: -1, lineHeight: 1,
+                fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
+              }}>
+                {getTimeLabel()}
+              </div>
+
+              {/* Flashlight + Camera buttons — frosted glass, bottom */}
+              {(['left','right'] as const).map((side) => {
+                const isFlash = side === 'left';
+                return (
+                  <div key={side} style={{
+                    position: 'absolute',
+                    bottom: '9%',
+                    [side]: Math.round(canvasWidth * 0.07),
+                    width: btnSize, height: btnSize, borderRadius: '50%',
+                    background: 'rgba(80,80,80,0.55)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
                 {isFlash ? (
                   /* flashlight.on.fill — SF Symbol: tapered barrel + wide lens head + beam rays */
                   <svg width={btnSize * 0.42} height={btnSize * 0.42} viewBox="0 0 100 100" fill="white">
@@ -328,18 +318,20 @@ export default function Canvas({
                     <circle cx="84" cy="24" r="5" fill="rgba(40,40,40,0.7)"/>
                   </svg>
                 )}
-              </div>
-            );
-          })}
+                  </div>
+                );
+              })}
 
-          {/* Home indicator */}
-          <div style={{
-            position: 'absolute', bottom: '2%', left: '50%',
-            transform: 'translateX(-50%)',
-            width: Math.round(canvasWidth * 0.35), height: 4,
-            background: 'rgba(255,255,255,0.55)', borderRadius: 3,
-          }} />
-        </div>
+              {/* Home indicator */}
+              <div style={{
+                position: 'absolute', bottom: '2%', left: '50%',
+                transform: 'translateX(-50%)',
+                width: Math.round(canvasWidth * 0.35), height: 4,
+                background: 'rgba(255,255,255,0.55)', borderRadius: 3,
+              }} />
+            </div>
+          );
+        })()}
 
         {/* Phone frame — switches with the selected device */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
