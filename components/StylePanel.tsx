@@ -543,7 +543,7 @@ export default function StylePanel({
                   Preview PNG →
                 </a>
                 <a
-                  href={`/install?token=${saveState.token}`}
+                  href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`}
                   style={{ padding: '6px 14px', background: '#1a1a1a', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', fontWeight: 500 }}
                 >
                   Setup →

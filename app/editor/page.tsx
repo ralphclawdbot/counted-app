@@ -695,7 +695,7 @@ export default function EditorPage() {
               onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
               style={{ padding: '4px 10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
             >{saveState.copied ? '✓' : 'Copy'}</button>
-            <a href={`/install?token=${saveState.token}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
+            <a href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
               Setup →
             </a>
           </div>

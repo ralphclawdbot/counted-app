@@ -15,7 +15,9 @@ function getTodayLabel(): string {
 
 function getTimeLabel(): string {
   const d = new Date();
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
+  const h = d.getHours() % 12 || 12;
+  const m = d.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
 }
 
 interface CanvasProps {
@@ -83,6 +85,12 @@ export default function Canvas({
 
   // ── Live PNG preview — fetches actual /api/wallpaper with 400ms debounce ──
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [liveTime, setLiveTime] = useState(getTimeLabel);
+  const [liveDate, setLiveDate] = useState(getTodayLabel);
+  useEffect(() => {
+    const t = setInterval(() => { setLiveTime(getTimeLabel()); setLiveDate(getTodayLabel()); }, 10000);
+    return () => clearInterval(t);
+  }, []);
   const [previewStale, setPreviewStale] = useState(false);
 
   useEffect(() => {
@@ -210,7 +218,7 @@ export default function Canvas({
               <div style={{ position: 'absolute', top: '1.5%', left: '50%', transform: 'translateX(-50%)', width: Math.round(canvasWidth * 0.035), height: Math.round(canvasWidth * 0.035), background: '#000', borderRadius: '50%' }} />
               {/* Status bar */}
               <div style={{ position: 'absolute', top: '1.5%', left: 0, right: 0, height: Math.round(screenH * 0.04), display: 'flex', alignItems: 'center', padding: `0 ${Math.round(canvasWidth * 0.05)}px` }}>
-                <span style={{ fontSize: Math.round(canvasWidth * 0.038), color: 'rgba(255,255,255,0.85)', fontWeight: 500, fontFamily: 'sans-serif' }}>{getTodayLabel().split(',')[0]}</span>
+                <span style={{ fontSize: Math.round(canvasWidth * 0.038), color: 'rgba(255,255,255,0.85)', fontWeight: 500, fontFamily: 'sans-serif' }}>{liveDate.split(',')[0]}</span>
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   {[0.3,0.55,0.75,0.95].map((op, i) => <div key={i} style={{ width: 3, borderRadius: 1, height: 4 + i * 2, background: `rgba(255,255,255,${op})` }} />)}
@@ -227,9 +235,9 @@ export default function Canvas({
                 </div>
               </div>
               {/* Date */}
-              <div style={{ position: 'absolute', top: dateTop, width: '100%', textAlign: 'center', color: 'rgba(255,255,255,0.88)', fontSize: dateFontPx, fontWeight: 400, fontFamily: 'sans-serif' }}>{getTodayLabel()}</div>
+              <div style={{ position: 'absolute', top: dateTop, width: '100%', textAlign: 'center', color: 'rgba(255,255,255,0.88)', fontSize: dateFontPx, fontWeight: 400, fontFamily: 'sans-serif' }}>{liveDate}</div>
               {/* Time */}
-              <div style={{ position: 'absolute', top: timeTop, width: '100%', textAlign: 'center', color: '#fff', fontSize: timeFontPx, fontWeight: 300, letterSpacing: -1, lineHeight: 1, fontFamily: 'sans-serif' }}>{getTimeLabel()}</div>
+              <div style={{ position: 'absolute', top: timeTop, width: '100%', textAlign: 'center', color: '#fff', fontSize: timeFontPx, fontWeight: 300, letterSpacing: -1, lineHeight: 1, fontFamily: 'sans-serif' }}>{liveTime}</div>
               {/* Gesture bar */}
               <div style={{ position: 'absolute', bottom: '2%', left: '50%', transform: 'translateX(-50%)', width: Math.round(canvasWidth * 0.30), height: 4, background: 'rgba(255,255,255,0.5)', borderRadius: 3 }} />
             </div>
@@ -317,7 +325,7 @@ export default function Canvas({
                 fontSize: dateFontPx, fontWeight: 400, letterSpacing: 0.1,
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
               }}>
-                {getTodayLabel()}
+                {liveDate}
               </div>
 
               {/* Time — sized to fill available space above dots */}
@@ -327,7 +335,7 @@ export default function Canvas({
                 letterSpacing: -1, lineHeight: 1,
                 fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
               }}>
-                {getTimeLabel()}
+                {liveTime}
               </div>
 
               {/* Flashlight + Camera buttons — frosted glass, bottom */}

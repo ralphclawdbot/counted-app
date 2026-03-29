@@ -35,11 +35,12 @@ function StepNum({ n }: { n: number }) {
 function InstallContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const platformParam = searchParams.get('platform') as 'ios' | 'android' | null;
   const appUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const wallpaperUrl = token ? `${appUrl}/api/w/${token}` : '';
 
   const [copied, setCopied] = useState(false);
-  const [platform, setPlatform] = useState<'ios' | 'android' | null>(null);
+  const [platform, setPlatform] = useState<'ios' | 'android' | null>(platformParam || null);
   const [showManual, setShowManual] = useState(false);
   const [showTrouble, setShowTrouble] = useState(false);
 
