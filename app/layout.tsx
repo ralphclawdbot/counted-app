@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   description: 'Visualize your life as a grid of dots and get an auto-updating iPhone lock screen wallpaper.',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {

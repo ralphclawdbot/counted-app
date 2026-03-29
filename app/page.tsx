@@ -5,6 +5,7 @@ import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/
 import { DEFAULT_DEVICE } from '@/lib/devices';
 import StylePanel from '@/components/StylePanel';
 import Canvas from '@/components/Canvas';
+import LayerPanel from '@/components/LayerPanel';
 import LifeEventPopup from '@/components/LifeEventPopup';
 import { nanoid } from 'nanoid';
 
@@ -229,16 +230,8 @@ export default function EditorPage() {
     saving: boolean;
     copied: boolean;
   }>({ token: null, url: null, saving: false, copied: false });
-  const [isMobile, setIsMobile] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'style' | 'layers'>('style');
   const preDragRef = useRef<WallpaperConfig | null>(null);
-
-  // Check mobile
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   // Load token from localStorage
   useEffect(() => {
@@ -439,11 +432,17 @@ export default function EditorPage() {
       alert('Maximum 50 life events');
       return;
     }
-    // Calculate position for popup (use center of screen as fallback)
-    setPopupState({
-      weekIndex,
-      position: { x: Math.min(window.innerWidth - 240, 500), y: Math.min(window.innerHeight - 300, 300) },
-    });
+    // On mobile: center the popup. On desktop: position near canvas.
+    const isMobileNow = window.innerWidth < 768;
+    const popupW = 220;
+    const popupH = 220;
+    const x = isMobileNow
+      ? (window.innerWidth - popupW) / 2
+      : Math.min(window.innerWidth - popupW - 16, 520);
+    const y = isMobileNow
+      ? (window.innerHeight - popupH) / 2
+      : Math.min(window.innerHeight - popupH - 16, 300);
+    setPopupState({ weekIndex, position: { x, y } });
   }, [config.type, config.birthday, config.lifeEvents]);
 
   const saveEvent = useCallback((weekIndex: number, icon: string) => {
@@ -499,19 +498,6 @@ export default function EditorPage() {
     }
   }, [saveState.url]);
 
-  // Mobile check
-  if (isMobile) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: 32, textAlign: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Counted</h1>
-          <p style={{ color: '#888' }}>For the best experience, open Counted on a desktop or tablet.</p>
-          <p style={{ color: '#555', fontSize: 13, marginTop: 8 }}>Screen width must be at least 768px.</p>
-        </div>
-      </div>
-    );
-  }
-
   const existingEvent = popupState
     ? (config.lifeEvents || []).find((e) => e.weekIndex === popupState.weekIndex)
     : undefined;
@@ -524,98 +510,20 @@ export default function EditorPage() {
       })()
     : '';
 
-  return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Left Panel */}
-      <StylePanel
-        config={config}
-        onConfigChange={updateConfig}
-        layers={config.layers || []}
-        selectedLayerId={selectedLayerId}
-        onSelectLayer={setSelectedLayerId}
-        onDeleteLayer={deleteLayer}
-        onToggleVisibility={toggleVisibility}
-        onReorderLayers={reorderLayers}
-        onAddPhoto={() => setShowUploadModal(true)}
-        lifeEvents={config.lifeEvents || []}
-        onRemoveEvent={removeEvent}
-        onSave={handleSave}
-        saveState={{ ...saveState, copied: saveState.copied }}
-      />
+  // Shared canvas + modals (used in both desktop and mobile layouts)
+  const canvasEl = (
+    <Canvas
+      config={config}
+      selectedLayerId={selectedLayerId}
+      onSelectLayer={setSelectedLayerId}
+      onUpdateLayer={updateLayer}
+      onDragEnd={commitDrag}
+      onDotClick={handleDotClick}
+    />
+  );
 
-      {/* Right Panel — Canvas */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #1a1a1a' }}>
-          <button
-            onClick={() => dispatch({ type: 'UNDO' })}
-            disabled={history.past.length === 0}
-            style={{
-              padding: '4px 10px',
-              background: '#222',
-              color: history.past.length === 0 ? '#444' : '#aaa',
-              border: '1px solid #333',
-              borderRadius: 4,
-              cursor: history.past.length === 0 ? 'not-allowed' : 'pointer',
-              fontSize: 12,
-            }}
-          >
-            Undo
-          </button>
-          <button
-            onClick={() => dispatch({ type: 'REDO' })}
-            disabled={history.future.length === 0}
-            style={{
-              padding: '4px 10px',
-              background: '#222',
-              color: history.future.length === 0 ? '#444' : '#aaa',
-              border: '1px solid #333',
-              borderRadius: 4,
-              cursor: history.future.length === 0 ? 'not-allowed' : 'pointer',
-              fontSize: 12,
-            }}
-          >
-            Redo
-          </button>
-          <div style={{ flex: 1 }} />
-          {uploadProgress && (
-            <span style={{ fontSize: 12, color: '#888' }}>{uploadProgress}</span>
-          )}
-          <button
-            onClick={() => {
-              if (confirm('Reset all settings to defaults?')) {
-                dispatch({ type: 'SET', state: { config: DEFAULT_CONFIG } });
-                setSelectedLayerId(null);
-              }
-            }}
-            style={{
-              padding: '4px 10px',
-              background: '#222',
-              color: '#888',
-              border: '1px solid #333',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
-          >
-            Reset
-          </button>
-        </div>
-
-        {/* Canvas Area */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: 24 }}>
-          <Canvas
-            config={config}
-            selectedLayerId={selectedLayerId}
-            onSelectLayer={setSelectedLayerId}
-            onUpdateLayer={updateLayer}
-            onDragEnd={commitDrag}
-            onDotClick={handleDotClick}
-          />
-        </div>
-      </div>
-
-      {/* Upload Modal */}
+  const modals = (
+    <>
       {showUploadModal && (
         <UploadModal
           onClose={() => setShowUploadModal(false)}
@@ -623,8 +531,6 @@ export default function EditorPage() {
           hasBg={(config.layers || []).some((l) => l.type === 'bg')}
         />
       )}
-
-      {/* Life Event Popup */}
       {popupState && (
         <LifeEventPopup
           weekIndex={popupState.weekIndex}
@@ -636,6 +542,180 @@ export default function EditorPage() {
           position={popupState.position}
         />
       )}
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* ── DESKTOP LAYOUT (≥768px) ── */}
+      <div className="desktop-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <StylePanel
+          config={config}
+          onConfigChange={updateConfig}
+          layers={config.layers || []}
+          selectedLayerId={selectedLayerId}
+          onSelectLayer={setSelectedLayerId}
+          onDeleteLayer={deleteLayer}
+          onToggleVisibility={toggleVisibility}
+          onReorderLayers={reorderLayers}
+          onAddPhoto={() => setShowUploadModal(true)}
+          lifeEvents={config.lifeEvents || []}
+          onRemoveEvent={removeEvent}
+          onSave={handleSave}
+          saveState={saveState}
+        />
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Toolbar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #1a1a1a' }}>
+            <button
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={history.past.length === 0}
+              style={{ padding: '4px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
+            >Undo</button>
+            <button
+              onClick={() => dispatch({ type: 'REDO' })}
+              disabled={history.future.length === 0}
+              style={{ padding: '4px 10px', background: '#222', color: history.future.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
+            >Redo</button>
+            <div style={{ flex: 1 }} />
+            {uploadProgress && <span style={{ fontSize: 12, color: '#888' }}>{uploadProgress}</span>}
+            <button
+              onClick={() => { if (confirm('Reset all settings to defaults?')) { dispatch({ type: 'SET', state: { config: DEFAULT_CONFIG } }); setSelectedLayerId(null); } }}
+              style={{ padding: '4px 10px', background: '#222', color: '#888', border: '1px solid #333', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+            >Reset</button>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: 24 }}>
+            {canvasEl}
+          </div>
+        </div>
+
+        {modals}
+      </div>
+
+      {/* ── MOBILE LAYOUT (<768px) ── */}
+      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
+        {/* Sticky header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 16px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a',
+          flexShrink: 0,
+        }}>
+          <div>
+            <span style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>Counted</span>
+            {uploadProgress && <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>{uploadProgress}</span>}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={history.past.length === 0}
+              style={{ padding: '6px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 6, fontSize: 13, minHeight: 36 }}
+            >↩</button>
+            <button
+              onClick={handleSave}
+              disabled={saveState.saving}
+              style={{ padding: '6px 16px', background: saveState.saving ? '#333' : '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36 }}
+            >{saveState.saving ? '...' : 'Save'}</button>
+          </div>
+        </div>
+
+        {/* Canvas preview — scales to fit screen width */}
+        <div style={{
+          flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '12px 0', background: '#0f0f0f',
+        }}>
+          <div style={{
+            transformOrigin: 'top center',
+            // Scale the 398px phone frame to fit within viewport width minus margins
+            transform: `scale(var(--mobile-canvas-scale, 0.88))`,
+          }}>
+            {canvasEl}
+          </div>
+        </div>
+
+        {/* Saved URL strip */}
+        {saveState.url && (
+          <div style={{ padding: '8px 16px', background: '#0a1628', borderTop: '1px solid #1a3a6a', borderBottom: '1px solid #1a3a6a', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 11, color: '#4a9eff', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveState.url}</span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
+              style={{ padding: '4px 10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
+            >{saveState.copied ? '✓' : 'Copy'}</button>
+            <a href={`/install?token=${saveState.token}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
+              Setup →
+            </a>
+          </div>
+        )}
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a', flexShrink: 0 }}>
+          {(['style', 'layers'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setMobileTab(tab)}
+              style={{
+                flex: 1, padding: '10px', border: 'none', background: 'none',
+                color: mobileTab === tab ? '#fff' : '#555',
+                borderBottom: mobileTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+                fontSize: 13, fontWeight: mobileTab === tab ? 600 : 400, cursor: 'pointer',
+              }}
+            >
+              {tab === 'style' ? '🎨 Style' : '📷 Layers'}
+            </button>
+          ))}
+        </div>
+
+        {/* Scrollable panel content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+          {mobileTab === 'style' ? (
+            <StylePanel
+              config={config}
+              onConfigChange={updateConfig}
+              layers={config.layers || []}
+              selectedLayerId={selectedLayerId}
+              onSelectLayer={setSelectedLayerId}
+              onDeleteLayer={deleteLayer}
+              onToggleVisibility={toggleVisibility}
+              onReorderLayers={reorderLayers}
+              onAddPhoto={() => setShowUploadModal(true)}
+              lifeEvents={config.lifeEvents || []}
+              onRemoveEvent={removeEvent}
+              onSave={handleSave}
+              saveState={saveState}
+              hideLayers
+              hideSaveButton
+            />
+          ) : (
+            <LayerPanel
+              layers={config.layers || []}
+              selectedLayerId={selectedLayerId}
+              onSelectLayer={setSelectedLayerId}
+              onDeleteLayer={deleteLayer}
+              onToggleVisibility={toggleVisibility}
+              onReorder={reorderLayers}
+              onAddPhoto={() => setShowUploadModal(true)}
+            />
+          )}
+        </div>
+
+        {modals}
+      </div>
+
+      {/* CSS to show/hide layouts based on screen width */}
+      <style>{`
+        @media (min-width: 768px) {
+          .desktop-layout { display: flex !important; }
+          .mobile-layout { display: none !important; }
+        }
+        @media (max-width: 767px) {
+          .desktop-layout { display: none !important; }
+          .mobile-layout { display: flex !important; }
+          :root {
+            --mobile-canvas-scale: calc((100vw - 32px) / 398);
+          }
+        }
+      `}</style>
+    </>
   );
 }

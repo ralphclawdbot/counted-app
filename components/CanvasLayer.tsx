@@ -48,6 +48,9 @@ function BgLayerComponent({
         outline: isSelected ? '2px dashed rgba(255,255,255,0.7)' : 'none',
         overflow: 'hidden',
         opacity: layer.visible ? layer.opacity / 100 : 0,
+        // Prevent browser scroll/zoom interference during drag on touch
+        touchAction: 'none',
+        userSelect: 'none',
       }}
       onPointerDown={(e) => {
         if (!isSelected) return;
@@ -118,7 +121,7 @@ function CutoutLayerComponent({
   const [imgLoaded, setImgLoaded] = useState(false);
 
   const cssW = canvasWidth * (layer.layerSize / 100);
-  const cssH = cssW * (layer.naturalH / layer.naturalW);
+  const cssH = layer.naturalW > 0 ? cssW * (layer.naturalH / layer.naturalW) : cssW;
   const left = (layer.x / 100) * canvasWidth - cssW / 2;
   const top = (layer.y / 100) * canvasHeight - cssH / 2;
 
@@ -172,28 +175,39 @@ function CutoutLayerComponent({
     window.addEventListener('pointerup', handleUp);
   }, [layer.layerSize, canvasWidth, onUpdate, onDragEnd]);
 
+  // 44px hit target wrapper around the visible 8px handle dot
   const resizeHandle = (corner: string) => {
-    const pos: React.CSSProperties = {};
-    if (corner.includes('top')) pos.top = -4;
-    if (corner.includes('bottom')) pos.bottom = -4;
-    if (corner.includes('left')) pos.left = -4;
-    if (corner.includes('right')) pos.right = -4;
+    const wrapPos: React.CSSProperties = {};
+    const dotPos: React.CSSProperties = {};
+    if (corner.includes('top')) { wrapPos.top = -22; dotPos.top = 14; }
+    if (corner.includes('bottom')) { wrapPos.bottom = -22; dotPos.bottom = 14; }
+    if (corner.includes('left')) { wrapPos.left = -22; dotPos.left = 14; }
+    if (corner.includes('right')) { wrapPos.right = -22; dotPos.right = 14; }
     return (
       <div
         key={corner}
         onPointerDown={handleResize}
         style={{
           position: 'absolute',
-          ...pos,
-          width: 8,
-          height: 8,
-          background: 'white',
-          border: '1px solid #666',
-          borderRadius: 2,
+          ...wrapPos,
+          width: 44,
+          height: 44,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           cursor: 'nwse-resize',
           zIndex: 10,
+          touchAction: 'none',
         }}
-      />
+      >
+        <div style={{
+          width: 10,
+          height: 10,
+          background: 'white',
+          border: '1.5px solid #666',
+          borderRadius: 3,
+        }} />
+      </div>
     );
   };
 
@@ -210,6 +224,9 @@ function CutoutLayerComponent({
         outline: isSelected ? '2px dashed rgba(255,255,255,0.7)' : 'none',
         opacity: layer.visible ? layer.opacity / 100 : 0,
         pointerEvents: layer.visible ? 'auto' : 'none',
+        // Prevent scroll hijacking on touch during drag
+        touchAction: 'none',
+        userSelect: 'none',
       }}
       onPointerDown={handlePointerDown}
       onClick={(e) => e.stopPropagation()}

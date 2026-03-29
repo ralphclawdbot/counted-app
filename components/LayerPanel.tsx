@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { PhotoLayer } from '@/types';
 
 interface LayerPanelProps {
@@ -23,17 +23,6 @@ export default function LayerPanel({
   onAddPhoto,
 }: LayerPanelProps) {
   const sortedLayers = [...layers].sort((a, b) => b.zIndex - a.zIndex);
-  const dragItem = useRef<number | null>(null);
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-
-  // Suppress unused
-  void dragOverIdx;
-
-  useEffect(() => {
-    return () => {
-      dragItem.current = null;
-    };
-  }, []);
 
   return (
     <div style={{ marginBottom: 16 }}>
@@ -42,14 +31,15 @@ export default function LayerPanel({
         <button
           onClick={onAddPhoto}
           style={{
-            padding: '4px 10px',
+            padding: '8px 14px',
             background: '#2563eb',
             color: 'white',
             border: 'none',
-            borderRadius: 4,
+            borderRadius: 6,
             cursor: 'pointer',
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 600,
+            minHeight: 44,
           }}
         >
           + Add Photo
@@ -61,68 +51,82 @@ export default function LayerPanel({
           No photos yet. Add a background or portrait.
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {sortedLayers.map((layer, idx) => (
             <div
               key={layer.id}
-              draggable
-              onDragStart={() => { dragItem.current = idx; }}
-              onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
-              onDrop={() => {
-                if (dragItem.current !== null && dragItem.current !== idx) {
-                  onReorder(dragItem.current, idx);
-                }
-                dragItem.current = null;
-                setDragOverIdx(null);
-              }}
-              onDragEnd={() => { dragItem.current = null; setDragOverIdx(null); }}
               onClick={() => onSelectLayer(layer.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                padding: '6px 8px',
+                padding: '8px',
                 background: selectedLayerId === layer.id ? '#1a2a4a' : '#111',
                 border: selectedLayerId === layer.id ? '1px solid #2563eb' : '1px solid #222',
-                borderRadius: 4,
-                cursor: 'grab',
+                borderRadius: 6,
+                cursor: 'pointer',
+                minHeight: 52,
               }}
             >
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                  background: '#222',
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src={layer.url}
-                  alt=""
-                  style={{ width: 36, height: 36, objectFit: 'cover' }}
-                />
+              {/* Thumbnail */}
+              <div style={{ width: 36, height: 36, borderRadius: 4, overflow: 'hidden', background: '#222', flexShrink: 0 }}>
+                <img src={layer.url} alt="" style={{ width: 36, height: 36, objectFit: 'cover' }} />
               </div>
+
+              {/* Label */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 500, color: '#ddd' }}>
-                  {layer.type === 'bg' ? 'Background' : 'Cutout'}
+                  {layer.type === 'bg' ? '🖼 Background' : '✂️ Cutout'}
                 </div>
+                <div style={{ fontSize: 11, color: '#555' }}>z:{layer.zIndex}</div>
               </div>
+
+              {/* ↑↓ reorder — replaces HTML5 drag (which doesn't work on touch) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (idx > 0) onReorder(idx, idx - 1); }}
+                  disabled={idx === 0}
+                  style={{
+                    width: 28, height: 22,
+                    background: idx === 0 ? '#1a1a1a' : '#333',
+                    color: idx === 0 ? '#444' : '#aaa',
+                    border: 'none', borderRadius: 3,
+                    cursor: idx === 0 ? 'default' : 'pointer',
+                    fontSize: 12, lineHeight: 1,
+                  }}
+                  title="Move up"
+                >▲</button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (idx < sortedLayers.length - 1) onReorder(idx, idx + 1); }}
+                  disabled={idx === sortedLayers.length - 1}
+                  style={{
+                    width: 28, height: 22,
+                    background: idx === sortedLayers.length - 1 ? '#1a1a1a' : '#333',
+                    color: idx === sortedLayers.length - 1 ? '#444' : '#aaa',
+                    border: 'none', borderRadius: 3,
+                    cursor: idx === sortedLayers.length - 1 ? 'default' : 'pointer',
+                    fontSize: 12, lineHeight: 1,
+                  }}
+                  title="Move down"
+                >▼</button>
+              </div>
+
+              {/* Visibility toggle */}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleVisibility(layer.id); }}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 14,
+                  width: 36, height: 36,
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', fontSize: 16,
                   color: layer.visible ? '#888' : '#444',
-                  padding: 4,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
-                title={layer.visible ? 'Hide layer' : 'Show layer'}
+                title={layer.visible ? 'Hide' : 'Show'}
               >
                 {layer.visible ? '👁' : '👁‍🗨'}
               </button>
+
+              {/* Delete */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -133,17 +137,13 @@ export default function LayerPanel({
                   }
                 }}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  color: '#666',
-                  padding: 4,
+                  width: 36, height: 36,
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', fontSize: 16, color: '#666',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
-                title="Delete layer"
-              >
-                🗑
-              </button>
+                title="Delete"
+              >🗑</button>
             </div>
           ))}
         </div>

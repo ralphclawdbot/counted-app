@@ -22,6 +22,10 @@ interface StylePanelProps {
   onRemoveEvent: (weekIndex: number) => void;
   onSave: () => void;
   saveState: { token: string | null; url: string | null; saving: boolean; copied: boolean };
+  /** Mobile: hide layers section (rendered separately in its own tab) */
+  hideLayers?: boolean;
+  /** Mobile: hide save button (shown in sticky header instead) */
+  hideSaveButton?: boolean;
 }
 
 const sectionStyle: React.CSSProperties = {
@@ -44,12 +48,13 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '6px 8px',
+  padding: '8px 10px',
   background: '#1a1a1a',
   border: '1px solid #333',
   borderRadius: 4,
   color: '#ddd',
-  fontSize: 13,
+  // 16px minimum prevents iOS Safari from auto-zooming the page on input focus
+  fontSize: 16,
 };
 
 const selectStyle: React.CSSProperties = {
@@ -82,6 +87,8 @@ export default function StylePanel({
   onRemoveEvent,
   onSave,
   saveState,
+  hideLayers = false,
+  hideSaveButton = false,
 }: StylePanelProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -324,16 +331,18 @@ export default function StylePanel({
         )}
       </div>
 
-      {/* Layer Panel */}
-      <LayerPanel
-        layers={layers}
-        selectedLayerId={selectedLayerId}
-        onSelectLayer={onSelectLayer}
-        onDeleteLayer={onDeleteLayer}
-        onToggleVisibility={onToggleVisibility}
-        onReorder={onReorderLayers}
-        onAddPhoto={onAddPhoto}
-      />
+      {/* Layer Panel — hidden on mobile (rendered in its own tab) */}
+      {!hideLayers && (
+        <LayerPanel
+          layers={layers}
+          selectedLayerId={selectedLayerId}
+          onSelectLayer={onSelectLayer}
+          onDeleteLayer={onDeleteLayer}
+          onToggleVisibility={onToggleVisibility}
+          onReorder={onReorderLayers}
+          onAddPhoto={onAddPhoto}
+        />
+      )}
 
       {/* Life Events (life type only) */}
       {config.type === 'life' && (
@@ -367,8 +376,8 @@ export default function StylePanel({
         </div>
       )}
 
-      {/* Save Button */}
-      <div style={{ marginTop: 16, marginBottom: 32 }}>
+      {/* Save Button — hidden on mobile (in sticky header) */}
+      {!hideSaveButton && <div style={{ marginTop: 16, marginBottom: 32 }}>
         <button
           onClick={onSave}
           disabled={saveState.saving}
@@ -444,7 +453,7 @@ export default function StylePanel({
             </div>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
