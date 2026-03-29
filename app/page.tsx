@@ -32,114 +32,141 @@ const DEMO_WALLPAPER =
   '&dotCurrent=ff5722&dotFilledOpacity=88&dotEmptyOpacity=10' +
   '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1';
 
-// iOS lock screen chrome overlay (Dynamic Island, clock, status bar, bottom buttons)
+// Live time + date helpers (same as Canvas.tsx)
+function getTimeLabel() {
+  const now = new Date();
+  const h = now.getHours() % 12 || 12;
+  const m = now.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+function getTodayLabel() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+// iOS lock screen chrome — exact replica of Canvas.tsx overlay
 function IOSChrome({ w, h }: { w: number; h: number }) {
-  const s = w / 393; // scale relative to standard 393pt width
+  const [time, setTime] = useState(getTimeLabel);
+  const [date, setDate] = useState(getTodayLabel);
+  useEffect(() => {
+    const t = setInterval(() => { setTime(getTimeLabel()); setDate(getTodayLabel()); }, 10000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Mirror same layout math as Canvas.tsx
+  const safeTopFrac = 0.28;
+  const dotStartPx  = Math.round(h * safeTopFrac);
+  const dateFontPx  = Math.round(w * 0.052);
+  const timeFontPx  = Math.min(Math.round(w * 0.32), Math.round((dotStartPx - Math.round(h * 0.07) - 4) * 0.55));
+  const lockSize    = Math.max(10, Math.round(timeFontPx * 0.22));
+  const timeTop     = dotStartPx - timeFontPx - 4;
+  const dateTop     = timeTop - dateFontPx - 5;
+  const lockTop     = dateTop - lockSize - 6;
+  const btnSize     = Math.round(w * 0.155);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none', overflow: 'hidden', borderRadius: 38 }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none', overflow: 'hidden' }}>
 
-      {/* Dynamic Island */}
+      {/* DI + status bar row */}
       <div style={{
-        position: 'absolute', top: Math.round(10 * s), left: '50%',
-        transform: 'translateX(-50%)',
-        width: Math.round(120 * s), height: Math.round(34 * s),
-        background: '#000', borderRadius: 20,
-      }} />
-
-      {/* Status bar — right of DI */}
-      <div style={{
-        position: 'absolute', top: Math.round(13 * s),
-        right: Math.round(14 * s),
-        display: 'flex', alignItems: 'center', gap: Math.round(4 * s),
+        position: 'absolute', top: '2%', left: 0, right: 0,
+        height: Math.round(h * 0.04),
+        display: 'flex', alignItems: 'center',
+        padding: `0 ${Math.round(w * 0.04)}px`,
       }}>
-        {/* Signal dots */}
-        {[1,0.85,0.7,0.4].map((o, i) => (
-          <div key={i} style={{ width: Math.round(4*s), height: Math.round(4*s), borderRadius: '50%', background: `rgba(255,255,255,${o})` }} />
-        ))}
-        {/* WiFi */}
-        <svg width={Math.round(14*s)} height={Math.round(11*s)} viewBox="0 0 14 11" fill="none">
-          <path d="M7 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" fill="white"/>
-          <path d="M3.5 6C4.8 4.7 6.3 4 7 4s2.2.7 3.5 2" stroke="white" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
-          <path d="M1 3.5C2.9 1.4 4.9 0 7 0s4.1 1.4 6 3.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.55"/>
-        </svg>
-        {/* Battery */}
-        <div style={{ position: 'relative', width: Math.round(20*s), height: Math.round(10*s), border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2 }}>
-          <div style={{ position: 'absolute', top: 1, left: 1, width: `${0.78 * 100}%`, height: `calc(100% - 2px)`, background: 'white', borderRadius: 1 }} />
-          <div style={{ position: 'absolute', right: -3, top: '25%', width: 2, height: '50%', background: 'rgba(255,255,255,0.4)', borderRadius: 1 }} />
+        <div style={{ flex: 1 }} />
+        {/* Dynamic Island */}
+        <div style={{ width: Math.round(w * 0.26), height: Math.round(h * 0.032), background: '#000', borderRadius: 99, flexShrink: 0 }} />
+        {/* Status icons */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, paddingLeft: 6 }}>
+          {/* Signal bars */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
+            {[0.25,0.45,0.65,0.85].map((op, i) => (
+              <div key={i} style={{ width: 3, borderRadius: 1, height: 4 + i * 2, background: `rgba(255,255,255,${op})` }} />
+            ))}
+          </div>
+          {/* WiFi */}
+          <svg width="12" height="9" viewBox="0 0 24 18" fill="none" style={{ marginLeft: 1 }}>
+            <path d="M1 7 Q12 -1 23 7" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <path d="M5 12 Q12 6 19 12" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <circle cx="12" cy="17" r="2.5" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+          {/* Battery */}
+          <svg width="22" height="11" viewBox="0 0 44 22" fill="none" style={{ marginLeft: 1 }}>
+            <rect x="1" y="1" width="37" height="20" rx="5" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
+            <rect x="3" y="3" width="24" height="16" rx="3" fill="rgba(255,255,255,0.85)"/>
+            <path d="M40 8 Q44 8 44 11 Q44 14 40 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+          </svg>
         </div>
       </div>
 
       {/* Lock icon */}
-      <div style={{ position: 'absolute', top: Math.round(62*s), left: '50%', transform: 'translateX(-50%)' }}>
-        <svg width={Math.round(16*s)} height={Math.round(20*s)} viewBox="0 0 16 20" fill="white">
-          <rect x="1" y="9" width="14" height="10" rx="2.5"/>
-          <path d="M4 9V6a4 4 0 018 0v3" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <div style={{ position: 'absolute', top: lockTop, width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <svg width={lockSize} height={Math.round(lockSize * 1.2)} viewBox="0 0 28 34" fill="none">
+          <path d="M6 14V9C6 4.6 9.6 1 14 1s8 3.6 8 8v5" stroke="rgba(255,255,255,0.9)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+          <rect x="1" y="14" width="26" height="19" rx="5" fill="rgba(255,255,255,0.9)"/>
         </svg>
-      </div>
-
-      {/* Clock */}
-      <div style={{
-        position: 'absolute', top: Math.round(82*s), left: '50%', transform: 'translateX(-50%)',
-        fontSize: Math.round(72*s), fontWeight: 300, color: '#fff',
-        letterSpacing: -1, lineHeight: 1, whiteSpace: 'nowrap',
-        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        textShadow: '0 1px 8px rgba(0,0,0,0.4)',
-      }}>
-        9:41
       </div>
 
       {/* Date */}
       <div style={{
-        position: 'absolute', top: Math.round(165*s), left: '50%', transform: 'translateX(-50%)',
-        fontSize: Math.round(16*s), fontWeight: 500, color: 'rgba(255,255,255,0.85)',
-        whiteSpace: 'nowrap', letterSpacing: 0.1,
-        textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-      }}>
-        Sunday, March 29
-      </div>
+        position: 'absolute', top: dateTop, width: '100%', textAlign: 'center',
+        color: 'rgba(255,255,255,0.88)', fontSize: dateFontPx, fontWeight: 400, letterSpacing: 0.1,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
+      }}>{date}</div>
 
-      {/* Bottom buttons (flashlight + camera) */}
+      {/* Time */}
       <div style={{
-        position: 'absolute', bottom: Math.round(36*s),
-        left: 0, right: 0,
-        display: 'flex', justifyContent: 'space-between',
-        padding: `0 ${Math.round(28*s)}px`,
-      }}>
-        {/* Flashlight */}
-        <div style={{
-          width: Math.round(52*s), height: Math.round(52*s),
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width={Math.round(18*s)} height={Math.round(22*s)} viewBox="0 0 18 22" fill="white">
-            <path d="M6 0h6l-1 8h4L6 22l2-10H4L6 0z"/>
-          </svg>
-        </div>
-        {/* Camera */}
-        <div style={{
-          width: Math.round(52*s), height: Math.round(52*s),
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width={Math.round(22*s)} height={Math.round(18*s)} viewBox="0 0 22 18" fill="white">
-            <path d="M7 2l1.5-2h5L15 2h4a1 1 0 011 1v13a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1h5z"/>
-            <circle cx="11" cy="9.5" r="3.5" fill="#050505"/>
-            <circle cx="11" cy="9.5" r="2" fill="none" stroke="white" strokeWidth="0.8"/>
-          </svg>
-        </div>
-      </div>
+        position: 'absolute', top: timeTop, width: '100%', textAlign: 'center',
+        color: '#ffffff', fontSize: timeFontPx, fontWeight: 400,
+        letterSpacing: -1, lineHeight: 1,
+        fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
+      }}>{time}</div>
+
+      {/* Flashlight + Camera buttons */}
+      {(['left','right'] as const).map((side) => {
+        const isFlash = side === 'left';
+        return (
+          <div key={side} style={{
+            position: 'absolute', bottom: '9%',
+            [side]: Math.round(w * 0.07),
+            width: btnSize, height: btnSize, borderRadius: '50%',
+            background: 'rgba(80,80,80,0.55)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {isFlash ? (
+              <svg width={btnSize * 0.42} height={btnSize * 0.42} viewBox="0 0 100 100" fill="white">
+                <line x1="50" y1="4" x2="50" y2="10" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                <line x1="72" y1="10" x2="67" y2="15" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                <line x1="28" y1="10" x2="33" y2="15" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                <circle cx="50" cy="30" r="16" fill="white"/>
+                <circle cx="50" cy="30" r="9" fill="rgba(0,0,0,0.35)"/>
+                <path d="M34 44 L40 90 Q50 96 60 90 L66 44 Z" fill="white"/>
+                <rect x="38" y="60" width="24" height="4" rx="2" fill="rgba(0,0,0,0.2)"/>
+                <rect x="38" y="70" width="24" height="4" rx="2" fill="rgba(0,0,0,0.2)"/>
+              </svg>
+            ) : (
+              <svg width={btnSize * 0.46} height={btnSize * 0.42} viewBox="0 0 100 80" fill="white">
+                <path d="M35 6 L40 0 L60 0 L65 6 Z" fill="white"/>
+                <rect x="33" y="4" width="34" height="8" rx="3" fill="white"/>
+                <rect x="0" y="10" width="100" height="70" rx="14" fill="white"/>
+                <circle cx="50" cy="46" r="22" fill="rgba(40,40,40,0.75)"/>
+                <circle cx="50" cy="46" r="14" fill="rgba(20,20,20,0.9)"/>
+                <circle cx="44" cy="40" r="4" fill="rgba(255,255,255,0.15)"/>
+                <circle cx="84" cy="24" r="5" fill="rgba(40,40,40,0.7)"/>
+              </svg>
+            )}
+          </div>
+        );
+      })}
 
       {/* Home indicator */}
       <div style={{
-        position: 'absolute', bottom: Math.round(10*s), left: '50%',
+        position: 'absolute', bottom: '2%', left: '50%',
         transform: 'translateX(-50%)',
-        width: Math.round(120*s), height: Math.round(4*s),
-        background: 'rgba(255,255,255,0.5)', borderRadius: 3,
+        width: Math.round(w * 0.35), height: 4,
+        background: 'rgba(255,255,255,0.55)', borderRadius: 3,
       }} />
     </div>
   );
