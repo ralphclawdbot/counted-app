@@ -34,6 +34,7 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
     config.gradientEnd = params.get('gradientEnd') || '0000FF';
   }
   if (params.get('showQuote') === 'true') config.showQuote = true;
+  if (params.get('widgetMode') === 'true') config.widgetMode = true;
 
   // Parse life events: YYYY-MM-DD:icon,...
   if (params.get('lifeEvents')) {
