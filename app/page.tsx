@@ -20,27 +20,139 @@ const C = {
   dotCurrent: '#ff5722',
 };
 
-// ── Phone mockup — real frame + live wallpaper PNG ───────────
+// ── Phone mockup — real frame + live wallpaper + iOS chrome ──
 // Frame: apple-iphone-15-pro-black-titanium-portrait.png
 // Native frame: 1419×2796  |  Screen bounds: left=120 top=120 right=1299 bottom=2676
 const FRAME_W = 1419, FRAME_H = 2796;
 const SCR_L = 120, SCR_T = 120, SCR_R = 1299, SCR_B = 2676;
 
-// Wallpaper params for the landing page hero demo
 const DEMO_WALLPAPER =
   '/api/wallpaper?type=year&width=1179&height=2556' +
   '&bg=050505&dotFilled=ffffff&dotEmpty=ffffff' +
   '&dotCurrent=ff5722&dotFilledOpacity=88&dotEmptyOpacity=10' +
   '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1';
 
+// iOS lock screen chrome overlay (Dynamic Island, clock, status bar, bottom buttons)
+function IOSChrome({ w, h }: { w: number; h: number }) {
+  const s = w / 393; // scale relative to standard 393pt width
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none', overflow: 'hidden', borderRadius: 38 }}>
+
+      {/* Dynamic Island */}
+      <div style={{
+        position: 'absolute', top: Math.round(10 * s), left: '50%',
+        transform: 'translateX(-50%)',
+        width: Math.round(120 * s), height: Math.round(34 * s),
+        background: '#000', borderRadius: 20,
+      }} />
+
+      {/* Status bar — right of DI */}
+      <div style={{
+        position: 'absolute', top: Math.round(13 * s),
+        right: Math.round(14 * s),
+        display: 'flex', alignItems: 'center', gap: Math.round(4 * s),
+      }}>
+        {/* Signal dots */}
+        {[1,0.85,0.7,0.4].map((o, i) => (
+          <div key={i} style={{ width: Math.round(4*s), height: Math.round(4*s), borderRadius: '50%', background: `rgba(255,255,255,${o})` }} />
+        ))}
+        {/* WiFi */}
+        <svg width={Math.round(14*s)} height={Math.round(11*s)} viewBox="0 0 14 11" fill="none">
+          <path d="M7 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" fill="white"/>
+          <path d="M3.5 6C4.8 4.7 6.3 4 7 4s2.2.7 3.5 2" stroke="white" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+          <path d="M1 3.5C2.9 1.4 4.9 0 7 0s4.1 1.4 6 3.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.55"/>
+        </svg>
+        {/* Battery */}
+        <div style={{ position: 'relative', width: Math.round(20*s), height: Math.round(10*s), border: '1px solid rgba(255,255,255,0.5)', borderRadius: 2 }}>
+          <div style={{ position: 'absolute', top: 1, left: 1, width: `${0.78 * 100}%`, height: `calc(100% - 2px)`, background: 'white', borderRadius: 1 }} />
+          <div style={{ position: 'absolute', right: -3, top: '25%', width: 2, height: '50%', background: 'rgba(255,255,255,0.4)', borderRadius: 1 }} />
+        </div>
+      </div>
+
+      {/* Lock icon */}
+      <div style={{ position: 'absolute', top: Math.round(62*s), left: '50%', transform: 'translateX(-50%)' }}>
+        <svg width={Math.round(16*s)} height={Math.round(20*s)} viewBox="0 0 16 20" fill="white">
+          <rect x="1" y="9" width="14" height="10" rx="2.5"/>
+          <path d="M4 9V6a4 4 0 018 0v3" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+        </svg>
+      </div>
+
+      {/* Clock */}
+      <div style={{
+        position: 'absolute', top: Math.round(82*s), left: '50%', transform: 'translateX(-50%)',
+        fontSize: Math.round(72*s), fontWeight: 300, color: '#fff',
+        letterSpacing: -1, lineHeight: 1, whiteSpace: 'nowrap',
+        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        textShadow: '0 1px 8px rgba(0,0,0,0.4)',
+      }}>
+        9:41
+      </div>
+
+      {/* Date */}
+      <div style={{
+        position: 'absolute', top: Math.round(165*s), left: '50%', transform: 'translateX(-50%)',
+        fontSize: Math.round(16*s), fontWeight: 500, color: 'rgba(255,255,255,0.85)',
+        whiteSpace: 'nowrap', letterSpacing: 0.1,
+        textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+      }}>
+        Sunday, March 29
+      </div>
+
+      {/* Bottom buttons (flashlight + camera) */}
+      <div style={{
+        position: 'absolute', bottom: Math.round(36*s),
+        left: 0, right: 0,
+        display: 'flex', justifyContent: 'space-between',
+        padding: `0 ${Math.round(28*s)}px`,
+      }}>
+        {/* Flashlight */}
+        <div style={{
+          width: Math.round(52*s), height: Math.round(52*s),
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width={Math.round(18*s)} height={Math.round(22*s)} viewBox="0 0 18 22" fill="white">
+            <path d="M6 0h6l-1 8h4L6 22l2-10H4L6 0z"/>
+          </svg>
+        </div>
+        {/* Camera */}
+        <div style={{
+          width: Math.round(52*s), height: Math.round(52*s),
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width={Math.round(22*s)} height={Math.round(18*s)} viewBox="0 0 22 18" fill="white">
+            <path d="M7 2l1.5-2h5L15 2h4a1 1 0 011 1v13a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1h5z"/>
+            <circle cx="11" cy="9.5" r="3.5" fill="#050505"/>
+            <circle cx="11" cy="9.5" r="2" fill="none" stroke="white" strokeWidth="0.8"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Home indicator */}
+      <div style={{
+        position: 'absolute', bottom: Math.round(10*s), left: '50%',
+        transform: 'translateX(-50%)',
+        width: Math.round(120*s), height: Math.round(4*s),
+        background: 'rgba(255,255,255,0.5)', borderRadius: 3,
+      }} />
+    </div>
+  );
+}
+
 function PhoneMockup() {
   const DISPLAY_W = 260;
   const scale     = DISPLAY_W / FRAME_W;
-  const DISPLAY_H = Math.round(FRAME_H * scale);         // 433px
-  const scrLeft   = Math.round(SCR_L * scale);           // 19px
-  const scrTop    = Math.round(SCR_T * scale);           // 19px
-  const scrW      = Math.round((SCR_R - SCR_L) * scale); // 183px
-  const scrH      = Math.round((SCR_B - SCR_T) * scale); // 396px
+  const DISPLAY_H = Math.round(FRAME_H * scale);
+  const scrLeft   = Math.round(SCR_L * scale);
+  const scrTop    = Math.round(SCR_T * scale);
+  const scrW      = Math.round((SCR_R - SCR_L) * scale);
+  const scrH      = Math.round((SCR_B - SCR_T) * scale);
 
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -48,7 +160,7 @@ function PhoneMockup() {
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 320, height: 320, borderRadius: '50%',
+        width: 340, height: 340, borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(255,87,34,0.18) 0%, transparent 68%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
@@ -59,21 +171,26 @@ function PhoneMockup() {
         width: DISPLAY_W, height: DISPLAY_H,
         filter: 'drop-shadow(0 32px 64px rgba(0,0,0,0.8))',
       }}>
-        {/* Wallpaper behind frame */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={DEMO_WALLPAPER}
-          alt="wallpaper preview"
-          style={{
-            position: 'absolute',
-            top: scrTop, left: scrLeft,
-            width: scrW, height: scrH,
-            borderRadius: 38,
-            objectFit: 'cover',
-            zIndex: 1,
-          }}
-        />
-        {/* Frame overlay — sits on top, screen area is transparent */}
+        {/* Screen area wrapper — clips iOS chrome to screen bounds */}
+        <div style={{
+          position: 'absolute',
+          top: scrTop, left: scrLeft,
+          width: scrW, height: scrH,
+          borderRadius: 38, overflow: 'hidden',
+          zIndex: 1,
+        }}>
+          {/* Wallpaper */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={DEMO_WALLPAPER}
+            alt="wallpaper preview"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+          {/* iOS chrome overlay */}
+          <IOSChrome w={scrW} h={scrH} />
+        </div>
+
+        {/* Frame overlay — on top of everything */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/frames/apple-iphone-15-pro-black-titanium-portrait.png"
@@ -126,11 +243,16 @@ function Counter({ end, label }: { end: number | string; label: string }) {
 // ── Main landing page ─────────────────────────────────────────
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/stats').then(r => r.json()).then(d => setUserCount(d.count)).catch(() => {});
   }, []);
 
   return (
@@ -232,7 +354,10 @@ export default function LandingPage() {
         }}>
           <Counter end={4160} label="weeks in 80 years" />
           <Counter end={1} label="dot = 1 week of your life" />
-          <Counter end="∞" label="reasons to make them count" />
+          {userCount !== null && userCount > 0
+            ? <Counter end={userCount} label="wallpapers created" />
+            : <Counter end="∞" label="reasons to make them count" />
+          }
         </div>
       </div>
 
