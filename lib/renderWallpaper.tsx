@@ -498,18 +498,15 @@ export async function renderWallpaper(
   }
 
   // ── Bottom zone geometry (shared by stats + quote) ──────────────────────
-  // Button constants match Canvas.tsx overlay
+  // Horizontal: centered between the flashlight and camera buttons
   const _btnSize   = Math.round(width * 0.155);
   const _btnMargin = Math.round(width * 0.07);
   const _btnGap    = Math.round(width * 0.025);
-  const _btnBottom = Math.round(height * 0.09);
-  // Vertical center of the button zone — both text elements orbit this anchor
-  const _btnCenterY   = _btnBottom + Math.round(_btnSize / 2);
   const _quoteFontPx  = Math.round(width * 0.028);
-  // Stats sits just below the quote with a tight gap (or at btnCenter if no quote)
-  const _statsBottom  = config.showQuote
-    ? _btnCenterY - _quoteFontPx - Math.round(height * 0.006)
-    : _btnCenterY - Math.round(statsTextSize / 2);
+  // Vertical: just above home indicator (~2%), below button zone (~9%)
+  // Stats at 4%, quote just above stats — keeps them near the very bottom
+  const _statsBottom = Math.round(height * 0.04);
+  const _quoteBottom = _statsBottom + Math.round(statsTextSize * 1.3) + Math.round(height * 0.004);
 
   // Progress stats element (always shown if we have data)
   const statsElement: React.ReactElement | null = statsLine ? (
@@ -549,7 +546,7 @@ export async function renderWallpaper(
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: _btnCenterY,
+          bottom: _quoteBottom,
           left:  _btnMargin + _btnSize + _btnGap,
           right: _btnMargin + _btnSize + _btnGap,
           justifyContent: 'center',
