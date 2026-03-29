@@ -184,8 +184,10 @@ export async function renderWallpaper(
   }
 
   const totalRows = Math.ceil(totalDots / columns);
-  const dotSize  = Math.floor(cellSize * 0.78);
-  const gap      = cellSize - dotSize;  // identical horizontal AND vertical gap
+  const gapScale   = Math.max(0.3, Math.min(3.0, config.dotGapScale ?? 1));
+  const dotFrac    = Math.max(0.30, Math.min(0.95, 1 - 0.22 * gapScale));
+  const dotSize    = Math.floor(cellSize * dotFrac);
+  const gap        = cellSize - dotSize;  // identical horizontal AND vertical gap
   const horizGap = gap;
   const vertGap  = gap;
 
@@ -516,7 +518,7 @@ export async function renderWallpaper(
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: Math.round(height * 0.085),
+          bottom: Math.round(height * 0.11),
           left: hPad,
           right: hPad,
           justifyContent: 'center',
@@ -525,8 +527,8 @@ export async function renderWallpaper(
         <div
           style={{
             display: 'flex',
-            color: hexToRgba(config.dotFilled, 45),
-            fontSize: Math.round(width * 0.02),
+            color: hexToRgba(config.dotFilled, 65),
+            fontSize: Math.round(width * 0.028),
             fontStyle: 'italic',
             textAlign: 'center',
             fontFamily,

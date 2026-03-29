@@ -29,6 +29,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   dotMode: 'standard',
   bgBlur: 0,
   bgDim: 0,
+  dotGapScale: 1,
   lifeEvents: [],
   layers: [],
 };
@@ -636,7 +637,7 @@ export default function EditorPage() {
             {config.birthday ? `Life calendar · ${config.type}` : 'Set your birthday to preview your calendar'}
           </div>
           <a
-            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}${config.showQuote ? '&showQuote=true' : ''}${config.goalName ? `&goalName=${encodeURIComponent(config.goalName)}` : ''}${config.fontFamily ? `&fontFamily=${encodeURIComponent(config.fontFamily)}` : ''}`}
+            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}${config.showQuote ? '&showQuote=true' : ''}${config.goalName ? `&goalName=${encodeURIComponent(config.goalName)}` : ''}${config.fontFamily ? `&fontFamily=${encodeURIComponent(config.fontFamily)}` : ''}${config.dotGapScale && config.dotGapScale !== 1 ? `&dotGapScale=${config.dotGapScale}` : ''}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

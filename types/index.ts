@@ -77,6 +77,7 @@ export interface WallpaperConfig {
   showQuote?: boolean;
   goalName?: string;
   fontFamily?: string;
+  dotGapScale?: number;   // gap multiplier: 0.5 (tight) → 1.0 (default) → 3.0 (spacious)
   lifeEvents?: LifeEvent[];
   layers?: PhotoLayer[];
 }

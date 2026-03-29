@@ -145,6 +145,35 @@ export default function Canvas({
             canvasHeight={canvasHeight}
             onDotClick={onDotClick}
           />
+
+          {/* Daily quote — mirrors renderWallpaper.tsx placement */}
+          {config.showQuote && (() => {
+            const q = [
+              "Make it count.",
+              "Every day is a gift.",
+              "Live with intention.",
+              "Time is the only currency.",
+              "Be here now.",
+            ][new Date().getDate() % 5];
+            return (
+              <div style={{
+                position: 'absolute',
+                bottom: Math.round(canvasHeight * 0.11),
+                left: 0, right: 0,
+                display: 'flex', justifyContent: 'center',
+                pointerEvents: 'none',
+              }}>
+                <span style={{
+                  color: `rgba(255,255,255,0.65)`,
+                  fontSize: Math.round(canvasWidth * 0.028),
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  padding: '0 12px',
+                  fontFamily: '-apple-system, sans-serif',
+                }}>{q}</span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* iOS lock screen UI overlay — makes preview match real lock screen */}

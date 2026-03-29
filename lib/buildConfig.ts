@@ -34,6 +34,8 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
     config.gradientEnd = params.get('gradientEnd') || '0000FF';
   }
   if (params.get('showQuote') === 'true') config.showQuote = true;
+  const dotGapScale = parseFloat(params.get('dotGapScale') ?? '');
+  if (!isNaN(dotGapScale)) config.dotGapScale = Math.max(0.3, Math.min(3.0, dotGapScale));
   if (params.get('dotRowAlign')) config.dotRowAlign = params.get('dotRowAlign') as 'left' | 'center' | 'right';
   if (params.get('deviceName')) config.deviceName = params.get('deviceName')!;
   if (params.get('widgetPosition')) config.widgetPosition = params.get('widgetPosition') as 'none' | 'bottom' | 'top';

@@ -74,8 +74,10 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     const totalRows = Math.ceil(totalDots / columns);
-    const dotSize = Math.floor(cellSize * 0.78);
-    const gap = cellSize - dotSize; // same for both H and V
+    const gapScale = Math.max(0.3, Math.min(3.0, config.dotGapScale ?? 1));
+    const dotFrac  = Math.max(0.30, Math.min(0.95, 1 - 0.22 * gapScale));
+    const dotSize  = Math.floor(cellSize * dotFrac);
+    const gap      = cellSize - dotSize; // same for both H and V
     const horizGap = gap;
     const vertGap = gap;
     const gridW = columns * dotSize + (columns - 1) * gap;

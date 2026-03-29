@@ -309,6 +309,9 @@ export default function StylePanel({
           <div style={{ flex: 1 }}>
             <span style={sectionLabelStyle}>Empty Opacity ({config.dotEmptyOpacity}%)</span>
             <input type="range" min={0} max={100} value={config.dotEmptyOpacity} onChange={(e) => onConfigChange({ dotEmptyOpacity: parseInt(e.target.value) })} style={{ width: '100%', accentColor: '#fff' }} />
+
+            <span style={sectionLabelStyle}>Dot Gap ({((config.dotGapScale ?? 1) * 100).toFixed(0)}%)</span>
+            <input type="range" min={30} max={300} step={10} value={Math.round((config.dotGapScale ?? 1) * 100)} onChange={(e) => onConfigChange({ dotGapScale: parseInt(e.target.value) / 100 })} style={{ width: '100%', accentColor: '#fff' }} />
           </div>
         </div>
       </div>
