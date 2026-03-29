@@ -39,45 +39,14 @@ export function symbolSvgUri(name: string, color: string): string {
 }
 
 // ── Daily Quotes ──
-
-const QUOTES = [
-  "The only way to do great work is to love what you do.",
-  "Life is what happens when you're busy making other plans.",
-  "In the end, it's not the years in your life that count. It's the life in your years.",
-  "The purpose of our lives is to be happy.",
-  "Life is really simple, but we insist on making it complicated.",
-  "The unexamined life is not worth living.",
-  "Turn your wounds into wisdom.",
-  "The best time to plant a tree was 20 years ago. The second best time is now.",
-  "Your time is limited, don't waste it living someone else's life.",
-  "Life shrinks or expands in proportion to one's courage.",
-  "Every moment is a fresh beginning.",
-  "The only impossible journey is the one you never begin.",
-  "What we think, we become.",
-  "Be the change that you wish to see in the world.",
-  "Not all those who wander are lost.",
-  "It is during our darkest moments that we must focus to see the light.",
-  "The way to get started is to quit talking and begin doing.",
-  "Everything you've ever wanted is on the other side of fear.",
-  "Happiness is not something ready made. It comes from your own actions.",
-  "The biggest adventure you can take is to live the life of your dreams.",
-  "Life is short, and it is up to you to make it sweet.",
-  "Go confidently in the direction of your dreams.",
-  "Believe you can and you're halfway there.",
-  "Life is 10% what happens to us and 90% how we react to it.",
-  "An unexamined life is not worth living.",
-  "The best revenge is massive success.",
-  "Life is a journey, not a destination.",
-  "You only live once, but if you do it right, once is enough.",
-  "Many of life's failures are people who did not realize how close they were to success when they gave up.",
-  "If life were predictable it would cease to be life, and be without flavor.",
-];
+import { QUOTES } from './quotes';
 
 function getDailyQuote(tz?: string): string {
   const epoch = new Date('2026-01-01T00:00:00');
   const now = nowInTz(tz);
   const dayIndex = Math.floor((now.getTime() - epoch.getTime()) / (24 * 60 * 60 * 1000));
-  return QUOTES[((dayIndex % QUOTES.length) + QUOTES.length) % QUOTES.length];
+  const q = QUOTES[((dayIndex % QUOTES.length) + QUOTES.length) % QUOTES.length];
+  return `${q.text} — ${q.author}`;
 }
 
 // ── Dot Rendering Helpers ──
@@ -502,7 +471,7 @@ export async function renderWallpaper(
   const _btnSize   = Math.round(width * 0.155);
   const _btnMargin = Math.round(width * 0.07);
   const _btnGap    = Math.round(width * 0.07); // 7% extra gap each side (was 4.5%)
-  const _quoteFontPx  = Math.round(width * 0.028);
+  const _quoteFontPx  = Math.round(width * 0.024); // slightly smaller to fit quote + author
   // Vertical positioning (Arthur's spec):
   // • With quote: stats at 5%, quote at 8.5% from bottom
   // • Without quote: stats at 7% from bottom
