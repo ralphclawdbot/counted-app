@@ -80,6 +80,7 @@ export interface WallpaperConfig {
   fontFamily?: string;
   dotGapScale?: number;   // gap multiplier: 0.5 (tight) → 1.0 (default) → 3.0 (spacious)
   platform?: Platform;    // 'ios' (default) | 'android'
+  timezone?: string;      // IANA tz string e.g. 'America/New_York' — defaults to server UTC if unset
   lifeEvents?: LifeEvent[];
   layers?: PhotoLayer[];
 }

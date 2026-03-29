@@ -29,6 +29,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   dotStyle: 'flat',
   dotMode: 'standard',
   platform: 'ios',
+  timezone: typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
   widgetPosition: 'none',
   dotRowAlign: 'left',
   bgBlur: 0,

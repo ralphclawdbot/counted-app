@@ -430,6 +430,38 @@ export default function StylePanel({
         </label>
       </div>
 
+      {/* Timezone */}
+      <div style={separatorStyle}>
+        <span style={sectionLabelStyle}>Timezone</span>
+        <div style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>
+          Used to calculate the correct day on your wallpaper.
+        </div>
+        <input
+          type="text"
+          value={config.timezone || (typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC')}
+          onChange={(e) => onConfigChange({ timezone: e.target.value })}
+          onFocus={(e) => {
+            // Auto-fill device timezone if still empty
+            if (!config.timezone) {
+              onConfigChange({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+              e.target.select();
+            }
+          }}
+          placeholder="e.g. America/New_York"
+          style={{
+            width: '100%', padding: '8px 10px',
+            background: '#111', border: '1px solid #333', borderRadius: 6,
+            color: '#ddd', fontSize: 16, fontFamily: 'monospace', // 16px prevents iOS zoom
+          }}
+        />
+        <button
+          onClick={() => onConfigChange({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
+          style={{ marginTop: 6, fontSize: 11, color: '#555', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          ↺ Reset to device timezone ({typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : '…'})
+        </button>
+      </div>
+
       {/* Font */}
       <div style={separatorStyle}>
         <span style={sectionLabelStyle}>Font</span>

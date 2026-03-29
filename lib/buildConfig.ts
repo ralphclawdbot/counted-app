@@ -28,6 +28,7 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
   if (config.dotRowAlign)    p.set('dotRowAlign', config.dotRowAlign);
   if (config.dotGapScale && config.dotGapScale !== 1) p.set('dotGapScale', String(config.dotGapScale));
   if (config.showQuote)      p.set('showQuote', 'true');
+  if (config.timezone)       p.set('tz', config.timezone);
   if (config.goalName)       p.set('goalName', config.goalName);
   if (config.fontFamily)     p.set('fontFamily', config.fontFamily);
   if (config.emojiLived)     p.set('emojiLived', config.emojiLived);
@@ -82,6 +83,8 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
   if (params.get('showQuote') === 'true') config.showQuote = true;
   const dotGapScale = parseFloat(params.get('dotGapScale') ?? '');
   if (!isNaN(dotGapScale)) config.dotGapScale = Math.max(0.3, Math.min(3.0, dotGapScale));
+  const tz = params.get('tz');
+  if (tz) config.timezone = tz;
   if (params.get('dotRowAlign')) config.dotRowAlign = params.get('dotRowAlign') as 'left' | 'center' | 'right';
   if (params.get('deviceName')) config.deviceName = params.get('deviceName')!;
   if (params.get('widgetPosition')) config.widgetPosition = params.get('widgetPosition') as 'none' | 'bottom' | 'top';

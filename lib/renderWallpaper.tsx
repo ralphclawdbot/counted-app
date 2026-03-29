@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { WallpaperConfig, BgLayer, CutoutLayer, LifeEvent } from '@/types';
-import { weeksLived, dayOfYear, goalProgress } from './calculations';
+import { weeksLived, dayOfYear, goalProgress, nowInTz } from './calculations';
 import { lifeEventWeekIndex } from './buildConfig';
 
 import { hexToRgba, lerpHex } from './colors';
@@ -73,9 +73,9 @@ const QUOTES = [
   "If life were predictable it would cease to be life, and be without flavor.",
 ];
 
-function getDailyQuote(): string {
+function getDailyQuote(tz?: string): string {
   const epoch = new Date('2026-01-01T00:00:00');
-  const now = new Date();
+  const now = nowInTz(tz);
   const dayIndex = Math.floor((now.getTime() - epoch.getTime()) / (24 * 60 * 60 * 1000));
   return QUOTES[((dayIndex % QUOTES.length) + QUOTES.length) % QUOTES.length];
 }
@@ -120,16 +120,16 @@ export async function renderWallpaper(
     const lifespan = config.lifespan || 80;
     totalDots = lifespan * 52;
     if (config.birthday) {
-      filledDots = weeksLived(config.birthday);
+      filledDots = weeksLived(config.birthday, config.timezone);
       currentDot = filledDots;
     }
   } else if (config.type === 'year') {
     totalDots = 365;
-    filledDots = dayOfYear();
+    filledDots = dayOfYear(config.timezone);
     currentDot = filledDots;
   } else if (config.type === 'goal') {
     if (config.goalStart && config.deadline) {
-      const progress = goalProgress(config.goalStart, config.deadline);
+      const progress = goalProgress(config.goalStart, config.deadline, config.timezone);
       totalDots = progress.total;
       filledDots = progress.elapsed;
       currentDot = filledDots;
@@ -543,7 +543,7 @@ export async function renderWallpaper(
   // vertically centered in the button zone (mirrors Canvas overlay positioning)
   let quoteElement: React.ReactElement | null = null;
   if (config.showQuote) {
-    const quote = getDailyQuote();
+    const quote = getDailyQuote(config.timezone);
     quoteElement = (
       <div
         style={{
