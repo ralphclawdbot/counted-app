@@ -47,9 +47,8 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     const widgetH = Math.round(fullHeight * 0.13);
     const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
     const safeTop = Math.round(fullHeight * safeTopFrac);
-    const safeBot = Math.round(fullHeight * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
-    const statsAreaH = Math.round(fullHeight * 0.055);
-    const usableH = fullHeight - safeTop - safeBot - statsAreaH;
+    const safeBot = Math.round(fullHeight * 0.05) + (config.widgetPosition === 'bottom' ? widgetH : 0);
+    const usableH = fullHeight - safeTop - safeBot;
 
     // Equal-gap grid sizing: scan for largest square cellSize
     // horizGap === vertGap === (cellSize - dotSize)

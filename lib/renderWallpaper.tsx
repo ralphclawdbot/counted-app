@@ -164,12 +164,14 @@ export async function renderWallpaper(
   const widgetH = Math.round(height * 0.13);
   // top widget:    38% — iOS widgets fill top area, grid starts right below them
   // no widget:     28% — grid starts high, iOS clock overlays on top visually
-  // bottom widget: 28% — no top widgets so same as none; extra space reserved at bottom
+  // bottom widget: 28% — same safeTop; extra reserved at bottom for widget strip
   const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
   const safeTop = Math.round(height * safeTopFrac);
-  const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
-  const statsAreaH = Math.round(height * 0.055);
-  const usableH = height - safeTop - safeBot - statsAreaH;
+  // Base buffer: 5% (home indicator + just above buttons).
+  // For bottom widget, add the widget strip height on top of that.
+  const safeBot = Math.round(height * 0.05) + (config.widgetPosition === 'bottom' ? widgetH : 0);
+  // statsAreaH removed — stats/quote use absolute pixel positioning so no reserved zone needed
+  const usableH = height - safeTop - safeBot;
 
   // ── Equal-gap grid sizing ──
   // Scan from large to small to find the biggest square cellSize that fits:
