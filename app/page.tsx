@@ -117,9 +117,28 @@ export default function LandingPage() {
 
   return (
     <div style={{ background: C.bg, color: C.text, fontFamily: "-apple-system, 'Helvetica Neue', sans-serif", minHeight: '100vh' }}>
+      <style>{`
+        .lp-hero        { flex-direction: row; }
+        .lp-phone       { display: flex; }
+        .lp-section-pad { padding-left: 40px; padding-right: 40px; }
+        .lp-stats       { gap: 32px; }
+        .lp-quote       { font-size: 28px; }
+        @media (max-width: 640px) {
+          .lp-hero        { flex-direction: column !important; align-items: flex-start !important; padding: 40px 20px 48px !important; gap: 40px !important; }
+          .lp-phone       { justify-content: center; width: 100%; }
+          .lp-section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+          .lp-stats       { gap: 24px !important; flex-wrap: wrap !important; justify-content: center !important; }
+          .lp-quote       { font-size: 20px !important; }
+          .lp-nav         { padding: 0 20px !important; }
+          .lp-footer      { padding: 20px !important; flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+          .lp-cta-section { padding: 60px 20px !important; }
+          .lp-h2          { font-size: 30px !important; }
+          .lp-stats-bar   { padding: 28px 20px !important; }
+        }
+      `}</style>
 
       {/* ── NAV ─────────────────────────────────────────── */}
-      <nav style={{
+      <nav className="lp-nav" style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0 40px', height: 56,
         position: 'sticky', top: 0, zIndex: 100,
@@ -142,7 +161,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────── */}
-      <section style={{
+      <section className="lp-hero" style={{
         maxWidth: 1100, margin: '0 auto',
         padding: '72px 40px 80px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -183,12 +202,12 @@ export default function LandingPage() {
         </div>
 
         {/* Right: phone */}
-        <PhoneMockup />
+        <div className="lp-phone"><PhoneMockup /></div>
       </section>
 
       {/* ── STATS BAR ───────────────────────────────────── */}
       <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{
+        <div className="lp-stats lp-stats-bar" style={{
           maxWidth: 800, margin: '0 auto',
           padding: '32px 40px',
           display: 'flex', justifyContent: 'space-around', gap: 32, flexWrap: 'wrap',
@@ -200,11 +219,11 @@ export default function LandingPage() {
       </div>
 
       {/* ── HOW IT WORKS ────────────────────────────────── */}
-      <section id="how" style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 40px' }}>
+      <section id="how" className="lp-section-pad" style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 40px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
           How it works
         </div>
-        <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 48 }}>
+        <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 48 }}>
           Three steps to clarity.
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
@@ -224,11 +243,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ────────────────────────────────────── */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
+      <section className="lp-section-pad" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
           Features
         </div>
-        <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 40 }}>
+        <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 40 }}>
           Everything you need.
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -257,7 +276,7 @@ export default function LandingPage() {
       {/* ── QUOTE STRIP ─────────────────────────────────── */}
       <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '56px 40px', textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.4, color: C.text, marginBottom: 12 }}>
+          <div className="lp-quote" style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.4, color: C.text, marginBottom: 12 }}>
             &ldquo;The two most important days in your life are the day you are born and the day you find out why.&rdquo;
           </div>
           <div style={{ fontSize: 13, color: C.textLow }}>— Mark Twain</div>
@@ -265,7 +284,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── CTA ─────────────────────────────────────────── */}
-      <section style={{ textAlign: 'center', padding: '88px 40px' }}>
+      <section className="lp-cta-section" style={{ textAlign: 'center', padding: '88px 40px' }}>
         <h2 style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 800, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 16 }}>
           Start counting<br />your weeks.
         </h2>
@@ -287,7 +306,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────── */}
-      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <footer className="lp-footer" style={{ borderTop: `1px solid ${C.border}`, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <span style={{ fontSize: 14, fontWeight: 700 }}>
           counted<span style={{ color: C.accent }}>.</span>
         </span>
