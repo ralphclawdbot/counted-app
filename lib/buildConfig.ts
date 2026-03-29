@@ -10,10 +10,10 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
     type: config.type,
     width: String(config.width),
     height: String(config.height),
-    bg: config.bg,
-    dotFilled: config.dotFilled,
-    dotEmpty: config.dotEmpty,
-    dotCurrent: config.dotCurrent,
+    bg: config.bg.replace(/^#/, ''),
+    dotFilled: config.dotFilled.replace(/^#/, ''),
+    dotEmpty: config.dotEmpty.replace(/^#/, ''),
+    dotCurrent: config.dotCurrent.replace(/^#/, ''),
     dotFilledOpacity: String(config.dotFilledOpacity),
     dotEmptyOpacity: String(config.dotEmptyOpacity),
     dotShape: config.dotShape,
@@ -54,10 +54,10 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
     type: (params.get('type') as WallpaperConfig['type']) || 'life',
     width: parseInt(params.get('width') || '1179', 10),
     height: parseInt(params.get('height') || '2556', 10),
-    bg: params.get('bg') || '000000',
-    dotFilled: params.get('dotFilled') || 'FFFFFF',
-    dotEmpty: params.get('dotEmpty') || 'FFFFFF',
-    dotCurrent: params.get('dotCurrent') || 'FFFFFF',
+    bg: (params.get('bg') || '000000').replace(/^#/, ''),
+    dotFilled: (params.get('dotFilled') || 'FFFFFF').replace(/^#/, ''),
+    dotEmpty: (params.get('dotEmpty') || 'FFFFFF').replace(/^#/, ''),
+    dotCurrent: (params.get('dotCurrent') || 'FFFFFF').replace(/^#/, ''),
     dotFilledOpacity: parseInt(params.get('dotFilledOpacity') || '85', 10),
     dotEmptyOpacity: parseInt(params.get('dotEmptyOpacity') || '10', 10),
     dotShape: (params.get('dotShape') as WallpaperConfig['dotShape']) || 'square',
@@ -76,8 +76,8 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
   if (params.get('bgDim')) config.bgDim = parseInt(params.get('bgDim')!, 10);
   if (params.get('gradientMode') === 'true') {
     config.gradientMode = true;
-    config.gradientStart = params.get('gradientStart') || 'FF0000';
-    config.gradientEnd = params.get('gradientEnd') || '0000FF';
+    config.gradientStart = (params.get('gradientStart') || 'FF0000').replace(/^#/, '');
+    config.gradientEnd = (params.get('gradientEnd') || '0000FF').replace(/^#/, '');
   }
   if (params.get('showQuote') === 'true') config.showQuote = true;
   const dotGapScale = parseFloat(params.get('dotGapScale') ?? '');
