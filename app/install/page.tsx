@@ -170,7 +170,7 @@ function InstallContent() {
                   <p style={{ fontSize: 12, color: C.textMid, marginBottom: 12 }}>Apple doesn&apos;t allow sharing automations — takes 2 minutes to set up manually.</p>
                   <ol style={{ paddingLeft: 20, fontSize: 13, color: '#bbb', lineHeight: 2, margin: 0 }}>
                     <li>Open <strong>Shortcuts</strong> → <strong>Automation</strong> tab → <strong>+</strong></li>
-                    <li><strong>Time of Day</strong> → 6:00 AM → Daily → <strong>Run Immediately</strong></li>
+                    <li><strong>Time of Day</strong> → 12:00 AM (midnight) → Daily → <strong>Run Immediately</strong></li>
                     <li>Turn off &quot;Ask Before Running&quot;</li>
                     <li>Add action: <strong>Get File</strong> (from iCloud / Shortcuts / <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3 }}>counted-url.txt</code>)</li>
                     <li>Add action: <strong>Get Contents of URL</strong></li>
@@ -191,7 +191,7 @@ function InstallContent() {
                       <li>Add: <strong>Get Contents of URL</strong></li>
                       <li>Add: <strong>Set Wallpaper Photo</strong> → Lock Screen</li>
                       <li>Name it &quot;Counted&quot; → Done</li>
-                      <li>Automation tab → + → Time of Day → 6 AM → Run Immediately → Run Shortcut &quot;Counted&quot;</li>
+                      <li>Automation tab → + → Time of Day → 12:00 AM → Run Immediately → Run Shortcut &quot;Counted&quot;</li>
                     </ol>
                   )}
                 </div>
@@ -247,7 +247,7 @@ function InstallContent() {
                   <ol style={{ paddingLeft: 20, fontSize: 13, color: '#bbb', lineHeight: 2, margin: 0 }}>
                     <li>Open MacroDroid → tap <strong>+ Add Macro</strong></li>
                     <li>Tap <strong>Triggers</strong> → <strong>Clock / Timer</strong> → <strong>Specific Time</strong></li>
-                    <li>Set time to <strong>6:00 AM</strong> → Daily → tap <strong>OK</strong></li>
+                    <li>Set time to <strong>12:00 AM (midnight)</strong> → Daily → tap <strong>OK</strong></li>
                     <li>Tap <strong>Actions</strong> → <strong>Files/Media</strong> → <strong>Download File</strong></li>
                     <li>URL: paste your wallpaper URL. Save path: <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3 }}>Downloads/counted.jpg</code></li>
                     <li>Tap <strong>+</strong> again → <strong>Device</strong> → <strong>Set Wallpaper</strong></li>
