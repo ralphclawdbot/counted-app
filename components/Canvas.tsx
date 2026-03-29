@@ -132,22 +132,33 @@ export default function Canvas({
                 objectFit: 'fill',
                 display: 'block',
                 pointerEvents: 'none',
-                opacity: previewStale ? 0.55 : 1,
+                opacity: previewStale ? 0.35 : 1,
                 transition: 'opacity 0.15s ease',
                 zIndex: 10,
               }}
             />
           )}
 
-          {/* Loading shimmer while fetching first frame */}
-          {!previewUrl && (
+          {/* Spinner — shown on first load (no image yet) or while refetching */}
+          {(!previewUrl || previewStale) && (
             <div style={{
               position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-              background: 'rgba(255,255,255,0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              pointerEvents: 'none', zIndex: 10,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              pointerEvents: 'none', zIndex: 15,
+              background: previewUrl ? 'transparent' : 'rgba(255,255,255,0.03)',
             }}>
-              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Loading…</span>
+              <style>{`
+                @keyframes _canvas_spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+              <div style={{
+                width: 28, height: 28,
+                border: '2.5px solid rgba(255,255,255,0.12)',
+                borderTopColor: 'rgba(255,255,255,0.75)',
+                borderRadius: '50%',
+                animation: '_canvas_spin 0.7s linear infinite',
+              }} />
             </div>
           )}
 
