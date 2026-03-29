@@ -508,7 +508,7 @@ export async function renderWallpaper(
   // • Without quote: stats at 7% from bottom
   const _statsBottom = config.showQuote
     ? Math.round(height * 0.055)
-    : Math.round(height * 0.07);
+    : Math.round(height * 0.075);
   const _quoteBottom = Math.round(height * 0.085);
 
   // Progress stats element (always shown if we have data)
