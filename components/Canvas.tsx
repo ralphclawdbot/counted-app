@@ -239,14 +239,14 @@ export default function Canvas({
             {getTodayLabel()}
           </div>
 
-          {/* Time — iOS 26: large, thin strokes, fills screen width */}
+          {/* Time — iOS lock screen: thick clean strokes, fills screen width */}
           <div style={{
             position: 'absolute',
             top: '17%', width: '100%', textAlign: 'center',
             color: '#ffffff',
             fontSize: Math.round(canvasWidth * 0.43),
-            fontWeight: 200,
-            letterSpacing: -4,
+            fontWeight: 300,
+            letterSpacing: -2,
             fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
             lineHeight: 1,
           }}>
