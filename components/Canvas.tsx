@@ -25,11 +25,17 @@ interface CanvasProps {
   onDotClick?: (weekIndex: number) => void;
 }
 
-// Phone frame image (iPhone 15 Pro Black, ~780×1560px)
-// Screen area insets: 7% left/right, 5.5% top/bottom
-const FRAME_SCREEN_INSET_H = 0.07;  // left + right each
-const FRAME_SCREEN_INSET_V = 0.055; // top + bottom each
-const FRAME_ASPECT = 1560 / 780;    // height / width of the frame image
+// Phone frame image: 1419×2796px (pixel-exact measurements from alpha channel scan)
+// Screen area: starts at (120,120), ends at (1346,2724)
+const FRAME_IMG_W  = 1419;
+const FRAME_IMG_H  = 2796;
+const SCREEN_PX_L  = 120;   // screen left in frame px
+const SCREEN_PX_R  = 1346;  // screen right in frame px
+const SCREEN_PX_T  = 120;   // screen top in frame px
+const SCREEN_PX_B  = 2724;  // screen bottom in frame px
+
+// Display the frame at DISPLAY_FRAME_W css-px wide; everything else derived
+const DISPLAY_FRAME_W = 350;
 
 export default function Canvas({
   config,
@@ -39,20 +45,26 @@ export default function Canvas({
   onDragEnd,
   onDotClick,
 }: CanvasProps) {
-  // Canvas content is 300px wide → frame is sized so its screen area = 300px wide
-  const canvasWidth = 300;
-  const canvasScale = canvasWidth / config.width;
+  // Frame display dimensions — scale factor from native to CSS px
+  const frameW    = DISPLAY_FRAME_W;
+  const frameH    = Math.round(FRAME_IMG_H * (DISPLAY_FRAME_W / FRAME_IMG_W));
+  const displayScale = DISPLAY_FRAME_W / FRAME_IMG_W;
+
+  // Screen area in CSS px — derived directly from measured pixel positions
+  const bezelLeft = Math.round(SCREEN_PX_L * displayScale);
+  const bezelTop  = Math.round(SCREEN_PX_T * displayScale);
+  const screenW   = Math.round((SCREEN_PX_R - SCREEN_PX_L) * displayScale);
+  const screenH   = Math.round((SCREEN_PX_B - SCREEN_PX_T) * displayScale);
+
+  // Canvas fills the screen WIDTH exactly; height follows the wallpaper aspect ratio.
+  // canvasHeight may slightly exceed screenH (wallpaper taller than frame screen) — that's
+  // fine, it gets clipped by overflow:hidden. Never shorter → no top/bottom gaps.
+  const canvasWidth  = screenW;
+  const canvasScale  = canvasWidth / config.width;
   const canvasHeight = useMemo(
     () => Math.round(canvasWidth * config.height / config.width),
-    [config.width, config.height]
+    [canvasWidth, config.width, config.height]
   );
-
-  // Frame dimensions: screen area = canvasWidth → frame = canvasWidth / (1 - 2*inset_h)
-  const frameW = Math.round(canvasWidth / (1 - 2 * FRAME_SCREEN_INSET_H));
-  const frameH = Math.round(frameW * FRAME_ASPECT);
-  const bezelLeft = Math.round(frameW * FRAME_SCREEN_INSET_H);
-  const bezelTop  = Math.round(frameH * FRAME_SCREEN_INSET_V);
-  const screenH   = Math.round(frameH * (1 - 2 * FRAME_SCREEN_INSET_V));
 
   const sortedLayers = useMemo(() => {
     if (!config.layers) return [];
