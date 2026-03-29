@@ -67,6 +67,7 @@ export interface WallpaperConfig {
   bgBlur?: number;
   bgDim?: number;
   dotRowAlign?: DotRowAlign;
+  deviceName?: string;
   safeLayout?: boolean;
   /** Widget position on iOS lock screen: none | bottom (default) | top (iOS 26+) */
   widgetPosition?: WidgetPosition;

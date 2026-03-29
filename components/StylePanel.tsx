@@ -94,7 +94,11 @@ export default function StylePanel({
 }: StylePanelProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const selectedDevice = DEVICES.find((d) => d.width === config.width && d.height === config.height) || DEVICES[3];
+  // selectedDeviceName tracks the chosen device by name (unique), not by dimensions
+  // Multiple iPhones share the same dimensions (e.g. 16/15 Pro/15/14 Pro all 1179×2556)
+  const selectedDevice = DEVICES.find((d) => d.name === config.deviceName) ||
+    DEVICES.find((d) => d.width === config.width && d.height === config.height) ||
+    DEVICES[3];
 
   return (
     <div style={{ width: 360, height: '100vh', overflowY: 'auto', padding: '16px', borderRight: '1px solid #1a1a1a', background: '#0a0a0a' }}>
@@ -118,14 +122,14 @@ export default function StylePanel({
         <span style={labelStyle}>Device</span>
         <select
           style={selectStyle}
-          value={`${selectedDevice.width}x${selectedDevice.height}`}
+          value={selectedDevice.name}
           onChange={(e) => {
-            const [w, h] = e.target.value.split('x').map(Number);
-            onConfigChange({ width: w, height: h });
+            const device = DEVICES.find((d) => d.name === e.target.value);
+            if (device) onConfigChange({ width: device.width, height: device.height, deviceName: device.name });
           }}
         >
           {DEVICES.map((d) => (
-            <option key={d.name} value={`${d.width}x${d.height}`}>{d.name} ({d.width}×{d.height})</option>
+            <option key={d.name} value={d.name}>{d.name} ({d.width}×{d.height})</option>
           ))}
         </select>
       </div>

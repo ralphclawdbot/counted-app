@@ -15,6 +15,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   type: 'life',
   width: DEFAULT_DEVICE.width,
   height: DEFAULT_DEVICE.height,
+  deviceName: DEFAULT_DEVICE.name,
   birthday: '',
   lifespan: 80,
   bg: '000000',

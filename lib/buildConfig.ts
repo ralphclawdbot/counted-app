@@ -35,6 +35,7 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
   }
   if (params.get('showQuote') === 'true') config.showQuote = true;
   if (params.get('dotRowAlign')) config.dotRowAlign = params.get('dotRowAlign') as 'left' | 'center' | 'right';
+  if (params.get('deviceName')) config.deviceName = params.get('deviceName')!;
   if (params.get('widgetPosition')) config.widgetPosition = params.get('widgetPosition') as 'none' | 'bottom' | 'top';
 
   // Parse life events: YYYY-MM-DD:icon,...
