@@ -501,13 +501,13 @@ export async function renderWallpaper(
   // Horizontal: centered between the flashlight and camera buttons
   const _btnSize   = Math.round(width * 0.155);
   const _btnMargin = Math.round(width * 0.07);
-  const _btnGap    = Math.round(width * 0.025);
+  const _btnGap    = Math.round(width * 0.045); // ~4.5% extra gap each side (was 2.5%)
   const _quoteFontPx  = Math.round(width * 0.028);
   // Vertical positioning (Arthur's spec):
   // • With quote: stats at 5%, quote at 8.5% from bottom
   // • Without quote: stats at 7% from bottom
   const _statsBottom = config.showQuote
-    ? Math.round(height * 0.05)
+    ? Math.round(height * 0.055)
     : Math.round(height * 0.07);
   const _quoteBottom = Math.round(height * 0.085);
 
