@@ -1,773 +1,300 @@
 'use client';
 
-import React, { useReducer, useCallback, useState, useEffect, useRef } from 'react';
-import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/types';
-import { DEFAULT_DEVICE } from '@/lib/devices';
-import { configToWallpaperParams } from '@/lib/buildConfig';
-import StylePanel from '@/components/StylePanel';
-import Canvas from '@/components/Canvas';
-import LayerPanel from '@/components/LayerPanel';
-import LifeEventPopup from '@/components/LifeEventPopup';
-import { nanoid } from 'nanoid';
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 
-// ── Default Config ──
-
-const DEFAULT_CONFIG: WallpaperConfig = {
-  type: 'year',
-  width: DEFAULT_DEVICE.width,
-  height: DEFAULT_DEVICE.height,
-  deviceName: DEFAULT_DEVICE.name,
-  birthday: '',
-  lifespan: 80,
-  bg: '000000',
-  dotFilled: 'FFFFFF',
-  dotEmpty: '888888',
-  dotCurrent: 'FF5722',
-  dotFilledOpacity: 100,
-  dotEmptyOpacity: 35,
-  dotShape: 'circle',
-  dotStyle: 'flat',
-  dotMode: 'standard',
-  widgetPosition: 'none',
-  dotRowAlign: 'left',
-  bgBlur: 0,
-  bgDim: 0,
-  dotGapScale: 1,
-  lifeEvents: [],
-  layers: [],
+// ── Color tokens (match app defaults) ────────────────────────
+const C = {
+  bg:         '#050505',
+  surface:    '#0d0d0d',
+  border:     '#1c1c1c',
+  borderHi:   '#2a2a2a',
+  accent:     '#ff5722',
+  accentDim:  'rgba(255,87,34,0.12)',
+  accentBorder:'rgba(255,87,34,0.28)',
+  text:       '#ffffff',
+  textMid:    'rgba(255,255,255,0.55)',
+  textLow:    'rgba(255,255,255,0.3)',
+  dotFilled:  'rgba(255,255,255,0.88)',
+  dotEmpty:   'rgba(255,255,255,0.11)',
+  dotCurrent: '#ff5722',
 };
 
-// ── Undo/Redo State ──
-
-interface EditorState {
-  config: WallpaperConfig;
-}
-
-interface HistoryState {
-  past: EditorState[];
-  present: EditorState;
-  future: EditorState[];
-}
-
-type HistoryAction =
-  | { type: 'SET'; state: EditorState }
-  | { type: 'DRAFT'; state: EditorState }
-  | { type: 'COMMIT' }
-  | { type: 'PUSH_PAST'; state: EditorState }
-  | { type: 'UNDO' }
-  | { type: 'REDO' };
-
-const MAX_HISTORY = 30;
-
-function historyReducer(state: HistoryState, action: HistoryAction): HistoryState {
-  switch (action.type) {
-    case 'SET':
-      return {
-        past: [...state.past, state.present].slice(-MAX_HISTORY),
-        present: action.state,
-        future: [],
-      };
-    case 'DRAFT':
-      // Update present without adding to history (for drag moves)
-      return { ...state, present: action.state };
-    case 'COMMIT':
-      return state;
-    case 'PUSH_PAST':
-      // Push a specific state to past without changing present (used to save pre-drag snapshot)
-      return {
-        past: [...state.past, action.state].slice(-MAX_HISTORY),
-        present: state.present,
-        future: [],
-      };
-    case 'UNDO':
-      if (state.past.length === 0) return state;
-      return {
-        past: state.past.slice(0, -1),
-        present: state.past[state.past.length - 1],
-        future: [state.present, ...state.future].slice(0, MAX_HISTORY),
-      };
-    case 'REDO':
-      if (state.future.length === 0) return state;
-      return {
-        past: [...state.past, state.present].slice(-MAX_HISTORY),
-        present: state.future[0],
-        future: state.future.slice(1),
-      };
-    default:
-      return state;
-  }
-}
-
-// ── Upload Modal ──
-
-function UploadModal({
-  onClose,
-  onUpload,
-  hasBg,
-}: {
-  onClose: () => void;
-  onUpload: (type: 'bg' | 'cutout', file: File) => void;
-  hasBg: boolean;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploadType, setUploadType] = useState<'bg' | 'cutout' | null>(null);
-
-  const handleFile = (type: 'bg' | 'cutout') => {
-    setUploadType(type);
-    fileRef.current?.click();
-  };
-
+// ── Dot grid for phone mockup ─────────────────────────────────
+function PhoneDotGrid({ total = 300, lived = 188 }: { total?: number; lived?: number }) {
+  const COLS = 18;
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0,0,0,0.7)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10000,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: '#1a1a1a',
-          borderRadius: 12,
-          padding: 24,
-          minWidth: 320,
-          border: '1px solid #333',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#fff' }}>Add Photo</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button
-            onClick={() => handleFile('bg')}
-            style={{
-              padding: '12px 16px',
-              background: '#222',
-              color: '#ddd',
-              border: '1px solid #333',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontSize: 14,
-              textAlign: 'left',
-            }}
-          >
-            {hasBg ? '🔄 Replace Background' : '🖼 Add as Background'}
-            <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>Fills the entire wallpaper</div>
-          </button>
-          <button
-            onClick={() => handleFile('cutout')}
-            style={{
-              padding: '12px 16px',
-              background: '#222',
-              color: '#ddd',
-              border: '1px solid #333',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontSize: 14,
-              textAlign: 'left',
-            }}
-          >
-            ✂️ Add as Cutout
-            <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>Removes background automatically</div>
-          </button>
-        </div>
-        <button
-          onClick={onClose}
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, 5px)`, gap: '3px', padding: '0 8px' }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
           style={{
-            marginTop: 12,
-            width: '100%',
-            padding: '8px',
-            background: '#333',
-            color: '#aaa',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 13,
-          }}
-        >
-          Cancel
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file && uploadType) {
-              onUpload(uploadType, file);
-              onClose();
-            }
+            width: 5, height: 5, borderRadius: '50%',
+            background: i < lived - 1 ? C.dotFilled : i === lived - 1 ? C.dotCurrent : C.dotEmpty,
+            boxShadow: i === lived - 1 ? `0 0 5px ${C.dotCurrent}` : 'none',
           }}
         />
+      ))}
+    </div>
+  );
+}
+
+// ── Phone mockup ──────────────────────────────────────────────
+function PhoneMockup() {
+  return (
+    <div style={{ position: 'relative', width: 200, flexShrink: 0 }}>
+      {/* Glow */}
+      <div style={{ position: 'absolute', inset: -60, background: `radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 65%)`, pointerEvents: 'none', zIndex: 0 }} />
+
+      {/* Frame */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        width: 200, aspectRatio: '9 / 19.5',
+        background: '#080808',
+        borderRadius: 38,
+        border: `1.5px solid #2a2a2a`,
+        overflow: 'hidden',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px #1a1a1a',
+      }}>
+        {/* Dynamic island */}
+        <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', width: 78, height: 22, background: '#000', borderRadius: 20, zIndex: 10 }} />
+
+        {/* Screen */}
+        <div style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 52 }}>
+          <div style={{ fontSize: 46, fontWeight: 300, color: C.text, letterSpacing: -1, lineHeight: 1 }}>9:41</div>
+          <div style={{ fontSize: 11, color: C.textMid, marginBottom: 16 }}>Sunday, March 29</div>
+          <PhoneDotGrid />
+          <div style={{ marginTop: 10, fontSize: 8, color: C.textLow, letterSpacing: 0.2 }}>1,456 weeks lived · 704 left</div>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Main Page ──
+// ── Animated counter ──────────────────────────────────────────
+function Counter({ end, label }: { end: number | string; label: string }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
 
-export default function EditorPage() {
-  const [history, dispatch] = useReducer(historyReducer, undefined, (): HistoryState => {
-    try {
-      const saved = typeof window !== 'undefined' && localStorage.getItem('counted-config');
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<WallpaperConfig>;
-        return { past: [], present: { config: { ...DEFAULT_CONFIG, ...parsed } }, future: [] };
-      }
-    } catch {}
-    return { past: [], present: { config: DEFAULT_CONFIG }, future: [] };
-  });
-
-  const config = history.present.config;
-
-  // Persist config to localStorage on every change so session survives navigation/reload
   useEffect(() => {
-    try { localStorage.setItem('counted-config', JSON.stringify(config)); } catch {}
-  }, [config]);
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
-  const [popupState, setPopupState] = useState<{
-    weekIndex: number;
-    position: { x: number; y: number };
-  } | null>(null);
-  const [saveState, setSaveState] = useState<{
-    token: string | null;
-    url: string | null;
-    saving: boolean;
-    copied: boolean;
-  }>({ token: null, url: null, saving: false, copied: false });
-  const [mobileTab, setMobileTab] = useState<'style' | 'layers'>('style');
-  const [mobileDisplayWidth, setMobileDisplayWidth] = useState(320);
-  const mobileCanvasRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const update = () => {
-      if (mobileCanvasRef.current) {
-        setMobileDisplayWidth(Math.min(350, mobileCanvasRef.current.offsetWidth - 16));
+    if (typeof end !== 'number') return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        let start = 0;
+        const step = Math.ceil(end / 60);
+        const t = setInterval(() => {
+          start = Math.min(start + step, end);
+          setVal(start);
+          if (start >= end) clearInterval(t);
+        }, 16);
       }
-    };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
-  const preDragRef = useRef<WallpaperConfig | null>(null);
-
-  // On mount: load config from ?token= URL param (or fall back to localStorage token)
-  useEffect(() => {
-    const urlToken = new URLSearchParams(window.location.search).get('token');
-    const localToken = localStorage.getItem('counted_token');
-    const token = urlToken || localToken;
-    if (!token) return;
-
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const editUrl = `${appUrl}/?token=${token}`;
-
-    if (urlToken) {
-      // Fetch saved config from blob and hydrate the editor
-      fetch(`/api/configs?token=${token}`)
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.config) {
-            dispatch({ type: 'SET', state: { config: { ...DEFAULT_CONFIG, ...data.config } } });
-          }
-          setSaveState({ token, url: editUrl, saving: false, copied: false });
-          // Keep URL clean but preserve token for re-saves
-          window.history.replaceState({}, '', `/?token=${token}`);
-        })
-        .catch(() => {
-          setSaveState((s) => ({ ...s, token, url: editUrl }));
-        });
-    } else {
-      // Just restore the edit URL from localStorage token
-      setSaveState((s) => ({ ...s, token, url: editUrl }));
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          dispatch({ type: 'REDO' });
-        } else {
-          dispatch({ type: 'UNDO' });
-        }
-      }
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedLayerId && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
-          e.preventDefault();
-          deleteLayer(selectedLayerId);
-        }
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLayerId]);
-
-  // ── Config update (with undo) ──
-
-  const updateConfig = useCallback((updates: Partial<WallpaperConfig>) => {
-    dispatch({
-      type: 'SET',
-      state: { config: { ...config, ...updates } },
-    });
-  }, [config]);
-
-  // ── Layer operations ──
-
-  const updateLayer = useCallback((id: string, updates: Partial<PhotoLayer>) => {
-    // Save pre-drag state on the FIRST update of a drag gesture (before any DRAFT dispatches)
-    if (!preDragRef.current) {
-      preDragRef.current = config;
-    }
-    const newLayers = (config.layers || []).map((l) => {
-      if (l.id !== id) return l;
-      if (l.type === 'bg') return { ...l, ...updates } as BgLayer;
-      return { ...l, ...updates } as CutoutLayer;
-    });
-    dispatch({
-      type: 'DRAFT',
-      state: { config: { ...config, layers: newLayers } },
-    });
-  }, [config]);
-
-  const commitDrag = useCallback(() => {
-    // Push the pre-drag state into history so Undo correctly reverts to before the drag started.
-    // (DRAFT dispatches update present without touching past — past still has pre-drag state)
-    if (preDragRef.current) {
-      dispatch({ type: 'PUSH_PAST', state: { config: preDragRef.current } });
-      preDragRef.current = null;
-    }
-  }, []);
-
-  const deleteLayer = useCallback((id: string) => {
-    const newLayers = (config.layers || []).filter((l) => l.id !== id);
-    dispatch({
-      type: 'SET',
-      state: { config: { ...config, layers: newLayers } },
-    });
-    if (selectedLayerId === id) setSelectedLayerId(null);
-  }, [config, selectedLayerId]);
-
-  const toggleVisibility = useCallback((id: string) => {
-    const newLayers = (config.layers || []).map((l) =>
-      l.id === id ? { ...l, visible: !l.visible } : l
-    );
-    dispatch({
-      type: 'SET',
-      state: { config: { ...config, layers: newLayers } },
-    });
-  }, [config]);
-
-  const reorderLayers = useCallback((fromIdx: number, toIdx: number) => {
-    const sorted = [...(config.layers || [])].sort((a, b) => b.zIndex - a.zIndex);
-    const [moved] = sorted.splice(fromIdx, 1);
-    sorted.splice(toIdx, 0, moved);
-    // Reassign zIndex
-    const updated = sorted.map((l, i) => ({ ...l, zIndex: sorted.length - 1 - i }));
-    dispatch({
-      type: 'SET',
-      state: { config: { ...config, layers: updated } },
-    });
-  }, [config]);
-
-  // ── Upload handler ──
-
-  const handleUpload = useCallback(async (type: 'bg' | 'cutout', file: File) => {
-    setUploadProgress(type === 'cutout' ? 'Removing background...' : 'Uploading...');
-
-    let uploadFile = file;
-
-    if (type === 'cutout') {
-      try {
-        const { removeBackground } = await import('@imgly/background-removal');
-        const blob = await removeBackground(file, {
-          output: { format: 'image/png' },
-        });
-        uploadFile = new File([blob], 'cutout.png', { type: 'image/png' });
-      } catch (err) {
-        console.error('BG removal failed, using original:', err);
-      }
-    }
-
-    setUploadProgress('Uploading...');
-
-    const formData = new FormData();
-    formData.append('file', uploadFile);
-
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Upload failed');
-        setUploadProgress(null);
-        return;
-      }
-      const data = await res.json();
-
-      const maxZ = (config.layers || []).reduce((max, l) => Math.max(max, l.zIndex), -1);
-
-      let newLayer: PhotoLayer;
-      if (type === 'bg') {
-        // Replace existing bg layer
-        const existingLayers = (config.layers || []).filter((l) => l.type !== 'bg');
-        newLayer = {
-          id: nanoid(),
-          type: 'bg',
-          url: data.url,
-          layerSize: 100,
-          opacity: 100,
-          naturalW: data.width,
-          naturalH: data.height,
-          zIndex: 0,
-          visible: true,
-          panX: 50,
-          panY: 50,
-        } as BgLayer;
-        // Ensure bg is always lowest z
-        const updated = existingLayers.map((l) => ({ ...l, zIndex: l.zIndex + 1 }));
-        dispatch({
-          type: 'SET',
-          state: { config: { ...config, layers: [newLayer, ...updated] } },
-        });
-      } else {
-        newLayer = {
-          id: nanoid(),
-          type: 'cutout',
-          url: data.url,
-          layerSize: 60,
-          opacity: 100,
-          naturalW: data.width,
-          naturalH: data.height,
-          zIndex: maxZ + 1,
-          visible: true,
-          x: 50,
-          y: 50,
-        } as CutoutLayer;
-        dispatch({
-          type: 'SET',
-          state: { config: { ...config, layers: [...(config.layers || []), newLayer] } },
-        });
-      }
-
-      setSelectedLayerId(newLayer.id);
-      setUploadProgress('Done ✓');
-      setTimeout(() => setUploadProgress(null), 1500);
-    } catch {
-      alert('Upload failed');
-      setUploadProgress(null);
-    }
-  }, [config]);
-
-  // ── Life Events ──
-
-  const handleDotClick = useCallback((weekIndex: number) => {
-    if (config.type !== 'life') return;
-    if (!config.birthday) {
-      alert('Enter your birthday first to place life events');
-      return;
-    }
-    if ((config.lifeEvents || []).length >= 50) {
-      alert('Maximum 50 life events');
-      return;
-    }
-    // On mobile: center the popup. On desktop: position near canvas.
-    const isMobileNow = window.innerWidth < 768;
-    const popupW = 220;
-    const popupH = 220;
-    const x = isMobileNow
-      ? (window.innerWidth - popupW) / 2
-      : Math.min(window.innerWidth - popupW - 16, 520);
-    const y = isMobileNow
-      ? (window.innerHeight - popupH) / 2
-      : Math.min(window.innerHeight - popupH - 16, 300);
-    setPopupState({ weekIndex, position: { x, y } });
-  }, [config.type, config.birthday, config.lifeEvents]);
-
-  const saveEvent = useCallback((weekIndex: number, icon: string) => {
-    if (!config.birthday) return;
-    const birth = new Date(config.birthday + 'T00:00:00');
-    const eventDate = new Date(birth.getTime() + weekIndex * 7 * 24 * 60 * 60 * 1000);
-    const dateStr = eventDate.toISOString().split('T')[0];
-
-    const existing = (config.lifeEvents || []).filter((e) => e.weekIndex !== weekIndex);
-    const newEvent: LifeEvent = { weekIndex, icon, date: dateStr };
-    updateConfig({ lifeEvents: [...existing, newEvent] });
-    setPopupState(null);
-  }, [config.birthday, config.lifeEvents, updateConfig]);
-
-  const removeEvent = useCallback((weekIndex: number) => {
-    const updated = (config.lifeEvents || []).filter((e) => e.weekIndex !== weekIndex);
-    updateConfig({ lifeEvents: updated });
-    setPopupState(null);
-  }, [config.lifeEvents, updateConfig]);
-
-  // ── Save ──
-
-  const handleSave = useCallback(async () => {
-    setSaveState((s) => ({ ...s, saving: true }));
-
-    const body = saveState.token
-      ? { token: saveState.token, config }
-      : { config };
-
-    const method = saveState.token ? 'PUT' : 'POST';
-
-    try {
-      const res = await fetch('/api/configs', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = await res.json();
-
-      if (data.token) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-        const editUrl = `${appUrl}/?token=${data.token}`;
-        localStorage.setItem('counted_token', data.token);
-        setSaveState({ token: data.token, url: editUrl, saving: false, copied: false });
-        // Update browser URL so the current tab IS the edit link
-        window.history.replaceState({}, '', `/?token=${data.token}`);
-      } else {
-        setSaveState((s) => ({ ...s, saving: false }));
-      }
-    } catch {
-      alert('Save failed');
-      setSaveState((s) => ({ ...s, saving: false }));
-    }
-  }, [config, saveState.token]);
-
-  const handleCopy = useCallback(() => {
-    if (saveState.url) {
-      navigator.clipboard.writeText(saveState.url);
-      setSaveState((s) => ({ ...s, copied: true }));
-      setTimeout(() => setSaveState((s) => ({ ...s, copied: false })), 2000);
-    }
-  }, [saveState.url]);
-
-  const existingEvent = popupState
-    ? (config.lifeEvents || []).find((e) => e.weekIndex === popupState.weekIndex)
-    : undefined;
-
-  const weekDate = popupState && config.birthday
-    ? (() => {
-        const birth = new Date(config.birthday + 'T00:00:00');
-        const d = new Date(birth.getTime() + popupState.weekIndex * 7 * 24 * 60 * 60 * 1000);
-        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      })()
-    : '';
-
-  // Shared canvas + modals (used in both desktop and mobile layouts)
-  const canvasEl = (
-    <Canvas
-      config={config}
-      selectedLayerId={selectedLayerId}
-      onSelectLayer={setSelectedLayerId}
-      onUpdateLayer={updateLayer}
-      onDragEnd={commitDrag}
-      onDotClick={handleDotClick}
-    />
-  );
-
-  const modals = (
-    <>
-      {showUploadModal && (
-        <UploadModal
-          onClose={() => setShowUploadModal(false)}
-          onUpload={handleUpload}
-          hasBg={(config.layers || []).some((l) => l.type === 'bg')}
-        />
-      )}
-      {popupState && (
-        <LifeEventPopup
-          weekIndex={popupState.weekIndex}
-          weekDate={weekDate}
-          existingIcon={existingEvent?.icon}
-          onSave={saveEvent}
-          onRemove={removeEvent}
-          onClose={() => setPopupState(null)}
-          position={popupState.position}
-        />
-      )}
-    </>
-  );
+    }, { threshold: 0.5 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [end]);
 
   return (
-    <>
-      {/* ── DESKTOP LAYOUT (≥768px) ── */}
-      <div className="desktop-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Toolbar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #1a1a1a' }}>
-            <button
-              onClick={() => dispatch({ type: 'UNDO' })}
-              disabled={history.past.length === 0}
-              style={{ padding: '4px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
-            >Undo</button>
-            <button
-              onClick={() => dispatch({ type: 'REDO' })}
-              disabled={history.future.length === 0}
-              style={{ padding: '4px 10px', background: '#222', color: history.future.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
-            >Redo</button>
-            <div style={{ flex: 1 }} />
-            {uploadProgress && <span style={{ fontSize: 12, color: '#888' }}>{uploadProgress}</span>}
-            <button
-              onClick={() => { if (confirm('Reset all settings to defaults?')) { dispatch({ type: 'SET', state: { config: DEFAULT_CONFIG } }); setSelectedLayerId(null); } }}
-              style={{ padding: '4px 10px', background: '#222', color: '#888', border: '1px solid #333', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
-            >Reset</button>
-          </div>
-
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: 24 }}>
-            {canvasEl}
-          </div>
-        </div>
-
-        <StylePanel
-          config={config}
-          onConfigChange={updateConfig}
-          layers={config.layers || []}
-          selectedLayerId={selectedLayerId}
-          onSelectLayer={setSelectedLayerId}
-          onDeleteLayer={deleteLayer}
-          onToggleVisibility={toggleVisibility}
-          onReorderLayers={reorderLayers}
-          onAddPhoto={() => setShowUploadModal(true)}
-          lifeEvents={config.lifeEvents || []}
-          onRemoveEvent={removeEvent}
-          onSave={handleSave}
-          saveState={saveState}
-        />
-
-        {modals}
+    <div ref={ref} style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: 36, fontWeight: 800, color: C.text, letterSpacing: -1 }}>
+        {typeof end === 'number' ? val.toLocaleString() : end}
       </div>
+      <div style={{ fontSize: 13, color: C.textLow, marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}
 
-      {/* ── MOBILE LAYOUT (<768px) ── */}
-      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
-        {/* Sticky header */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 16px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a',
+// ── Main landing page ─────────────────────────────────────────
+export default function LandingPage() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  return (
+    <div style={{ background: C.bg, color: C.text, fontFamily: "-apple-system, 'Helvetica Neue', sans-serif", minHeight: '100vh' }}>
+
+      {/* ── NAV ─────────────────────────────────────────── */}
+      <nav style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '0 40px', height: 56,
+        position: 'sticky', top: 0, zIndex: 100,
+        background: scrolled ? 'rgba(5,5,5,0.9)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(14px)' : 'none',
+        borderBottom: scrolled ? `1px solid ${C.border}` : '1px solid transparent',
+        transition: 'background 0.2s, border-color 0.2s',
+      }}>
+        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.5 }}>
+          counted<span style={{ color: C.accent }}>.</span>
+        </span>
+        <Link href="/editor" style={{
+          background: C.accent, color: '#fff',
+          padding: '7px 18px', borderRadius: 20,
+          fontSize: 13, fontWeight: 700, textDecoration: 'none',
+          letterSpacing: 0.1,
         }}>
-          <div>
-            <span style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>Counted</span>
-            {uploadProgress && <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>{uploadProgress}</span>}
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              onClick={() => dispatch({ type: 'UNDO' })}
-              disabled={history.past.length === 0}
-              style={{ padding: '6px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 6, fontSize: 13, minHeight: 36 }}
-            >↩</button>
-            <button
-              onClick={handleSave}
-              disabled={saveState.saving}
-              style={{ padding: '6px 16px', background: saveState.saving ? '#333' : '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36 }}
-            >{saveState.saving ? '...' : 'Save'}</button>
-          </div>
-        </div>
+          Start for free
+        </Link>
+      </nav>
 
-        {/* Phone frame preview — same as desktop editor */}
-        <div ref={mobileCanvasRef} style={{ background: '#000', display: 'flex', justifyContent: 'center', padding: '16px 0', borderBottom: '1px solid #1a1a1a' }}>
-          <Canvas
-            config={config}
-            selectedLayerId={selectedLayerId}
-            onSelectLayer={setSelectedLayerId}
-            onUpdateLayer={updateLayer}
-            onDragEnd={commitDrag}
-            onDotClick={handleDotClick}
-            displayWidth={mobileDisplayWidth}
-          />
-        </div>
-
-        {/* Saved URL strip */}
-        {saveState.url && (
-          <div style={{ padding: '8px 16px', background: '#0a1628', borderTop: '1px solid #1a3a6a', borderBottom: '1px solid #1a3a6a', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 11, color: '#4a9eff', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveState.url}</span>
-            <button
-              onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
-              style={{ padding: '4px 10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
-            >{saveState.copied ? '✓' : 'Copy'}</button>
-            <a href={`/install?token=${saveState.token}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
-              Setup →
+      {/* ── HERO ────────────────────────────────────────── */}
+      <section style={{
+        maxWidth: 1100, margin: '0 auto',
+        padding: '72px 40px 80px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 48,
+        background: 'radial-gradient(ellipse 55% 60% at 68% 48%, rgba(255,87,34,0.07) 0%, transparent 70%)',
+      }}>
+        {/* Left text */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: C.accentDim, border: `1px solid ${C.accentBorder}`,
+            color: '#ff7043', fontSize: 11, fontWeight: 700,
+            padding: '4px 12px', borderRadius: 20, marginBottom: 24,
+            textTransform: 'uppercase', letterSpacing: 0.8,
+          }}>
+            ✦ Free · No sign-up · Works on iPhone
+          </div>
+          <h1 style={{ fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 800, lineHeight: 1.03, letterSpacing: -2.5, marginBottom: 20 }}>
+            Your life,<br />
+            <span style={{ color: C.accent }}>counted.</span>
+          </h1>
+          <p style={{ fontSize: 18, color: C.textMid, lineHeight: 1.65, maxWidth: 400, marginBottom: 36 }}>
+            A dot for every week. See exactly how much time you have left — and make it mean something. Auto-updates on your lock screen every morning.
+          </p>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Link href="/editor" style={{
+              background: C.accent, color: '#fff',
+              padding: '13px 28px', borderRadius: 12,
+              fontSize: 15, fontWeight: 700, textDecoration: 'none',
+              boxShadow: `0 4px 24px rgba(255,87,34,0.3)`,
+            }}>
+              Build my calendar →
+            </Link>
+            <a href="#how" style={{ fontSize: 14, color: C.textMid, textDecoration: 'none' }}>
+              See how it works ↓
             </a>
           </div>
-        )}
-
-        {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a', flexShrink: 0 }}>
-          {(['style', 'layers'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setMobileTab(tab)}
-              style={{
-                flex: 1, padding: '10px', border: 'none', background: 'none',
-                color: mobileTab === tab ? '#fff' : '#555',
-                borderBottom: mobileTab === tab ? '2px solid #2563eb' : '2px solid transparent',
-                fontSize: 13, fontWeight: mobileTab === tab ? 600 : 400, cursor: 'pointer',
-              }}
-            >
-              {tab === 'style' ? '🎨 Style' : '📷 Layers'}
-            </button>
-          ))}
         </div>
 
-        {/* Settings panel */}
-        <div style={{ padding: '12px 16px' }}>
-          {mobileTab === 'style' ? (
-            <StylePanel
-              config={config}
-              onConfigChange={updateConfig}
-              layers={config.layers || []}
-              selectedLayerId={selectedLayerId}
-              onSelectLayer={setSelectedLayerId}
-              onDeleteLayer={deleteLayer}
-              onToggleVisibility={toggleVisibility}
-              onReorderLayers={reorderLayers}
-              onAddPhoto={() => setShowUploadModal(true)}
-              lifeEvents={config.lifeEvents || []}
-              onRemoveEvent={removeEvent}
-              onSave={handleSave}
-              saveState={saveState}
-              hideLayers
-              hideSaveButton
-            />
-          ) : (
-            <LayerPanel
-              layers={config.layers || []}
-              selectedLayerId={selectedLayerId}
-              onSelectLayer={setSelectedLayerId}
-              onDeleteLayer={deleteLayer}
-              onToggleVisibility={toggleVisibility}
-              onReorder={reorderLayers}
-              onAddPhoto={() => setShowUploadModal(true)}
-            />
-          )}
-        </div>
+        {/* Right: phone */}
+        <PhoneMockup />
+      </section>
 
-        {modals}
+      {/* ── STATS BAR ───────────────────────────────────── */}
+      <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{
+          maxWidth: 800, margin: '0 auto',
+          padding: '32px 40px',
+          display: 'flex', justifyContent: 'space-around', gap: 32, flexWrap: 'wrap',
+        }}>
+          <Counter end={4160} label="weeks in 80 years" />
+          <Counter end={1} label="dot = 1 week of your life" />
+          <Counter end="∞" label="reasons to make them count" />
+        </div>
       </div>
 
-      {/* CSS to show/hide layouts based on screen width */}
-      <style>{`
-        @media (min-width: 768px) {
-          .desktop-layout { display: flex !important; }
-          .mobile-layout { display: none !important; }
-        }
-        @media (max-width: 767px) {
-          .desktop-layout { display: none !important; }
-          .mobile-layout { display: flex !important; }
-          :root {
-            --mobile-canvas-scale: calc((100vw - 32px) / 398);
-          }
-        }
-      `}</style>
-    </>
+      {/* ── HOW IT WORKS ────────────────────────────────── */}
+      <section id="how" style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 40px' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
+          How it works
+        </div>
+        <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 48 }}>
+          Three steps to clarity.
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+          {[
+            { num: '01', icon: '🎨', title: 'Design your calendar', body: 'Pick life, year, or goal mode. Choose colors, photo layers, dot style, and theme. The canvas updates live — what you see is what hits your lock screen.' },
+            { num: '02', icon: '🔗', title: 'Save your permanent link', body: 'Hit save and get a permanent URL. That link always returns your latest wallpaper, freshly generated every morning from your config.' },
+            { num: '03', icon: '⚡', title: 'Set up iOS Shortcut', body: 'One-tap setup. An automation fetches your URL at 6AM and sets it as your lock screen. No app download, no login, no friction.' },
+          ].map((s) => (
+            <div key={s.num} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
+              <div style={{ fontSize: 26, marginBottom: 12 }}>{s.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, marginBottom: 8, letterSpacing: 0.5 }}>{s.num}</div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{s.title}</h3>
+              <p style={{ fontSize: 13, color: C.textMid, lineHeight: 1.65 }}>{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURES ────────────────────────────────────── */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
+          Features
+        </div>
+        <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 40 }}>
+          Everything you need.
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+          {[
+            { icon: '📅', title: 'Three calendar modes', body: 'Life (every week from birth to 80), Year (days left this year), or Goal (custom countdown to any deadline). Each dot tells a different story.' },
+            { icon: '🎨', title: 'Full visual editor', body: 'Color themes, photo backdrop layers, dot styles, gradient fills. Live PNG preview so you see exactly what your lock screen will look like.' },
+            { icon: '🔄', title: 'Auto-updates daily', body: 'Your dot count changes every single day. The iOS Shortcut pulls a fresh render at 6AM — your wallpaper is always accurate, always current.' },
+            { icon: '💬', title: 'Daily quotes', body: 'Optional rotating quote on your lock screen. A fresh line of perspective every day, sitting right between the flashlight and camera buttons.' },
+          ].map((f) => (
+            <div key={f.title} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: C.accentDim, border: `1px solid ${C.accentBorder}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 18, marginBottom: 14,
+              }}>
+                {f.icon}
+              </div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{f.title}</h3>
+              <p style={{ fontSize: 13, color: C.textMid, lineHeight: 1.65 }}>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── QUOTE STRIP ─────────────────────────────────── */}
+      <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '56px 40px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.4, color: C.text, marginBottom: 12 }}>
+            &ldquo;The two most important days in your life are the day you are born and the day you find out why.&rdquo;
+          </div>
+          <div style={{ fontSize: 13, color: C.textLow }}>— Mark Twain</div>
+        </div>
+      </div>
+
+      {/* ── CTA ─────────────────────────────────────────── */}
+      <section style={{ textAlign: 'center', padding: '88px 40px' }}>
+        <h2 style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 800, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 16 }}>
+          Start counting<br />your weeks.
+        </h2>
+        <p style={{ fontSize: 16, color: C.textMid, marginBottom: 36 }}>
+          Free. No account. Works on your iPhone, forever.
+        </p>
+        <Link href="/editor" style={{
+          display: 'inline-block',
+          background: C.accent, color: '#fff',
+          padding: '15px 44px', borderRadius: 14,
+          fontSize: 17, fontWeight: 700, textDecoration: 'none',
+          boxShadow: `0 6px 32px rgba(255,87,34,0.35)`,
+        }}>
+          Build my calendar →
+        </Link>
+        <div style={{ fontSize: 13, color: C.textLow, marginTop: 14 }}>
+          Takes about 2 minutes to set up.
+        </div>
+      </section>
+
+      {/* ── FOOTER ──────────────────────────────────────── */}
+      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>
+          counted<span style={{ color: C.accent }}>.</span>
+        </span>
+        <span style={{ fontSize: 13, color: C.textLow }}>Your life, counted.</span>
+        <Link href="/editor" style={{ fontSize: 13, color: C.textLow, textDecoration: 'none' }}>Open editor →</Link>
+      </footer>
+
+    </div>
   );
 }

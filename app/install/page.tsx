@@ -39,7 +39,7 @@ function InstallContent() {
       {!token && (
         <div style={{ padding: 20, background: '#1a0800', border: '1px solid #663300', borderRadius: 8, marginBottom: 24 }}>
           <p style={{ color: '#ffaa44' }}>No token found. Save your design first from the editor to get a wallpaper URL.</p>
-          <Link href="/" style={{ color: '#2563eb', fontSize: 14 }}>← Back to Editor</Link>
+          <Link href="/editor" style={{ color: '#2563eb', fontSize: 14 }}>← Back to Editor</Link>
         </div>
       )}
 
