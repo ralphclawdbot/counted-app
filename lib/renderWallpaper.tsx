@@ -167,7 +167,7 @@ export async function renderWallpaper(
   // bottom widget: 28% — no top widgets so same as none; extra space reserved at bottom
   const safeTopFrac = config.widgetPosition === 'top' ? 0.38 : 0.28;
   const safeTop = Math.round(height * safeTopFrac);
-  const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
+  const safeBot = Math.round(height * (config.widgetPosition === 'bottom' ? 0.09 : 0.12)) + (config.widgetPosition === 'bottom' ? widgetH : 0);
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
 
