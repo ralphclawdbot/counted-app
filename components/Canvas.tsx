@@ -165,128 +165,139 @@ export default function Canvas({
             overflow: 'hidden',
           }}
         >
-          {/* ── iOS 26 Lock Screen Layout ─────────────────────────────────────
-               Reference: date above time, ultra-thin large clock, buttons at bottom
-               Percentages measured from Arthur's iOS 26 reference screenshot          ── */}
+          {/* ── iOS 26 Lock Screen — pixel-matched to reference screenshot ──
+               Layout: [DI pill] + [status bar right of DI] on same row
+                       lock icon → date → huge thin time → (content) → buttons      */}
 
-          {/* Status bar — signal dots + wifi + battery (top right) */}
+          {/* Top row: Dynamic Island centered + status bar to its right */}
           <div style={{
-            position: 'absolute', top: '3%', right: '5%',
-            display: 'flex', alignItems: 'center', gap: 3,
+            position: 'absolute', top: '2%', left: 0, right: 0,
+            height: Math.round(screenH * 0.04),
+            display: 'flex', alignItems: 'center',
+            padding: `0 ${Math.round(canvasWidth * 0.04)}px`,
           }}>
-            {/* Signal dots (4 bars) */}
-            {[0.4,0.6,0.8,1].map((op, i) => (
-              <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: `rgba(255,255,255,${op})` }} />
-            ))}
-            {/* WiFi symbol (3 nested arcs via border trick) */}
-            <div style={{ width: 10, height: 7, marginLeft: 2, position: 'relative' }}>
-              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 10, height: 10, border: '1.5px solid rgba(255,255,255,0.8)', borderRadius: '50%', clipPath: 'polygon(0 0,100% 0,100% 55%,0 55%)' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, border: '1.5px solid rgba(255,255,255,0.8)', borderRadius: '50%', clipPath: 'polygon(0 0,100% 0,100% 55%,0 55%)' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 2.5, height: 2.5, background: 'rgba(255,255,255,0.8)', borderRadius: '50%' }} />
-            </div>
-            {/* Battery */}
-            <div style={{ marginLeft: 2, position: 'relative', width: 20, height: 10, border: '1.5px solid rgba(255,255,255,0.7)', borderRadius: 2.5 }}>
-              <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, background: 'rgba(255,255,255,0.5)', borderRadius: '0 1.5px 1.5px 0' }} />
-              <div style={{ margin: 1, width: '60%', height: 'calc(100% - 2px)', background: 'rgba(255,255,255,0.75)', borderRadius: 1 }} />
+            {/* Left spacer (mirror of status bar width) */}
+            <div style={{ flex: 1 }} />
+
+            {/* Dynamic Island pill */}
+            <div style={{
+              width: Math.round(canvasWidth * 0.26),
+              height: Math.round(screenH * 0.032),
+              background: '#000', borderRadius: 99,
+              flexShrink: 0,
+            }} />
+
+            {/* Status bar — right of DI, vertically centered with pill */}
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center',
+              justifyContent: 'flex-end', gap: 3,
+              paddingLeft: 6,
+            }}>
+              {/* Signal: 4 rounded bars increasing in height (SF-style) */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
+                {[0.25,0.45,0.65,0.85].map((op, i) => (
+                  <div key={i} style={{
+                    width: 3, borderRadius: 1,
+                    height: 4 + i * 2,
+                    background: `rgba(255,255,255,${op})`,
+                  }} />
+                ))}
+              </div>
+              {/* WiFi — 3 concentric arcs (SF Symbol style) */}
+              <svg width="12" height="9" viewBox="0 0 24 18" fill="none" style={{ marginLeft: 1 }}>
+                <path d="M1 7 Q12 -1 23 7" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                <path d="M5 12 Q12 6 19 12" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                <circle cx="12" cy="17" r="2.5" fill="rgba(255,255,255,0.9)"/>
+              </svg>
+              {/* Battery — outline + fill + nub */}
+              <svg width="22" height="11" viewBox="0 0 44 22" fill="none" style={{ marginLeft: 1 }}>
+                <rect x="1" y="1" width="37" height="20" rx="5" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
+                <rect x="3" y="3" width="24" height="16" rx="3" fill="rgba(255,255,255,0.85)"/>
+                <path d="M40 8 Q44 8 44 11 Q44 14 40 14" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+              </svg>
             </div>
           </div>
 
-          {/* Dynamic Island pill (top center) */}
+          {/* Lock icon — SF Symbol "lock.fill" style SVG, golden, centered */}
           <div style={{
-            position: 'absolute', top: '2%', left: '50%',
-            transform: 'translateX(-50%)',
-            width: 72, height: 18,
-            background: '#000', borderRadius: 12,
-          }} />
+            position: 'absolute', top: '9%', width: '100%',
+            display: 'flex', justifyContent: 'center',
+          }}>
+            <svg width="15" height="18" viewBox="0 0 30 36" fill="none">
+              {/* Shackle */}
+              <path d="M7 16V10a8 8 0 0 1 16 0v6" stroke="#e8c547" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+              {/* Body */}
+              <rect x="2" y="16" width="26" height="18" rx="6" fill="#d4a827"/>
+              {/* Keyhole dot */}
+              <circle cx="15" cy="25" r="3" fill="rgba(0,0,0,0.35)"/>
+              <rect x="13.5" y="25" width="3" height="4.5" rx="1.5" fill="rgba(0,0,0,0.35)"/>
+            </svg>
+          </div>
 
-          {/* Lock icon (padlock) — ~8.5% from top, centered */}
-          <div style={{
-            position: 'absolute', top: '7.5%', width: '100%',
-            textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.75)',
-            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-          }}>🔒</div>
-
-          {/* Date — iOS 26: ABOVE the time, ~11% from top */}
+          {/* Date — centered, above time (~12% from top) */}
           <div style={{
             position: 'absolute',
-            top: '11%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.85)',
-            fontSize: Math.round(canvasWidth * 0.050),
+            top: '13%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.88)',
+            fontSize: Math.round(canvasWidth * 0.052),
             fontWeight: 400,
-            letterSpacing: 0.2,
-            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+            letterSpacing: 0.1,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
           }}>
             {getTodayLabel()}
           </div>
 
-          {/* Time — iOS 26: huge ultra-thin font, ~14% from top */}
+          {/* Time — iOS 26 style: ultra-thin, fills ~85% of screen width */}
           <div style={{
             position: 'absolute',
-            top: '14.5%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.92)',
-            fontSize: Math.round(canvasWidth * 0.27),
-            fontWeight: 200,
-            letterSpacing: -2,
-            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+            top: '17%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.94)',
+            fontSize: Math.round(canvasWidth * 0.40),
+            fontWeight: 100,
+            letterSpacing: -3,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
             lineHeight: 1,
           }}>
             {getTimeLabel()}
           </div>
 
-          {/* Flashlight button — bottom left, iOS 26 frosted glass style */}
-          {(() => {
-            const btnSize = Math.round(canvasWidth * 0.16);
+          {/* Flashlight + Camera buttons — frosted glass, bottom */}
+          {(['left','right'] as const).map((side) => {
+            const btnSize = Math.round(canvasWidth * 0.155);
+            const isFlash = side === 'left';
             return (
-              <div style={{
-                position: 'absolute', bottom: '8%', left: '8%',
+              <div key={side} style={{
+                position: 'absolute',
+                bottom: '9%',
+                [side]: Math.round(canvasWidth * 0.07),
                 width: btnSize, height: btnSize, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.20)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.25)',
+                background: 'rgba(80,80,80,0.55)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                {/* Flashlight icon: handle + beam */}
-                <svg width={btnSize * 0.42} height={btnSize * 0.42} viewBox="0 0 20 20" fill="none">
-                  <rect x="7" y="11" width="6" height="8" rx="1.5" fill="rgba(255,255,255,0.85)" />
-                  <polygon points="7,11 13,11 11,3 9,3" fill="rgba(255,255,255,0.85)" />
-                  <rect x="8.5" y="13" width="3" height="1.5" rx="0.5" fill="rgba(0,0,0,0.3)" />
-                </svg>
+                {isFlash ? (
+                  /* Flashlight SF-symbol approximation */
+                  <svg width={btnSize * 0.44} height={btnSize * 0.44} viewBox="0 0 24 24" fill="none">
+                    <path d="M9 2l-1 8H4l7 12V14h4L9 2z" fill="rgba(255,255,255,0.9)" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  /* Camera SF-symbol approximation */
+                  <svg width={btnSize * 0.46} height={btnSize * 0.46} viewBox="0 0 24 24" fill="none">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
+                    <circle cx="12" cy="13" r="4" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" fill="none"/>
+                  </svg>
+                )}
               </div>
             );
-          })()}
-
-          {/* Camera button — bottom right, iOS 26 frosted glass style */}
-          {(() => {
-            const btnSize = Math.round(canvasWidth * 0.16);
-            return (
-              <div style={{
-                position: 'absolute', bottom: '8%', right: '8%',
-                width: btnSize, height: btnSize, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.20)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {/* Camera icon: lens + body */}
-                <svg width={btnSize * 0.46} height={btnSize * 0.46} viewBox="0 0 22 22" fill="none">
-                  <rect x="1" y="6" width="20" height="14" rx="3" fill="rgba(255,255,255,0.85)" />
-                  <circle cx="11" cy="13" r="4" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" fill="none" />
-                  <circle cx="11" cy="13" r="2" fill="rgba(0,0,0,0.25)" />
-                  <rect x="7" y="3" width="4" height="3" rx="1" fill="rgba(255,255,255,0.85)" />
-                  <circle cx="17.5" cy="9" r="1" fill="rgba(0,0,0,0.3)" />
-                </svg>
-              </div>
-            );
-          })()}
+          })}
 
           {/* Home indicator */}
           <div style={{
-            position: 'absolute', bottom: '1.5%', left: '50%',
+            position: 'absolute', bottom: '2%', left: '50%',
             transform: 'translateX(-50%)',
-            width: 100, height: 4,
-            background: 'rgba(255,255,255,0.5)', borderRadius: 3,
+            width: Math.round(canvasWidth * 0.35), height: 4,
+            background: 'rgba(255,255,255,0.55)', borderRadius: 3,
           }} />
         </div>
 
