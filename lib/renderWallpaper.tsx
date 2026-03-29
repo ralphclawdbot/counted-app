@@ -143,8 +143,14 @@ export async function renderWallpaper(
   // Camera/flashlight buttons: bottom ~12–18%
   // Lock screen widgets (when enabled): extra ~13% strip above camera buttons
   // Widget strip height = 13% of wallpaper height
+  // iOS lock screen layout (iPhone 14/15 Pro, 1179×2556 / 852pt tall):
+  //   Dynamic Island: top ~0–4%
+  //   Time clock:     ~18–30%  (centred at ~24%)
+  //   Date line:      ~30–36%
+  //   First clear pixel for content: ~38%  ← safeTop
+  //   Camera/flash:   ~87–94%  ← 12% from bottom covers this
   const widgetH = Math.round(height * 0.13);
-  const safeTop = Math.round(height * 0.33) + (config.widgetPosition === 'top' ? widgetH : 0);
+  const safeTop = Math.round(height * 0.38) + (config.widgetPosition === 'top' ? widgetH : 0);
   const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;

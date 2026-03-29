@@ -158,12 +158,12 @@ export default function Canvas({
             background: '#000', borderRadius: 12,
           }} />
 
-          {/* Time */}
+          {/* Time — centred at ~24% of screen, matching real iOS position */}
           <div style={{
             position: 'absolute',
-            top: '17%', width: '100%', textAlign: 'center',
+            top: '18%', width: '100%', textAlign: 'center',
             color: 'rgba(255,255,255,0.92)',
-            fontSize: Math.round(canvasWidth * 0.22),
+            fontSize: Math.round(canvasWidth * 0.20),
             fontWeight: 300,
             letterSpacing: -1,
             textShadow: '0 1px 8px rgba(0,0,0,0.6)',
@@ -172,10 +172,10 @@ export default function Canvas({
             {getTimeLabel()}
           </div>
 
-          {/* Date */}
+          {/* Date — at ~34%, just above the dot grid (38%) */}
           <div style={{
             position: 'absolute',
-            top: '31%', width: '100%', textAlign: 'center',
+            top: '34%', width: '100%', textAlign: 'center',
             color: 'rgba(255,255,255,0.80)',
             fontSize: Math.round(canvasWidth * 0.042),
             fontWeight: 400,
@@ -185,9 +185,9 @@ export default function Canvas({
             {getTodayLabel()}
           </div>
 
-          {/* Flashlight button (bottom left) */}
+          {/* Flashlight button — bottom left, at ~88% from top (real iOS position) */}
           <div style={{
-            position: 'absolute', bottom: '5%', left: '10%',
+            position: 'absolute', bottom: '8%', left: '10%',
             width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',
@@ -197,9 +197,9 @@ export default function Canvas({
             <div style={{ width: 3, height: 14, background: 'rgba(255,255,255,0.7)', borderRadius: 2 }} />
           </div>
 
-          {/* Camera button (bottom right) */}
+          {/* Camera button — bottom right, at ~88% from top */}
           <div style={{
-            position: 'absolute', bottom: '5%', right: '10%',
+            position: 'absolute', bottom: '8%', right: '10%',
             width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',
@@ -215,7 +215,7 @@ export default function Canvas({
 
           {/* Home indicator */}
           <div style={{
-            position: 'absolute', bottom: '1%', left: '50%',
+            position: 'absolute', bottom: '2%', left: '50%',
             transform: 'translateX(-50%)',
             width: 60, height: 4,
             background: 'rgba(255,255,255,0.4)', borderRadius: 3,
