@@ -63,14 +63,16 @@ const selectStyle: React.CSSProperties = {
 };
 
 const btnStyle = (active: boolean): React.CSSProperties => ({
-  padding: '4px 10px',
+  padding: '8px 12px',
   background: active ? '#2563eb' : '#222',
   color: active ? 'white' : '#aaa',
   border: active ? '1px solid #3b82f6' : '1px solid #333',
-  borderRadius: 4,
+  borderRadius: 6,
   cursor: 'pointer',
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: active ? 600 : 400,
+  minHeight: 44,
+  minWidth: 44,
 });
 
 export default function StylePanel({
