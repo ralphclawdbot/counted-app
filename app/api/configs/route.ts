@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { put, list } from '@vercel/blob';
 import { nanoid } from 'nanoid';
 import { WallpaperConfig } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
-const TTL = 31536000; // 1 year in seconds
 
 export async function POST(request: NextRequest) {
   const body = await request.json() as { config: WallpaperConfig };
@@ -15,7 +14,11 @@ export async function POST(request: NextRequest) {
   }
 
   const token = nanoid(8);
-  await kv.set(`config:${token}`, JSON.stringify(config), { ex: TTL });
+  await put(`configs/${token}.json`, JSON.stringify(config), {
+    contentType: 'application/json',
+    access: 'public',
+    addRandomSuffix: false,
+  });
 
   return NextResponse.json({
     token,
@@ -31,12 +34,17 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Token and config required' }, { status: 400 });
   }
 
-  const existing = await kv.get(`config:${token}`);
-  if (!existing) {
+  // Check if token exists
+  const { blobs } = await list({ prefix: `configs/${token}.json`, limit: 1 });
+  if (blobs.length === 0) {
     return NextResponse.json({ error: 'Token not found' }, { status: 404 });
   }
 
-  await kv.set(`config:${token}`, JSON.stringify(config), { ex: TTL });
+  await put(`configs/${token}.json`, JSON.stringify(config), {
+    contentType: 'application/json',
+    access: 'public',
+    addRandomSuffix: false,
+  });
 
   return NextResponse.json({
     token,

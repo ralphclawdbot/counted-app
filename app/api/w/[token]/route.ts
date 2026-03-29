@@ -1,14 +1,15 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-import { NextRequest } from 'next/server';
-import { kv } from '@vercel/kv';
+import { NextRequest, NextResponse } from 'next/server';
+import { list } from '@vercel/blob';
 import { WallpaperConfig } from '@/types';
 import { renderWallpaper } from '@/lib/renderWallpaper';
+import fs from 'fs';
+import path from 'path';
 
-// Load font at module level for edge caching
-const fontPromise = fetch(
-  new URL('../../../../public/fonts/inter.ttf', import.meta.url)
-).then((res) => res.arrayBuffer());
+// Load font at module level
+const fontPath = path.join(process.cwd(), 'public', 'fonts', 'inter.ttf');
+const fontData: ArrayBuffer = fs.readFileSync(fontPath).buffer as ArrayBuffer;
 
 export async function GET(
   request: NextRequest,
@@ -17,19 +18,33 @@ export async function GET(
   try {
     const { token } = await params;
 
-    const raw = await kv.get(`config:${token}`);
-    if (!raw) {
-      return new Response('Not found', { status: 404 });
+    // Look up config blob by token
+    const { blobs } = await list({ prefix: `configs/${token}.json`, limit: 1 });
+    if (blobs.length === 0) {
+      return new NextResponse('Not found', { status: 404 });
     }
 
-    const config: WallpaperConfig = typeof raw === 'string' ? JSON.parse(raw) : raw as WallpaperConfig;
+    const blobRes = await fetch(blobs[0].url);
+    if (!blobRes.ok) {
+      return new NextResponse('Config unavailable', { status: 502 });
+    }
 
-    const fontData = await fontPromise;
+    const config: WallpaperConfig = await blobRes.json();
+
     const imageResponse = await renderWallpaper(config, fontData);
-    return imageResponse;
+
+    // Convert ImageResponse to a plain Response with proper headers
+    const imageBuffer = await imageResponse.arrayBuffer();
+    return new NextResponse(imageBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'no-store, must-revalidate',
+      },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('Token wallpaper error:', err);
-    return new Response(`Error: ${message}`, { status: 500 });
+    return new NextResponse(`Error: ${message}`, { status: 500 });
   }
 }
