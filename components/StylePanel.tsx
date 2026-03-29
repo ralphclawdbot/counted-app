@@ -329,6 +329,15 @@ export default function StylePanel({
               <input type="checkbox" checked={config.showQuote || false} onChange={(e) => onConfigChange({ showQuote: e.target.checked })} />
               Show Daily Quote
             </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#aaa', marginTop: 8, cursor: 'pointer' }}>
+              <input type="checkbox" checked={config.widgetMode || false} onChange={(e) => onConfigChange({ widgetMode: e.target.checked })} />
+              Lock Screen Widgets
+            </label>
+            {config.widgetMode && (
+              <p style={{ fontSize: 11, color: '#666', marginTop: 4, marginLeft: 24 }}>
+                Leaves extra space for iOS widgets below the dot grid.
+              </p>
+            )}
           </div>
         )}
       </div>

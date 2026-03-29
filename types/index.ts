@@ -65,6 +65,8 @@ export interface WallpaperConfig {
   bgBlur?: number;
   bgDim?: number;
   safeLayout?: boolean;
+  /** When true, leaves extra space at the bottom for iOS lock screen widgets */
+  widgetMode?: boolean;
   gradientMode?: boolean;
   gradientStart?: string;
   gradientEnd?: string;

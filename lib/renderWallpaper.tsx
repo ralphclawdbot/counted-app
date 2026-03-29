@@ -149,12 +149,13 @@ export async function renderWallpaper(
   // Bottom 14% = camera/flashlight + home indicator (avoid covering these)
   // Grid lives in the 44%–86% band
   const statsTextSize = Math.round(width * 0.028);
-  // iOS lock screen safe zones:
-  // Time clock:   ~22–32% from top → grid must start below 32%
-  // Date widget:  ~32–38% from top → 38% is safe clear point
-  // Camera/flash: ~82–94% from bottom → 12% bottom margin clears it
-  const safeTop = Math.round(height * 0.38);
-  const safeBot = Math.round(height * 0.12);
+  // iOS lock screen safe zones (calibrated from real device screenshot):
+  // Dynamic Island + date + time clock: top ~0–33%
+  // Camera/flashlight buttons: bottom ~12–18%
+  // Lock screen widgets (when enabled): ~12% strip just above camera buttons
+  const safeTop = Math.round(height * 0.33);
+  const widgetExtra = config.widgetMode ? Math.round(height * 0.13) : 0;
+  const safeBot = Math.round(height * 0.12) + widgetExtra;
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
 
