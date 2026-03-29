@@ -18,10 +18,8 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
   const gridData = useMemo(() => {
     const fullWidth = config.width;
     const fullHeight = config.height;
-    const columns = config.type === 'life' ? 52 : 13;
     const hPad = Math.round(fullWidth * 0.09);
     const availW = fullWidth - hPad * 2;
-    const cellW = availW / columns;
 
     let totalDots = 0;
     let filledDots = 0;
@@ -46,14 +44,41 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
       }
     }
 
-    const totalRows = Math.ceil(totalDots / columns);
     const safeTop = Math.round(fullHeight * 0.33);
     const widgetExtra = config.widgetMode ? Math.round(fullHeight * 0.13) : 0;
     const safeBot = Math.round(fullHeight * 0.12) + widgetExtra;
     const statsAreaH = Math.round(fullHeight * 0.055);
     const usableH = fullHeight - safeTop - safeBot - statsAreaH;
+
+    // Dynamic columns: life = 52; year/goal = auto for square cells (equal gaps)
+    let columns: number;
+    if (config.type === 'life') {
+      columns = 52;
+    } else {
+      const approxCols = Math.sqrt(totalDots * availW / usableH);
+      const candidates = [
+        Math.max(5, Math.floor(approxCols) - 1),
+        Math.max(5, Math.floor(approxCols)),
+        Math.ceil(approxCols),
+        Math.ceil(approxCols) + 1,
+      ];
+      let best = Math.round(approxCols);
+      let bestDelta = Infinity;
+      for (const c of candidates) {
+        const rows = Math.ceil(totalDots / c);
+        const cw = availW / c;
+        const ch = usableH / rows;
+        const delta = Math.abs(cw - ch);
+        if (delta < bestDelta) { bestDelta = delta; best = c; }
+      }
+      columns = best;
+    }
+
+    const totalRows = Math.ceil(totalDots / columns);
+    const cellW = availW / columns;
     const cellH = usableH / totalRows;
-    const dotSize = Math.floor(Math.min(cellW, cellH) * 0.78);
+    const cellSize = Math.min(cellW, cellH);
+    const dotSize = Math.floor(cellSize * 0.78);
     const horizGap = cellW - dotSize;
     const vertGap = cellH - dotSize;
     const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;

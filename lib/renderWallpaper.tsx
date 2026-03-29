@@ -107,15 +107,9 @@ export async function renderWallpaper(
 ): Promise<ImageResponse> {
   const { width, height } = config;
 
-  // Compute dot grid params
-  // Year/goal: 13 cols → large bold dots (matches reference layout)
-  // Life: 52 cols → 1 year per row (standard life-calendar layout)
-  const columns = config.type === 'life' ? 52 : 13;
-
   // Horizontal params — 9% padding each side
   const hPad = Math.round(width * 0.09);
   const availW = width - hPad * 2;
-  const cellW = availW / columns;
 
   // Compute total dots
   let totalDots = 0;
@@ -142,30 +136,55 @@ export async function renderWallpaper(
     }
   }
 
-  const totalRows = Math.ceil(totalDots / columns);
-
-  // iOS lock screen safe zones:
-  // Top 44% = Dynamic Island + time + date (avoid covering these)
-  // Bottom 14% = camera/flashlight + home indicator (avoid covering these)
-  // Grid lives in the 44%–86% band
   const statsTextSize = Math.round(width * 0.028);
-  // iOS lock screen safe zones (calibrated from real device screenshot):
-  // Dynamic Island + date + time clock: top ~0–33%
+
+  // iOS lock screen safe zones (calibrated from real device):
+  // Dynamic Island + time + date: top ~0–33%
   // Camera/flashlight buttons: bottom ~12–18%
-  // Lock screen widgets (when enabled): ~12% strip just above camera buttons
+  // Lock screen widgets (when enabled): extra ~13% strip above camera buttons
   const safeTop = Math.round(height * 0.33);
   const widgetExtra = config.widgetMode ? Math.round(height * 0.13) : 0;
   const safeBot = Math.round(height * 0.12) + widgetExtra;
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
 
-  // Vertical cell size — size dots to fit the available height
+  // ── Dynamic column count (year / goal) ──
+  // Life calendar: always 52 columns (1 year per row)
+  // Year / goal:  compute columns so that cellW ≈ cellH (square cells, equal gaps)
+  //   approxCols = sqrt(totalDots × availW / usableH)
+  //   then pick nearest integer that minimises |cellW − cellH|
+  let columns: number;
+  if (config.type === 'life') {
+    columns = 52;
+  } else {
+    const approxCols = Math.sqrt(totalDots * availW / usableH);
+    const candidates = [
+      Math.max(5, Math.floor(approxCols) - 1),
+      Math.max(5, Math.floor(approxCols)),
+      Math.ceil(approxCols),
+      Math.ceil(approxCols) + 1,
+    ];
+    let best = Math.round(approxCols);
+    let bestDelta = Infinity;
+    for (const c of candidates) {
+      const rows = Math.ceil(totalDots / c);
+      const cw = availW / c;
+      const ch = usableH / rows;
+      const delta = Math.abs(cw - ch);
+      if (delta < bestDelta) { bestDelta = delta; best = c; }
+    }
+    columns = best;
+  }
+
+  const totalRows = Math.ceil(totalDots / columns);
+  const cellW = availW / columns;
   const cellH = usableH / totalRows;
 
-  // Dot size = 78% of the smaller cell dimension so dots stay as circles
-  const dotSize = Math.floor(Math.min(cellW, cellH) * 0.78);
-  const horizGap = cellW - dotSize;   // horizontal spacing between dots
-  const vertGap  = cellH - dotSize;   // vertical spacing between rows
+  // Use the smaller cell dimension for dot size → perfectly round dots
+  const cellSize = Math.min(cellW, cellH);
+  const dotSize  = Math.floor(cellSize * 0.78);
+  const horizGap = cellW - dotSize;   // may be slightly wider than vertGap
+  const vertGap  = cellH - dotSize;   // row gap
 
   const gridH = totalRows * dotSize + (totalRows - 1) * vertGap;
   const topOffset = safeTop + Math.max(0, Math.floor((usableH - gridH) / 2));
