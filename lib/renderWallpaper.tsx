@@ -497,13 +497,27 @@ export async function renderWallpaper(
     );
   }
 
+  // ── Bottom zone geometry (shared by stats + quote) ──────────────────────
+  // Button constants match Canvas.tsx overlay
+  const _btnSize   = Math.round(width * 0.155);
+  const _btnMargin = Math.round(width * 0.07);
+  const _btnGap    = Math.round(width * 0.025);
+  const _btnBottom = Math.round(height * 0.09);
+  // Vertical center of the button zone — both text elements orbit this anchor
+  const _btnCenterY   = _btnBottom + Math.round(_btnSize / 2);
+  const _quoteFontPx  = Math.round(width * 0.028);
+  // Stats sits just below the quote with a tight gap (or at btnCenter if no quote)
+  const _statsBottom  = config.showQuote
+    ? _btnCenterY - _quoteFontPx - Math.round(height * 0.006)
+    : _btnCenterY - Math.round(statsTextSize / 2);
+
   // Progress stats element (always shown if we have data)
   const statsElement: React.ReactElement | null = statsLine ? (
     <div
       style={{
         display: 'flex',
         position: 'absolute',
-        bottom: Math.round(height * 0.075),
+        bottom: _statsBottom,
         left: 0,
         right: 0,
         justifyContent: 'center',
@@ -530,21 +544,14 @@ export async function renderWallpaper(
   let quoteElement: React.ReactElement | null = null;
   if (config.showQuote) {
     const quote = getDailyQuote();
-    // Button geometry (matches Canvas.tsx overlay constants)
-    const btnSize   = Math.round(width * 0.155);
-    const btnMargin = Math.round(width * 0.07);
-    const btnGap    = Math.round(width * 0.025); // breathing room between btn edge and text
-    const btnBottom = Math.round(height * 0.09); // same bottom% as Canvas overlay
-    // Place quote centered vertically in the button zone
-    const quoteBottom = btnBottom + Math.round(btnSize / 2);
     quoteElement = (
       <div
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: quoteBottom,
-          left:  btnMargin + btnSize + btnGap,
-          right: btnMargin + btnSize + btnGap,
+          bottom: _btnCenterY,
+          left:  _btnMargin + _btnSize + _btnGap,
+          right: _btnMargin + _btnSize + _btnGap,
           justifyContent: 'center',
           alignItems: 'center',
         }}
@@ -553,7 +560,7 @@ export async function renderWallpaper(
           style={{
             display: 'flex',
             color: hexToRgba(config.dotFilled, 65),
-            fontSize: Math.round(width * 0.028),
+            fontSize: _quoteFontPx,
             fontStyle: 'italic',
             textAlign: 'center',
             fontFamily,
