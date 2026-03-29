@@ -28,7 +28,7 @@ const F14PLUS: FrameInfo    = { path:'/frames/apple-iphone-14plus-blue-portrait.
 const FSE: FrameInfo        = { path:'/frames/apple-iphone-se-black-portrait.png',                  fw:1050, fh:1934, scl:150, sct:300, scr:900,  scb:1634 };
 const F13MINI: FrameInfo    = { path:'/frames/apple-iphone13mini-blue-portrait.png',                fw:1480, fh:2740, scl:200, sct:309, scr:1280, scb:2540 };
 
-export { type FrameInfo };
+
 
 // ── Device list ──────────────────────────────────────────────────────────────
 export const DEVICES: DeviceInfo[] = [
