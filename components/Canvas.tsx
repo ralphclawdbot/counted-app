@@ -165,75 +165,128 @@ export default function Canvas({
             overflow: 'hidden',
           }}
         >
-          {/* Dynamic Island pill */}
+          {/* ── iOS 26 Lock Screen Layout ─────────────────────────────────────
+               Reference: date above time, ultra-thin large clock, buttons at bottom
+               Percentages measured from Arthur's iOS 26 reference screenshot          ── */}
+
+          {/* Status bar — signal dots + wifi + battery (top right) */}
           <div style={{
-            position: 'absolute', top: 8, left: '50%',
+            position: 'absolute', top: '3%', right: '5%',
+            display: 'flex', alignItems: 'center', gap: 3,
+          }}>
+            {/* Signal dots (4 bars) */}
+            {[0.4,0.6,0.8,1].map((op, i) => (
+              <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: `rgba(255,255,255,${op})` }} />
+            ))}
+            {/* WiFi symbol (3 nested arcs via border trick) */}
+            <div style={{ width: 10, height: 7, marginLeft: 2, position: 'relative' }}>
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 10, height: 10, border: '1.5px solid rgba(255,255,255,0.8)', borderRadius: '50%', clipPath: 'polygon(0 0,100% 0,100% 55%,0 55%)' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, border: '1.5px solid rgba(255,255,255,0.8)', borderRadius: '50%', clipPath: 'polygon(0 0,100% 0,100% 55%,0 55%)' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 2.5, height: 2.5, background: 'rgba(255,255,255,0.8)', borderRadius: '50%' }} />
+            </div>
+            {/* Battery */}
+            <div style={{ marginLeft: 2, position: 'relative', width: 20, height: 10, border: '1.5px solid rgba(255,255,255,0.7)', borderRadius: 2.5 }}>
+              <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, background: 'rgba(255,255,255,0.5)', borderRadius: '0 1.5px 1.5px 0' }} />
+              <div style={{ margin: 1, width: '60%', height: 'calc(100% - 2px)', background: 'rgba(255,255,255,0.75)', borderRadius: 1 }} />
+            </div>
+          </div>
+
+          {/* Dynamic Island pill (top center) */}
+          <div style={{
+            position: 'absolute', top: '2%', left: '50%',
             transform: 'translateX(-50%)',
-            width: 80, height: 20,
+            width: 72, height: 18,
             background: '#000', borderRadius: 12,
           }} />
 
-          {/* Time — real iOS lock screen: clock top at ~20% of screen height */}
+          {/* Lock icon (padlock) — ~8.5% from top, centered */}
           <div style={{
-            position: 'absolute',
-            top: '20%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.92)',
-            fontSize: Math.round(canvasWidth * 0.20),
-            fontWeight: 300,
-            letterSpacing: -1,
-            textShadow: '0 1px 8px rgba(0,0,0,0.6)',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-          }}>
-            {getTimeLabel()}
-          </div>
+            position: 'absolute', top: '7.5%', width: '100%',
+            textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.75)',
+            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+          }}>🔒</div>
 
-          {/* Date — real iOS: just below the clock, at ~30% of screen height */}
+          {/* Date — iOS 26: ABOVE the time, ~11% from top */}
           <div style={{
             position: 'absolute',
-            top: '30%', width: '100%', textAlign: 'center',
-            color: 'rgba(255,255,255,0.80)',
-            fontSize: Math.round(canvasWidth * 0.042),
+            top: '11%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.85)',
+            fontSize: Math.round(canvasWidth * 0.050),
             fontWeight: 400,
-            textShadow: '0 1px 6px rgba(0,0,0,0.6)',
+            letterSpacing: 0.2,
+            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
             fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
           }}>
             {getTodayLabel()}
           </div>
 
-          {/* Flashlight button — bottom left, below the dot grid */}
+          {/* Time — iOS 26: huge ultra-thin font, ~14% from top */}
           <div style={{
-            position: 'absolute', bottom: '5%', left: '10%',
-            width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'absolute',
+            top: '14.5%', width: '100%', textAlign: 'center',
+            color: 'rgba(255,255,255,0.92)',
+            fontSize: Math.round(canvasWidth * 0.27),
+            fontWeight: 200,
+            letterSpacing: -2,
+            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+            lineHeight: 1,
           }}>
-            <div style={{ width: 3, height: 14, background: 'rgba(255,255,255,0.7)', borderRadius: 2 }} />
+            {getTimeLabel()}
           </div>
 
-          {/* Camera button — bottom right, below the dot grid */}
-          <div style={{
-            position: 'absolute', bottom: '5%', right: '10%',
-            width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <div style={{
-              width: 16, height: 14,
-              border: '2px solid rgba(255,255,255,0.7)',
-              borderRadius: 3,
-            }} />
-          </div>
+          {/* Flashlight button — bottom left, iOS 26 frosted glass style */}
+          {(() => {
+            const btnSize = Math.round(canvasWidth * 0.16);
+            return (
+              <div style={{
+                position: 'absolute', bottom: '8%', left: '8%',
+                width: btnSize, height: btnSize, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.20)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {/* Flashlight icon: handle + beam */}
+                <svg width={btnSize * 0.42} height={btnSize * 0.42} viewBox="0 0 20 20" fill="none">
+                  <rect x="7" y="11" width="6" height="8" rx="1.5" fill="rgba(255,255,255,0.85)" />
+                  <polygon points="7,11 13,11 11,3 9,3" fill="rgba(255,255,255,0.85)" />
+                  <rect x="8.5" y="13" width="3" height="1.5" rx="0.5" fill="rgba(0,0,0,0.3)" />
+                </svg>
+              </div>
+            );
+          })()}
+
+          {/* Camera button — bottom right, iOS 26 frosted glass style */}
+          {(() => {
+            const btnSize = Math.round(canvasWidth * 0.16);
+            return (
+              <div style={{
+                position: 'absolute', bottom: '8%', right: '8%',
+                width: btnSize, height: btnSize, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.20)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {/* Camera icon: lens + body */}
+                <svg width={btnSize * 0.46} height={btnSize * 0.46} viewBox="0 0 22 22" fill="none">
+                  <rect x="1" y="6" width="20" height="14" rx="3" fill="rgba(255,255,255,0.85)" />
+                  <circle cx="11" cy="13" r="4" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" fill="none" />
+                  <circle cx="11" cy="13" r="2" fill="rgba(0,0,0,0.25)" />
+                  <rect x="7" y="3" width="4" height="3" rx="1" fill="rgba(255,255,255,0.85)" />
+                  <circle cx="17.5" cy="9" r="1" fill="rgba(0,0,0,0.3)" />
+                </svg>
+              </div>
+            );
+          })()}
 
           {/* Home indicator */}
           <div style={{
-            position: 'absolute', bottom: '2%', left: '50%',
+            position: 'absolute', bottom: '1.5%', left: '50%',
             transform: 'translateX(-50%)',
-            width: 60, height: 4,
-            background: 'rgba(255,255,255,0.4)', borderRadius: 3,
+            width: 100, height: 4,
+            background: 'rgba(255,255,255,0.5)', borderRadius: 3,
           }} />
         </div>
 
