@@ -12,7 +12,7 @@ import { nanoid } from 'nanoid';
 // ── Default Config ──
 
 const DEFAULT_CONFIG: WallpaperConfig = {
-  type: 'life',
+  type: 'year',
   width: DEFAULT_DEVICE.width,
   height: DEFAULT_DEVICE.height,
   deviceName: DEFAULT_DEVICE.name,
@@ -550,22 +550,6 @@ export default function EditorPage() {
     <>
       {/* ── DESKTOP LAYOUT (≥768px) ── */}
       <div className="desktop-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        <StylePanel
-          config={config}
-          onConfigChange={updateConfig}
-          layers={config.layers || []}
-          selectedLayerId={selectedLayerId}
-          onSelectLayer={setSelectedLayerId}
-          onDeleteLayer={deleteLayer}
-          onToggleVisibility={toggleVisibility}
-          onReorderLayers={reorderLayers}
-          onAddPhoto={() => setShowUploadModal(true)}
-          lifeEvents={config.lifeEvents || []}
-          onRemoveEvent={removeEvent}
-          onSave={handleSave}
-          saveState={saveState}
-        />
-
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Toolbar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #1a1a1a' }}>
@@ -591,6 +575,22 @@ export default function EditorPage() {
             {canvasEl}
           </div>
         </div>
+
+        <StylePanel
+          config={config}
+          onConfigChange={updateConfig}
+          layers={config.layers || []}
+          selectedLayerId={selectedLayerId}
+          onSelectLayer={setSelectedLayerId}
+          onDeleteLayer={deleteLayer}
+          onToggleVisibility={toggleVisibility}
+          onReorderLayers={reorderLayers}
+          onAddPhoto={() => setShowUploadModal(true)}
+          lifeEvents={config.lifeEvents || []}
+          onRemoveEvent={removeEvent}
+          onSave={handleSave}
+          saveState={saveState}
+        />
 
         {modals}
       </div>
@@ -636,7 +636,7 @@ export default function EditorPage() {
             {config.birthday ? `Life calendar · ${config.type}` : 'Set your birthday to preview your calendar'}
           </div>
           <a
-            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}`}
+            href={`/api/wallpaper?type=${config.type}&birthday=${config.birthday || ''}&width=${config.width}&height=${config.height}&bg=${config.bg}&dotFilled=${config.dotFilled}&dotEmpty=${config.dotEmpty}&dotCurrent=${config.dotCurrent}&dotFilledOpacity=${config.dotFilledOpacity}&dotEmptyOpacity=${config.dotEmptyOpacity}&dotShape=${config.dotShape}&dotStyle=${config.dotStyle}&dotMode=${config.dotMode}${config.showQuote ? '&showQuote=true' : ''}${config.goalName ? `&goalName=${encodeURIComponent(config.goalName)}` : ''}${config.fontFamily ? `&fontFamily=${encodeURIComponent(config.fontFamily)}` : ''}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

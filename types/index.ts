@@ -75,6 +75,8 @@ export interface WallpaperConfig {
   gradientStart?: string;
   gradientEnd?: string;
   showQuote?: boolean;
+  goalName?: string;
+  fontFamily?: string;
   lifeEvents?: LifeEvent[];
   layers?: PhotoLayer[];
 }

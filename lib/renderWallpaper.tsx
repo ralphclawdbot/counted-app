@@ -288,6 +288,25 @@ export async function renderWallpaper(
         continue;
       }
 
+      // Emoji mode
+      if (config.dotMode === 'emoji') {
+        const ch = isFilled || isCurrent ? (config.emojiLived || '🌳') : (config.emojiEmpty || '🌑');
+        dotsInRow.push(
+          <div key={idx} style={{ width: dotSize, height: dotSize, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: dotSize * 0.75, lineHeight: 1, userSelect: 'none' }}>
+            {ch}
+          </div>
+        );
+        continue;
+      }
+      // Symbol mode
+      if (config.dotMode === 'symbol') {
+        const svgUri = symbolSvgUri(config.dotSymbol || 'heart', dotColor);
+        dotsInRow.push(
+          <img key={idx} alt="" src={svgUri} width={dotSize} height={dotSize} style={{ width: dotSize, height: dotSize, opacity: dotOpacity / 100 }} />
+        );
+        continue;
+      }
+
       if (isCurrent && !isEvent) {
         // Solid accent dot for today (no hollow ring — matches reference aesthetic)
         const shadow = getDotShadow(config.dotStyle, hexToRgba(config.dotCurrent, 100));
@@ -427,6 +446,39 @@ export async function renderWallpaper(
     }
   }
 
+  const fontFamily = config.fontFamily || 'Inter';
+
+  // Goal name element (shown above stats if goal type)
+  let goalNameElement: React.ReactElement | null = null;
+  if (config.type === 'goal' && config.goalName) {
+    goalNameElement = (
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          bottom: Math.round(height * 0.105),
+          left: hPad,
+          right: hPad,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            color: hexToRgba(config.dotFilled, 80),
+            fontSize: Math.round(width * 0.035),
+            fontWeight: 600,
+            textAlign: 'center',
+            fontFamily,
+          }}
+        >
+          {config.goalName}
+        </div>
+      </div>
+    );
+  }
+
   // Progress stats element (always shown if we have data)
   const statsElement: React.ReactElement | null = statsLine ? (
     <div
@@ -447,6 +499,7 @@ export async function renderWallpaper(
           fontSize: statsTextSize,
           letterSpacing: 1,
           fontWeight: 400,
+          fontFamily,
         }}
       >
         {statsLine}
@@ -476,6 +529,7 @@ export async function renderWallpaper(
             fontSize: Math.round(width * 0.02),
             fontStyle: 'italic',
             textAlign: 'center',
+            fontFamily,
           }}
         >
           {quote}
@@ -512,6 +566,9 @@ export async function renderWallpaper(
       >
         {dotRows}
       </div>
+
+      {/* Goal name */}
+      {goalNameElement}
 
       {/* Progress stats */}
       {statsElement}

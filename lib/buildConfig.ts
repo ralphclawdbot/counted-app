@@ -37,6 +37,8 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
   if (params.get('dotRowAlign')) config.dotRowAlign = params.get('dotRowAlign') as 'left' | 'center' | 'right';
   if (params.get('deviceName')) config.deviceName = params.get('deviceName')!;
   if (params.get('widgetPosition')) config.widgetPosition = params.get('widgetPosition') as 'none' | 'bottom' | 'top';
+  if (params.get('goalName')) config.goalName = params.get('goalName')!;
+  if (params.get('fontFamily')) config.fontFamily = params.get('fontFamily')!;
 
   // Parse life events: YYYY-MM-DD:icon,...
   if (params.get('lifeEvents')) {

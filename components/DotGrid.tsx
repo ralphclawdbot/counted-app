@@ -162,6 +162,43 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
         opacity = config.dotEmptyOpacity;
       }
 
+      // Emoji mode
+      if (config.dotMode === 'emoji') {
+        const ch = isFilled || isCurrent ? (config.emojiLived || '🌳') : (config.emojiEmpty || '🌑');
+        dots.push(
+          <div
+            key={`dot-${row}-${col}`}
+            onClick={(e) => { e.stopPropagation(); onDotClick?.(idx); }}
+            style={{ width: hitTargetSize, height: hitTargetSize, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: onDotClick ? 'pointer' : 'default' }}
+            title={`Dot ${idx}`}
+          >
+            <div style={{ width: cssDotSize, height: cssDotSize, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: cssDotSize * 0.75, lineHeight: 1 }}>{ch}</div>
+          </div>
+        );
+        continue;
+      }
+      // Symbol mode — show colored circle in preview
+      if (config.dotMode === 'symbol') {
+        const hexColor = isFilled || isCurrent ? config.dotFilled : config.dotEmpty;
+        const symOpacity = (isFilled || isCurrent ? config.dotFilledOpacity : config.dotEmptyOpacity) / 100;
+        dots.push(
+          <div
+            key={`dot-${row}-${col}`}
+            onClick={(e) => { e.stopPropagation(); onDotClick?.(idx); }}
+            style={{ width: hitTargetSize, height: hitTargetSize, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: onDotClick ? 'pointer' : 'default' }}
+            title={`Dot ${idx}`}
+          >
+            <div style={{
+              width: cssDotSize,
+              height: cssDotSize,
+              borderRadius: '50%',
+              background: hexToRgba(hexColor, symOpacity * 100),
+            }} />
+          </div>
+        );
+        continue;
+      }
+
       const borderRadius = getBorderRadius(config.dotShape);
       let shadow: string | undefined;
       if (config.dotStyle === 'glow') shadow = `0 0 ${Math.max(2, cssDotSize * 0.3)}px ${hexToRgba(bgColor, opacity)}`;
@@ -169,7 +206,6 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
 
       const dotStyle: React.CSSProperties = isCurrent && !isEvent
         ? {
-            // Solid accent dot for today (matches reference)
             width: cssDotSize,
             height: cssDotSize,
             borderRadius,
@@ -210,7 +246,6 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
           title={`Dot ${idx}`}
         >
           {isEvent ? (
-            // Render emoji icon to match the PNG output (which uses SVG symbols)
             <div style={{
               width: cssDotSize,
               height: cssDotSize,
