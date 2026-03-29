@@ -234,6 +234,18 @@ export default function EditorPage() {
     copied: boolean;
   }>({ token: null, url: null, saving: false, copied: false });
   const [mobileTab, setMobileTab] = useState<'style' | 'layers'>('style');
+  const [mobileDisplayWidth, setMobileDisplayWidth] = useState(320);
+  const mobileCanvasRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const update = () => {
+      if (mobileCanvasRef.current) {
+        setMobileDisplayWidth(Math.min(350, mobileCanvasRef.current.offsetWidth - 16));
+      }
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   const preDragRef = useRef<WallpaperConfig | null>(null);
 
   // Load token from localStorage
@@ -598,12 +610,12 @@ export default function EditorPage() {
       </div>
 
       {/* ── MOBILE LAYOUT (<768px) ── */}
-      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
+      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
         {/* Sticky header */}
         <div style={{
+          position: 'sticky', top: 0, zIndex: 100,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '10px 16px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a',
-          flexShrink: 0,
         }}>
           <div>
             <span style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>Counted</span>
@@ -623,40 +635,17 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Preview strip — shows a quick-preview button instead of the full phone frame
-            (phone frame = same dimensions as the screen, can't meaningfully scale it) */}
-        <div style={{
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '10px 16px',
-          background: '#0f0f0f',
-          borderBottom: '1px solid #1a1a1a',
-        }}>
-          <div style={{ flex: 1, fontSize: 12, color: '#555' }}>
-            {config.birthday ? `Life calendar · ${config.type}` : 'Set your birthday to preview your calendar'}
-          </div>
-          <a
-            href={`/api/wallpaper?${configToWallpaperParams(config).toString()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              padding: '8px 14px',
-              background: '#222',
-              color: '#aaa',
-              border: '1px solid #333',
-              borderRadius: 6,
-              fontSize: 13,
-              textDecoration: 'none',
-              flexShrink: 0,
-              minHeight: 36,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            👁 Preview PNG
-          </a>
+        {/* Phone frame preview — same as desktop editor */}
+        <div ref={mobileCanvasRef} style={{ background: '#000', display: 'flex', justifyContent: 'center', padding: '16px 0', borderBottom: '1px solid #1a1a1a' }}>
+          <Canvas
+            config={config}
+            selectedLayerId={selectedLayerId}
+            onSelectLayer={setSelectedLayerId}
+            onUpdateLayer={updateLayer}
+            onDragEnd={commitDrag}
+            onDotClick={handleDotClick}
+            displayWidth={mobileDisplayWidth}
+          />
         </div>
 
         {/* Saved URL strip */}
@@ -691,8 +680,8 @@ export default function EditorPage() {
           ))}
         </div>
 
-        {/* Scrollable panel content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+        {/* Settings panel */}
+        <div style={{ padding: '12px 16px' }}>
           {mobileTab === 'style' ? (
             <StylePanel
               config={config}

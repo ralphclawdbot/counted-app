@@ -25,10 +25,9 @@ interface CanvasProps {
   onUpdateLayer: (id: string, updates: Partial<PhotoLayer>) => void;
   onDragEnd: () => void;
   onDotClick?: (weekIndex: number) => void;
+  /** Override the default 350px frame display width (e.g. for mobile) */
+  displayWidth?: number;
 }
-
-// Frame display width in CSS px — all other dimensions derived per-device
-const DISPLAY_FRAME_W = 350;
 
 export default function Canvas({
   config,
@@ -37,6 +36,7 @@ export default function Canvas({
   onUpdateLayer,
   onDragEnd,
   onDotClick,
+  displayWidth = 350,
 }: CanvasProps) {
   // Resolve the device frame — falls back to first device if not found
   const device = useMemo(
@@ -45,7 +45,8 @@ export default function Canvas({
   );
   const frame = device.frame;
 
-  // Scale the frame image to DISPLAY_FRAME_W css-px wide
+  // Scale the frame image to displayWidth css-px wide
+  const DISPLAY_FRAME_W = displayWidth;
   const displayScale = DISPLAY_FRAME_W / frame.fw;
   const frameW   = DISPLAY_FRAME_W;
   const frameH   = Math.round(frame.fh * displayScale);
