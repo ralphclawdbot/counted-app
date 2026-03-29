@@ -162,7 +162,7 @@ export async function renderWallpaper(
   //  │  safeTop = 38%, safeBot = 12% + widgetH                      │
   //  └──────────────────────────────────────────────────────────────┘
   const widgetH = Math.round(height * 0.13);
-  const safeTop = Math.round(height * (config.widgetPosition === 'none' ? 0.46 : 0.38));
+  const safeTop = Math.round(height * (config.widgetPosition === 'top' ? 0.46 : 0.38));
   const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
