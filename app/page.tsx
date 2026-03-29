@@ -34,7 +34,7 @@ const DEMO_WALLPAPER =
   '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1';
 
 function PhoneMockup() {
-  const DISPLAY_W = 220;
+  const DISPLAY_W = 260;
   const scale     = DISPLAY_W / FRAME_W;
   const DISPLAY_H = Math.round(FRAME_H * scale);         // 433px
   const scrLeft   = Math.round(SCR_L * scale);           // 19px
