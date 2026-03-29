@@ -239,14 +239,14 @@ export default function Canvas({
             {getTodayLabel()}
           </div>
 
-          {/* Time — iOS lock screen: thick clean strokes, fills screen width */}
+          {/* Time — smaller + heavier weight, solid clean numerals */}
           <div style={{
             position: 'absolute',
-            top: '17%', width: '100%', textAlign: 'center',
+            top: '16%', width: '100%', textAlign: 'center',
             color: '#ffffff',
-            fontSize: Math.round(canvasWidth * 0.43),
-            fontWeight: 300,
-            letterSpacing: -2,
+            fontSize: Math.round(canvasWidth * 0.32),
+            fontWeight: 400,
+            letterSpacing: -1,
             fontFamily: '"Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif',
             lineHeight: 1,
           }}>
@@ -269,29 +269,37 @@ export default function Canvas({
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {isFlash ? (
-                  /* flashlight.on.fill — torch body + angled head + glow tip */
-                  <svg width={btnSize * 0.40} height={btnSize * 0.48} viewBox="0 0 20 26" fill="white">
-                    {/* Glow head (wide trapezoid at top) */}
-                    <path d="M3 8 Q10 0 17 8 L15 12 L5 12 Z" />
-                    {/* Body cylinder */}
-                    <rect x="5.5" y="12" width="9" height="10" rx="2" />
-                    {/* End cap */}
-                    <rect x="6.5" y="22" width="7" height="3" rx="1.5" />
-                    {/* Lens dot */}
-                    <circle cx="10" cy="9" r="2" fill="rgba(0,0,0,0.25)" />
+                  /* flashlight.on.fill — SF Symbol: tapered barrel + wide lens head + beam rays */
+                  <svg width={btnSize * 0.42} height={btnSize * 0.42} viewBox="0 0 100 100" fill="white">
+                    {/* Beam rays radiating from top */}
+                    <line x1="50" y1="4" x2="50" y2="10" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                    <line x1="72" y1="10" x2="67" y2="15" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                    <line x1="28" y1="10" x2="33" y2="15" stroke="white" strokeWidth="5" strokeLinecap="round"/>
+                    {/* Lens housing (wide circle at top) */}
+                    <circle cx="50" cy="30" r="16" fill="white"/>
+                    <circle cx="50" cy="30" r="9" fill="rgba(0,0,0,0.35)"/>
+                    {/* Barrel — tapers from wide to narrow */}
+                    <path d="M34 44 L40 90 Q50 96 60 90 L66 44 Z" fill="white"/>
+                    {/* Grip ridges */}
+                    <rect x="38" y="60" width="24" height="4" rx="2" fill="rgba(0,0,0,0.2)"/>
+                    <rect x="38" y="70" width="24" height="4" rx="2" fill="rgba(0,0,0,0.2)"/>
                   </svg>
                 ) : (
-                  /* camera.fill — body + lens bump + circle */
-                  <svg width={btnSize * 0.48} height={btnSize * 0.40} viewBox="0 0 26 20" fill="white">
-                    {/* Viewfinder bump */}
-                    <rect x="9" y="0" width="8" height="4" rx="2" />
+                  /* camera.fill — SF Symbol: body + viewfinder bump + lens ring */
+                  <svg width={btnSize * 0.46} height={btnSize * 0.42} viewBox="0 0 100 80" fill="white">
+                    {/* Viewfinder bump — centered top */}
+                    <path d="M35 6 L40 0 L60 0 L65 6 Z" fill="white"/>
+                    <rect x="33" y="4" width="34" height="8" rx="3" fill="white"/>
                     {/* Camera body */}
-                    <rect x="0" y="3" width="26" height="17" rx="4" />
-                    {/* Lens ring (dark cutout) */}
-                    <circle cx="13" cy="11.5" r="5" fill="rgba(50,50,50,0.7)" />
-                    <circle cx="13" cy="11.5" r="3" fill="rgba(30,30,30,0.8)" />
-                    {/* Flash dot top right */}
-                    <circle cx="22" cy="7" r="1.5" fill="rgba(50,50,50,0.6)" />
+                    <rect x="0" y="10" width="100" height="70" rx="14" fill="white"/>
+                    {/* Outer lens ring */}
+                    <circle cx="50" cy="46" r="22" fill="rgba(40,40,40,0.75)"/>
+                    {/* Inner lens */}
+                    <circle cx="50" cy="46" r="14" fill="rgba(20,20,20,0.9)"/>
+                    {/* Lens highlight dot */}
+                    <circle cx="44" cy="40" r="4" fill="rgba(255,255,255,0.15)"/>
+                    {/* Flash / indicator dot — top right */}
+                    <circle cx="84" cy="24" r="5" fill="rgba(40,40,40,0.7)"/>
                   </svg>
                 )}
               </div>
