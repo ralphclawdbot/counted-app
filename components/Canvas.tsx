@@ -185,9 +185,9 @@ export default function Canvas({
             {getTodayLabel()}
           </div>
 
-          {/* Flashlight button — bottom left, at ~88% from top (real iOS position) */}
+          {/* Flashlight button — bottom left, below the dot grid */}
           <div style={{
-            position: 'absolute', bottom: '8%', left: '10%',
+            position: 'absolute', bottom: '5%', left: '10%',
             width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',
@@ -197,9 +197,9 @@ export default function Canvas({
             <div style={{ width: 3, height: 14, background: 'rgba(255,255,255,0.7)', borderRadius: 2 }} />
           </div>
 
-          {/* Camera button — bottom right, at ~88% from top */}
+          {/* Camera button — bottom right, below the dot grid */}
           <div style={{
-            position: 'absolute', bottom: '8%', right: '10%',
+            position: 'absolute', bottom: '5%', right: '10%',
             width: Math.round(canvasWidth * 0.14), height: Math.round(canvasWidth * 0.14),
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',

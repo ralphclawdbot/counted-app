@@ -104,12 +104,17 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
   } = gridData;
 
   const cssDotSize = Math.max(1, Math.round(dotSize * canvasScale));
-  const cssGap = Math.max(0.5, horizGap * canvasScale); // same for H and V
+  const cssGap     = Math.max(0.5, Math.round(horizGap * canvasScale)); // same for H and V
   const cssHorizGap = cssGap;
-  const cssVertGap = cssGap;
+  const cssVertGap  = cssGap;
+
+  // Compute cssGridW from actual CSS sizes (not from scaling gridW) to avoid compounding rounding error
+  const cssGridW = columns * cssDotSize + (columns - 1) * cssGap;
+  // Centre grid in canvas based on actual CSS content width
+  const cssLeftOffset = Math.round((canvasWidth - cssGridW) / 2);
+
   const cssCellW = cssDotSize + cssGap;
   const cssTopOffset = Math.round(topOffset * canvasScale);
-  const cssLeftOffset = Math.round(leftOffset * canvasScale);
   const hitTargetSize = Math.max(8, cssCellW);
 
   const EVENT_EMOJI: Record<string, string> = {
