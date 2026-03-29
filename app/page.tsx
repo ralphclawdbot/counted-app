@@ -231,7 +231,31 @@ export default function EditorPage() {
     copied: boolean;
   }>({ token: null, url: null, saving: false, copied: false });
   const [mobileTab, setMobileTab] = useState<'style' | 'layers'>('style');
+  const [mobileCanvasScale, setMobileCanvasScale] = useState(0.82);
   const preDragRef = useRef<WallpaperConfig | null>(null);
+
+  // Calculate mobile canvas scale so it fits within available screen space
+  useEffect(() => {
+    const recalc = () => {
+      if (window.innerWidth >= 768) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const HEADER_H = 48;
+      const TABBAR_H = 44;
+      const VPAD = 24;
+      const availW = vw - 32;
+      const availH = vh - HEADER_H - TABBAR_H - VPAD;
+      const frameW = 398; // canvasWidth(390) + 8px border
+      // Canvas frame height depends on config but 52% of width is a good approximation for most phones
+      const frameH = Math.round(390 * (config.height / config.width)) + 48;
+      const scaleByW = availW / frameW;
+      const scaleByH = availH / frameH;
+      setMobileCanvasScale(Math.min(scaleByW, scaleByH, 1));
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
+  }, [config.width, config.height]);
 
   // Load token from localStorage
   useEffect(() => {
@@ -620,15 +644,21 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Canvas preview — scales to fit screen width */}
+        {/* Canvas preview — scaled to fit available space, wrapper collapses to scaled height */}
         <div style={{
-          flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '12px 0', background: '#0f0f0f',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0f0f0f',
+          // Wrapper height = scaled canvas height so it doesn't take up extra space
+          height: (Math.round(390 * config.height / config.width) + 48) * mobileCanvasScale,
+          overflow: 'hidden',
         }}>
           <div style={{
+            transform: `scale(${mobileCanvasScale})`,
             transformOrigin: 'top center',
-            // Scale the 398px phone frame to fit within viewport width minus margins
-            transform: `scale(var(--mobile-canvas-scale, 0.88))`,
+            flexShrink: 0,
           }}>
             {canvasEl}
           </div>
