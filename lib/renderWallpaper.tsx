@@ -503,10 +503,13 @@ export async function renderWallpaper(
   const _btnMargin = Math.round(width * 0.07);
   const _btnGap    = Math.round(width * 0.025);
   const _quoteFontPx  = Math.round(width * 0.028);
-  // Vertical: just above home indicator (~2%), below button zone (~9%)
-  // Stats at 4%, quote just above stats — keeps them near the very bottom
-  const _statsBottom = Math.round(height * 0.04);
-  const _quoteBottom = _statsBottom + Math.round(statsTextSize * 1.3) + Math.round(height * 0.004);
+  // Vertical positioning (Arthur's spec):
+  // • With quote: stats at 5%, quote at 8.5% from bottom
+  // • Without quote: stats at 7% from bottom
+  const _statsBottom = config.showQuote
+    ? Math.round(height * 0.05)
+    : Math.round(height * 0.07);
+  const _quoteBottom = Math.round(height * 0.085);
 
   // Progress stats element (always shown if we have data)
   const statsElement: React.ReactElement | null = statsLine ? (
