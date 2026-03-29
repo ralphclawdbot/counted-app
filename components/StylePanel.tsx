@@ -487,7 +487,7 @@ export default function StylePanel({
 
           {saveState.url && (
             <div style={{ marginTop: 12, padding: 12, background: '#111', borderRadius: 8, border: '1px solid #222' }}>
-              <div style={{ fontSize: 11, color: '#555', marginBottom: 4 }}>Your wallpaper URL:</div>
+              <div style={{ fontSize: 11, color: '#555', marginBottom: 4 }}>Your Counted link:</div>
               <div style={{ fontSize: 12, color: '#ddd', wordBreak: 'break-all', marginBottom: 8, fontFamily: 'monospace' }}>
                 {saveState.url}
               </div>
@@ -508,12 +508,12 @@ export default function StylePanel({
                   {saveState.copied ? 'Copied! ✓' : 'Copy'}
                 </button>
                 <a
-                  href={saveState.url}
+                  href={saveState.token ? `/api/w/${saveState.token}` : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ padding: '6px 14px', background: '#1a1a1a', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', fontWeight: 500 }}
                 >
-                  Test →
+                  Preview PNG →
                 </a>
                 <a
                   href={`/install?token=${saveState.token}`}

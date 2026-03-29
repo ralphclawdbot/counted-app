@@ -37,8 +37,8 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
   if (config.bgDim)          p.set('bgDim', String(config.bgDim));
   if (config.gradientMode) {
     p.set('gradientMode', 'true');
-    if (config.gradientStart) p.set('gradientStart', config.gradientStart);
-    if (config.gradientEnd)   p.set('gradientEnd', config.gradientEnd);
+    if (config.gradientStart) p.set('gradientStart', config.gradientStart.replace(/^#/, ''));
+    if (config.gradientEnd)   p.set('gradientEnd', config.gradientEnd.replace(/^#/, ''));
   }
   if (config.lifeEvents?.length) {
     p.set('lifeEvents', config.lifeEvents.map((e) => `${e.date}:${e.icon}`).join(','));

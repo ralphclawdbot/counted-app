@@ -28,6 +28,8 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   dotShape: 'circle',
   dotStyle: 'flat',
   dotMode: 'standard',
+  widgetPosition: 'none',
+  dotRowAlign: 'left',
   bgBlur: 0,
   bgDim: 0,
   dotGapScale: 1,

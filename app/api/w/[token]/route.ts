@@ -29,7 +29,18 @@ export async function GET(
       return new NextResponse('Config unavailable', { status: 502 });
     }
 
-    const config: WallpaperConfig = await blobRes.json();
+    const raw = await blobRes.json() as WallpaperConfig;
+    // Normalize colors — strip any accidental '#' prefix so renderWallpaper doesn't double-hash
+    const stripHash = (s?: string) => (s || '').replace(/^#/, '');
+    const config: WallpaperConfig = {
+      ...raw,
+      bg: stripHash(raw.bg),
+      dotFilled: stripHash(raw.dotFilled),
+      dotEmpty: stripHash(raw.dotEmpty),
+      dotCurrent: stripHash(raw.dotCurrent),
+      ...(raw.gradientStart && { gradientStart: stripHash(raw.gradientStart) }),
+      ...(raw.gradientEnd   && { gradientEnd:   stripHash(raw.gradientEnd) }),
+    };
 
     const imageResponse = await renderWallpaper(config, fontData);
 

@@ -152,9 +152,9 @@ export async function renderWallpaper(
   //  └──────────────────────────────────────────────────────────────┘
   //
   //  ┌─ widgetPosition: 'none' ─────────────────────────────────────┐
-  //  │  Full iOS 26 clock (huge, ~14–36% of screen).                │
-  //  │  Need more breathing room below clock → grid starts at 46%.  │
-  //  │  safeTop = 46%                                               │
+  //  │  Full iOS 26 clock overlays the top portion of wallpaper.    │
+  //  │  Grid starts at 28% (clock floats above the dots visually).  │
+  //  │  safeTop = 28%                                               │
   //  └──────────────────────────────────────────────────────────────┘
   //
   //  ┌─ widgetPosition: 'bottom' ───────────────────────────────────┐
