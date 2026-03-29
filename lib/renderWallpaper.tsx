@@ -162,7 +162,11 @@ export async function renderWallpaper(
   //  │  safeTop = 38%, safeBot = 12% + widgetH                      │
   //  └──────────────────────────────────────────────────────────────┘
   const widgetH = Math.round(height * 0.13);
-  const safeTop = Math.round(height * (config.widgetPosition === 'top' ? 0.46 : 0.38));
+  // top widget: 38% — iOS widgets fill top, grid starts right below them
+  // no widget:  32% — no widgets, grid starts closer to top (iOS clock overlays visually)
+  // bottom:     38% — same as top widget on safeTop side
+  const safeTopFrac = config.widgetPosition === 'none' ? 0.32 : 0.38;
+  const safeTop = Math.round(height * safeTopFrac);
   const safeBot = Math.round(height * 0.12) + (config.widgetPosition === 'bottom' ? widgetH : 0);
   const statsAreaH = Math.round(height * 0.055);
   const usableH = height - safeTop - safeBot - statsAreaH;
