@@ -47,8 +47,8 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     const totalRows = Math.ceil(totalDots / columns);
-    const safeTop = Math.round(fullHeight * 0.44);
-    const safeBot = Math.round(fullHeight * 0.14);
+    const safeTop = Math.round(fullHeight * 0.38);
+    const safeBot = Math.round(fullHeight * 0.12);
     const statsAreaH = Math.round(fullHeight * 0.055);
     const usableH = fullHeight - safeTop - safeBot - statsAreaH;
     const cellH = usableH / totalRows;
