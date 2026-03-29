@@ -234,22 +234,18 @@ export default function EditorPage() {
   const [mobileCanvasScale, setMobileCanvasScale] = useState(0.82);
   const preDragRef = useRef<WallpaperConfig | null>(null);
 
-  // Calculate mobile canvas scale so it fits within available screen space
+  // Calculate mobile canvas scale — canvas capped at 38% viewport height so settings panel has room
   useEffect(() => {
     const recalc = () => {
       if (window.innerWidth >= 768) return;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const HEADER_H = 48;
-      const TABBAR_H = 44;
-      const VPAD = 24;
+      const MAX_CANVAS_H = vh * 0.38; // leave 62% for header + tabbar + settings
       const availW = vw - 32;
-      const availH = vh - HEADER_H - TABBAR_H - VPAD;
-      const frameW = 398; // canvasWidth(390) + 8px border
-      // Canvas frame height depends on config but 52% of width is a good approximation for most phones
+      const frameW = 398;
       const frameH = Math.round(390 * (config.height / config.width)) + 48;
       const scaleByW = availW / frameW;
-      const scaleByH = availH / frameH;
+      const scaleByH = MAX_CANVAS_H / frameH;
       setMobileCanvasScale(Math.min(scaleByW, scaleByH, 1));
     };
     recalc();
