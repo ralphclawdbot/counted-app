@@ -47,6 +47,7 @@ type HistoryAction =
   | { type: 'SET'; state: EditorState }
   | { type: 'DRAFT'; state: EditorState }
   | { type: 'COMMIT' }
+  | { type: 'PUSH_PAST'; state: EditorState }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
@@ -64,14 +65,14 @@ function historyReducer(state: HistoryState, action: HistoryAction): HistoryStat
       // Update present without adding to history (for drag moves)
       return { ...state, present: action.state };
     case 'COMMIT':
-      // Commit current draft to history
-      if (state.past.length > 0) {
-        const lastPast = state.past[state.past.length - 1];
-        if (JSON.stringify(lastPast) === JSON.stringify(state.present)) {
-          return state;
-        }
-      }
       return state;
+    case 'PUSH_PAST':
+      // Push a specific state to past without changing present (used to save pre-drag snapshot)
+      return {
+        past: [...state.past, action.state].slice(-MAX_HISTORY),
+        present: state.present,
+        future: [],
+      };
     case 'UNDO':
       if (state.past.length === 0) return state;
       return {
@@ -229,6 +230,7 @@ export default function EditorPage() {
     copied: boolean;
   }>({ token: null, url: null, saving: false, copied: false });
   const [isMobile, setIsMobile] = useState(false);
+  const preDragRef = useRef<WallpaperConfig | null>(null);
 
   // Check mobile
   useEffect(() => {
@@ -282,6 +284,10 @@ export default function EditorPage() {
   // ── Layer operations ──
 
   const updateLayer = useCallback((id: string, updates: Partial<PhotoLayer>) => {
+    // Save pre-drag state on the FIRST update of a drag gesture (before any DRAFT dispatches)
+    if (!preDragRef.current) {
+      preDragRef.current = config;
+    }
     const newLayers = (config.layers || []).map((l) => {
       if (l.id !== id) return l;
       if (l.type === 'bg') return { ...l, ...updates } as BgLayer;
@@ -294,12 +300,13 @@ export default function EditorPage() {
   }, [config]);
 
   const commitDrag = useCallback(() => {
-    // Take snapshot for undo
-    dispatch({
-      type: 'SET',
-      state: { config },
-    });
-  }, [config]);
+    // Push the pre-drag state into history so Undo correctly reverts to before the drag started.
+    // (DRAFT dispatches update present without touching past — past still has pre-drag state)
+    if (preDragRef.current) {
+      dispatch({ type: 'PUSH_PAST', state: { config: preDragRef.current } });
+      preDragRef.current = null;
+    }
+  }, []);
 
   const deleteLayer = useCallback((id: string) => {
     const newLayers = (config.layers || []).filter((l) => l.id !== id);

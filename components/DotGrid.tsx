@@ -81,6 +81,10 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
   const cssTopOffset = Math.round(topOffset * canvasScale);
   const hitTargetSize = Math.max(8, cssCellW);
 
+  const EVENT_EMOJI: Record<string, string> = {
+    heart: '❤️', star: '⭐', leaf: '🍃', flower: '🌸', moon: '🌙', snow: '❄️',
+  };
+
   function getBorderRadius(shape: string): string {
     switch (shape) {
       case 'circle': return '50%';
@@ -169,7 +173,22 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
           }}
           title={`Dot ${idx}`}
         >
-          <div style={dotStyle} />
+          {isEvent ? (
+            // Render emoji icon to match the PNG output (which uses SVG symbols)
+            <div style={{
+              width: cssDotSize,
+              height: cssDotSize,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: Math.max(8, cssDotSize * 0.9),
+              lineHeight: 1,
+            }}>
+              {EVENT_EMOJI[eventMap.get(idx) || 'star'] || '⭐'}
+            </div>
+          ) : (
+            <div style={dotStyle} />
+          )}
         </div>
       );
     }

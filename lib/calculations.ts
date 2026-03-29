@@ -9,11 +9,13 @@ export function weeksLived(birthday: string): number {
 }
 
 /**
- * Day of year (1-indexed).
+ * Day of year (0-indexed: Jan 1 = 0, Jan 2 = 1, ...).
+ * Used as filledDots (days already completed) and currentDot index.
+ * On Jan 1: returns 0 → 0 dots filled, dot 0 is the current ring.
  */
 export function dayOfYear(date?: Date): number {
   const d = date || new Date();
-  const start = new Date(d.getFullYear(), 0, 0);
+  const start = new Date(d.getFullYear(), 0, 1); // Jan 1st of current year
   const diff = d.getTime() - start.getTime();
   return Math.floor(diff / (24 * 60 * 60 * 1000));
 }
