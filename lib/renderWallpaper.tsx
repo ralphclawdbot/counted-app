@@ -328,6 +328,11 @@ export async function renderWallpaper(
       }
     }
 
+    const rowAlign = config.dotRowAlign || 'left';
+    const justifyContent =
+      rowAlign === 'right' ? 'flex-end' :
+      rowAlign === 'center' ? 'center' : 'flex-start';
+
     dotRows.push(
       <div
         key={`row-${row}`}
@@ -335,6 +340,8 @@ export async function renderWallpaper(
           display: 'flex',
           flexDirection: 'row',
           gap: horizGap,
+          width: gridW,           // fixed so justifyContent works on partial rows
+          justifyContent,
         }}
       >
         {dotsInRow}

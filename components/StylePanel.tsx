@@ -325,6 +325,30 @@ export default function StylePanel({
                 <ColorPicker label="End" value={config.gradientEnd || '0000FF'} onChange={(v) => onConfigChange({ gradientEnd: v })} />
               </div>
             )}
+            {/* Row alignment */}
+            <div style={{ marginBottom: 4 }}>
+              <div style={{ fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Last Row Alignment</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['left', 'center', 'right'] as const).map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => onConfigChange({ dotRowAlign: a })}
+                    style={{
+                      flex: 1,
+                      padding: '6px 0',
+                      background: (config.dotRowAlign || 'left') === a ? '#2563eb' : '#1a1a1a',
+                      color: (config.dotRowAlign || 'left') === a ? '#fff' : '#888',
+                      border: '1px solid #333',
+                      borderRadius: 6,
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      textTransform: 'capitalize',
+                    }}
+                  >{a === 'left' ? '⬅ Left' : a === 'center' ? '⟺ Center' : 'Right ➡'}</button>
+                ))}
+              </div>
+            </div>
+
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#aaa', cursor: 'pointer' }}>
               <input type="checkbox" checked={config.showQuote || false} onChange={(e) => onConfigChange({ showQuote: e.target.checked })} />
               Show Daily Quote

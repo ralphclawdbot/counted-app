@@ -36,6 +36,7 @@ export interface LifeEvent {
 // ── Calendar Types ──
 
 export type CalendarType = 'life' | 'year' | 'goal';
+export type DotRowAlign = 'left' | 'center' | 'right';
 export type DotShape = 'circle' | 'square' | 'rounded' | 'diamond';
 export type DotStyle = 'flat' | 'glow' | 'neon' | 'outlined';
 export type DotMode = 'standard' | 'emoji' | 'symbol';
@@ -64,6 +65,7 @@ export interface WallpaperConfig {
   dotSymbol?: string;
   bgBlur?: number;
   bgDim?: number;
+  dotRowAlign?: DotRowAlign;
   safeLayout?: boolean;
   /** When true, leaves extra space at the bottom for iOS lock screen widgets */
   widgetMode?: boolean;

@@ -93,13 +93,13 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     return {
-      columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
+      columns, dotSize, horizGap, vertGap, gridW, totalDots, filledDots, currentDot,
       totalRows, topOffset, leftOffset, eventMap,
     };
   }, [config]);
 
   const {
-    columns, dotSize, horizGap, vertGap, totalDots, filledDots, currentDot,
+    columns, dotSize, horizGap, vertGap, gridW, totalDots, filledDots, currentDot,
     totalRows, topOffset, leftOffset, eventMap,
   } = gridData;
 
@@ -223,8 +223,14 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
         </div>
       );
     }
+    const rowAlign = config.dotRowAlign || 'left';
+    const justifyContent =
+      rowAlign === 'right' ? 'flex-end' :
+      rowAlign === 'center' ? 'center' : 'flex-start';
+    const cssGridW = Math.round(gridW * canvasScale);
+
     rows.push(
-      <div key={`row-${row}`} style={{ display: 'flex', flexDirection: 'row', gap: cssHorizGap }}>
+      <div key={`row-${row}`} style={{ display: 'flex', flexDirection: 'row', gap: cssHorizGap, width: cssGridW, justifyContent }}>
         {dots}
       </div>
     );
