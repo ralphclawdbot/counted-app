@@ -213,13 +213,23 @@ function UploadModal({
 // ── Main Page ──
 
 export default function EditorPage() {
-  const [history, dispatch] = useReducer(historyReducer, {
-    past: [],
-    present: { config: DEFAULT_CONFIG },
-    future: [],
+  const [history, dispatch] = useReducer(historyReducer, undefined, (): HistoryState => {
+    try {
+      const saved = typeof window !== 'undefined' && localStorage.getItem('counted-config');
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<WallpaperConfig>;
+        return { past: [], present: { config: { ...DEFAULT_CONFIG, ...parsed } }, future: [] };
+      }
+    } catch {}
+    return { past: [], present: { config: DEFAULT_CONFIG }, future: [] };
   });
 
   const config = history.present.config;
+
+  // Persist config to localStorage on every change so session survives navigation/reload
+  useEffect(() => {
+    try { localStorage.setItem('counted-config', JSON.stringify(config)); } catch {}
+  }, [config]);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
