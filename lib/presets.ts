@@ -11,12 +11,12 @@ export interface ThemePreset {
 export const THEME_PRESETS: ThemePreset[] = [
   {
     name: 'dark',
-    bg: '000000',
+    bg: '0f0f0f',
     dotFilled: 'FFFFFF',
-    dotEmpty: 'FFFFFF',
-    dotCurrent: 'FFFFFF',
-    dotFilledOpacity: 85,
-    dotEmptyOpacity: 10,
+    dotEmpty: '888888',
+    dotCurrent: 'FF5722',
+    dotFilledOpacity: 100,
+    dotEmptyOpacity: 35,
   },
   {
     name: 'light',

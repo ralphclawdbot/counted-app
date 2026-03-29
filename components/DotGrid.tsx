@@ -18,11 +18,11 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
   const gridData = useMemo(() => {
     const fullWidth = config.width;
     const fullHeight = config.height;
-    const columns = config.type === 'life' ? 52 : 25;
-    const hPad = Math.round(fullWidth * 0.05);
+    const columns = config.type === 'life' ? 52 : 13;
+    const hPad = Math.round(fullWidth * 0.115);
     const availW = fullWidth - hPad * 2;
     const cellW = availW / columns;
-    const dotSize = Math.floor(cellW * 0.55);
+    const dotSize = Math.floor(cellW * 0.78);
     const gap = cellW - dotSize;
 
     let totalDots = 0;
@@ -49,9 +49,10 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
     }
 
     const totalRows = Math.ceil(totalDots / columns);
+    const statsAreaH = Math.round(fullHeight * 0.08);
     const safeTop = Math.round(fullHeight * 0.12);
-    const safeBot = Math.round(fullHeight * 0.06);
-    const usable = fullHeight - safeTop - safeBot;
+    const safeBot = Math.round(fullHeight * 0.04);
+    const usable = fullHeight - safeTop - safeBot - statsAreaH;
     const gridH = totalRows * dotSize + (totalRows - 1) * gap;
     const topOffset = safeTop + Math.max(0, Math.floor((usable - gridH) / 2));
 
@@ -133,12 +134,12 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
 
       const dotStyle: React.CSSProperties = isCurrent && !isEvent
         ? {
+            // Solid accent dot for today (matches reference)
             width: cssDotSize,
             height: cssDotSize,
             borderRadius,
-            border: `${Math.max(1, Math.round(2 * canvasScale))}px solid ${hexToRgba(config.dotCurrent, 100)}`,
-            background: 'transparent',
-            boxSizing: 'border-box',
+            background: hexToRgba(config.dotCurrent, 100),
+            ...(shadow ? { boxShadow: shadow } : {}),
           }
         : config.dotStyle === 'outlined' && !isFilled && !isEvent
         ? {

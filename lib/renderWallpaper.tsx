@@ -108,11 +108,13 @@ export async function renderWallpaper(
   const { width, height } = config;
 
   // Compute dot grid params
-  const columns = config.type === 'life' ? 52 : 25;
-  const hPad = Math.round(width * 0.05);
+  // Year/goal: 13 cols → large bold dots (matches reference layout)
+  // Life: 52 cols → 1 year per row (standard life-calendar layout)
+  const columns = config.type === 'life' ? 52 : 13;
+  const hPad = Math.round(width * 0.115);
   const availW = width - hPad * 2;
   const cellW = availW / columns;
-  const dotSize = Math.floor(cellW * 0.55);
+  const dotSize = Math.floor(cellW * 0.78);
   const gap = cellW - dotSize;
 
   // Compute total dots
@@ -142,12 +144,33 @@ export async function renderWallpaper(
 
   const totalRows = Math.ceil(totalDots / columns);
 
-  // Vertical centering
+  // Vertical centering — reserve bottom area for progress text
+  const statsTextSize = Math.round(width * 0.028); // ~33px at 1179px
+  const statsAreaH = Math.round(height * 0.08); // space for stats text at bottom
   const safeTop = Math.round(height * 0.12);
-  const safeBot = Math.round(height * 0.06);
-  const usable = height - safeTop - safeBot;
+  const safeBot = Math.round(height * 0.04);
+  const usable = height - safeTop - safeBot - statsAreaH;
   const gridH = totalRows * dotSize + (totalRows - 1) * gap;
   const topOffset = safeTop + Math.max(0, Math.floor((usable - gridH) / 2));
+
+  // Build progress stats text
+  let statsLine = '';
+  if (config.type === 'year') {
+    const remaining = totalDots - filledDots;
+    const pct = totalDots > 0 ? Math.round((filledDots / totalDots) * 100) : 0;
+    statsLine = `${remaining}d left · ${pct}%`;
+  } else if (config.type === 'goal' && config.goalStart && config.deadline) {
+    const remaining = totalDots - filledDots;
+    const pct = totalDots > 0 ? Math.round((filledDots / totalDots) * 100) : 0;
+    statsLine = `${remaining}d left · ${pct}%`;
+  } else if (config.type === 'life' && config.birthday) {
+    const lifespan = config.lifespan || 80;
+    const remaining = totalDots - filledDots;
+    const pct = totalDots > 0 ? Math.round((filledDots / totalDots) * 100) : 0;
+    const yearsLeft = Math.round(remaining / 52);
+    statsLine = `${yearsLeft}y left · ${pct}% lived`;
+    void lifespan;
+  }
 
   // Build life events map
   const eventMap = new Map<number, string>();
@@ -224,7 +247,8 @@ export async function renderWallpaper(
       }
 
       if (isCurrent && !isEvent) {
-        // Outlined hollow ring
+        // Solid accent dot for today (no hollow ring — matches reference aesthetic)
+        const shadow = getDotShadow(config.dotStyle, hexToRgba(config.dotCurrent, 100));
         dotsInRow.push(
           <div
             key={idx}
@@ -233,9 +257,8 @@ export async function renderWallpaper(
               width: dotSize,
               height: dotSize,
               borderRadius,
-              border: `2px solid ${hexToRgba(config.dotCurrent, 100)}`,
-              background: 'transparent',
-              boxSizing: 'border-box' as const,
+              background: hexToRgba(config.dotCurrent, 100),
+              ...(shadow ? { boxShadow: shadow } : {}),
             }}
           />
         );
@@ -355,7 +378,34 @@ export async function renderWallpaper(
     }
   }
 
-  // Quote element
+  // Progress stats element (always shown if we have data)
+  const statsElement: React.ReactElement | null = statsLine ? (
+    <div
+      style={{
+        display: 'flex',
+        position: 'absolute',
+        bottom: Math.round(height * 0.035),
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          color: hexToRgba(config.dotCurrent, 85),
+          fontSize: statsTextSize,
+          letterSpacing: 1,
+          fontWeight: 400,
+        }}
+      >
+        {statsLine}
+      </div>
+    </div>
+  ) : null;
+
+  // Quote element (shown above stats if enabled)
   let quoteElement: React.ReactElement | null = null;
   if (config.showQuote) {
     const quote = getDailyQuote();
@@ -364,7 +414,7 @@ export async function renderWallpaper(
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: Math.round(height * 0.02),
+          bottom: Math.round(height * 0.085),
           left: hPad,
           right: hPad,
           justifyContent: 'center',
@@ -373,8 +423,8 @@ export async function renderWallpaper(
         <div
           style={{
             display: 'flex',
-            color: hexToRgba(config.dotFilled, 50),
-            fontSize: 22,
+            color: hexToRgba(config.dotFilled, 45),
+            fontSize: Math.round(width * 0.02),
             fontStyle: 'italic',
             textAlign: 'center',
           }}
@@ -415,6 +465,9 @@ export async function renderWallpaper(
       >
         {dotRows}
       </div>
+
+      {/* Progress stats */}
+      {statsElement}
 
       {/* Quote */}
       {quoteElement}
