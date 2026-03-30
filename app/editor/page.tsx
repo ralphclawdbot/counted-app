@@ -717,175 +717,139 @@ export default function EditorPage() {
         {modals}
       </div>
 
-      {/* ── MOBILE LAYOUT (<768px) ── */}
-      <div className="mobile-layout" style={{ position: 'fixed', inset: 0, paddingTop: 50, paddingBottom: 60, background: '#050505', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-
-        {/* Phone canvas — centered, sized to fit viewport */}
-        <div ref={mobileCanvasRef} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-          <Canvas
-            config={config}
-            selectedLayerId={selectedLayerId}
-            onSelectLayer={setSelectedLayerId}
-            onUpdateLayer={updateLayer}
-            onDragEnd={commitDrag}
-            onDotClick={handleDotClick}
-            displayWidth={mobileDisplayWidth}
-          />
-        </div>
-
-        {/* ── FIXED BOTTOM ACTION BAR ── */}
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-          height: 60,
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '0 12px',
-          background: 'rgba(5,5,5,0.96)',
-          backdropFilter: 'blur(16px)',
-          borderTop: '1px solid #1c1c1c',
-        }}>
-          {/* Undo */}
-          <button
-            onClick={() => dispatch({ type: 'UNDO' })}
-            disabled={history.past.length === 0}
-            style={{ width: 40, height: 40, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            title="Undo"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={history.past.length === 0 ? '#333' : '#aaa'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" />
-            </svg>
-          </button>
-          {/* Redo */}
-          <button
-            onClick={() => dispatch({ type: 'REDO' })}
-            disabled={history.future.length === 0}
-            style={{ width: 40, height: 40, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            title="Redo"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={history.future.length === 0 ? '#333' : '#aaa'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 14 20 9 15 4" /><path d="M4 20v-7a4 4 0 0 1 4-4h12" />
-            </svg>
-          </button>
-
-          {/* Settings — opens bottom sheet */}
-          <button
-            onClick={() => setSheetOpen(true)}
-            style={{ width: 40, height: 40, background: sheetOpen ? '#2a2a2a' : '#1a1a1a', border: `1px solid ${sheetOpen ? '#444' : '#2a2a2a'}`, borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            title="Settings"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-          </button>
-
-          <div style={{ flex: 1 }} />
-
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            disabled={saveState.saving}
-            style={{ height: 40, padding: '0 20px', background: saveState.saving ? '#333' : '#fff', color: saveState.saving ? '#888' : '#000', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
-          >{saveState.saving ? 'Saving…' : 'Save'}</button>
-
-          {/* Setup → */}
-          {saveState.token && (
-            <a
-              href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`}
-              style={{ height: 40, padding: '0 16px', background: '#1a3a8f', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-            >Setup →</a>
-          )}
-        </div>
-
-        {/* ── BOTTOM SHEET — settings panel ── */}
-        {/* Backdrop */}
-        {sheetOpen && (
-          <div
-            onClick={() => setSheetOpen(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 149 }}
-          />
-        )}
-
-        {/* Sheet */}
-        <div style={{
-          position: 'fixed', left: 0, right: 0, bottom: 60, zIndex: 150,
-          height: '72dvh',
-          background: '#0d0d0d',
-          borderTop: '1px solid #2a2a2a',
-          borderRadius: '16px 16px 0 0',
-          display: 'flex', flexDirection: 'column',
-          transform: sheetOpen ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
-        }}>
-          {/* Handle + tab bar */}
-          <div style={{ flexShrink: 0 }}>
-            {/* Drag handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }} onClick={() => setSheetOpen(false)}>
-              <div style={{ width: 36, height: 4, background: '#333', borderRadius: 2 }} />
-            </div>
-            {/* Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #1a1a1a' }}>
-              {([['style', <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> Style</>], ['layers', <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Layers</>]] as const).map(([tab, label]) => (
-                <button
-                  key={tab}
-                  onClick={() => setSheetTab(tab)}
-                  style={{
-                    flex: 1, padding: '10px', border: 'none', background: 'none',
-                    color: sheetTab === tab ? '#fff' : '#555',
-                    borderBottom: sheetTab === tab ? '2px solid #fff' : '2px solid transparent',
-                    fontSize: 13, fontWeight: sheetTab === tab ? 600 : 400, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}
-                >{label}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Scrollable content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 24px', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
-            {sheetTab === 'style' ? (
-              <StylePanel
-                config={config}
-                onConfigChange={updateConfig}
-                layers={config.layers || []}
-                selectedLayerId={selectedLayerId}
-                onSelectLayer={setSelectedLayerId}
-                onDeleteLayer={deleteLayer}
-                onToggleVisibility={toggleVisibility}
-                onReorderLayers={reorderLayers}
-                onAddPhoto={() => { setSheetOpen(false); setShowUploadModal(true); }}
-                lifeEvents={config.lifeEvents || []}
-                onRemoveEvent={removeEvent}
-                onSave={handleSave}
-                onSaveAndSetup={handleSaveAndSetup}
-                saveState={saveState}
-                hideLayers
-                hideSaveButton
-              />
-            ) : (
-              <LayerPanel
-                layers={config.layers || []}
-                selectedLayerId={selectedLayerId}
-                onSelectLayer={setSelectedLayerId}
-                onDeleteLayer={deleteLayer}
-                onToggleVisibility={toggleVisibility}
-                onReorder={reorderLayers}
-                onAddPhoto={() => { setSheetOpen(false); setShowUploadModal(true); }}
-              />
-            )}
-          </div>
-        </div>
-
+      {/* ── MOBILE LAYOUT: canvas area (between top + bottom bars) ── */}
+      <div
+        ref={mobileCanvasRef}
+        className="mobile-only"
+        style={{
+          position: 'fixed', top: 50, left: 0, right: 0, bottom: 60,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#050505',
+        }}
+      >
+        <Canvas
+          config={config}
+          selectedLayerId={selectedLayerId}
+          onSelectLayer={setSelectedLayerId}
+          onUpdateLayer={updateLayer}
+          onDragEnd={commitDrag}
+          onDotClick={handleDotClick}
+          displayWidth={mobileDisplayWidth}
+        />
         {modals}
       </div>
 
-      {/* CSS to show/hide layouts based on screen width */}
+      {/* ── MOBILE: fixed bottom action bar ── */}
+      <div className="mobile-only" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 180,
+        height: 60,
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '0 12px',
+        background: '#050505',
+        borderTop: '1px solid #1c1c1c',
+      }}>
+        <button onClick={() => dispatch({ type: 'UNDO' })} disabled={history.past.length === 0}
+          style={{ width: 40, height: 40, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={history.past.length === 0 ? '#333' : '#aaa'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+          </svg>
+        </button>
+        <button onClick={() => dispatch({ type: 'REDO' })} disabled={history.future.length === 0}
+          style={{ width: 40, height: 40, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={history.future.length === 0 ? '#333' : '#aaa'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
+          </svg>
+        </button>
+        <button onClick={() => setSheetOpen(true)}
+          style={{ width: 40, height: 40, background: sheetOpen ? '#222' : '#1a1a1a', border: `1px solid ${sheetOpen ? '#555' : '#2a2a2a'}`, borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <div style={{ flex: 1 }} />
+        <button onClick={handleSave} disabled={saveState.saving}
+          style={{ height: 40, padding: '0 20px', background: saveState.saving ? '#333' : '#fff', color: saveState.saving ? '#888' : '#000', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+        >{saveState.saving ? 'Saving…' : 'Save'}</button>
+        {saveState.token && (
+          <a href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`}
+            style={{ height: 40, padding: '0 14px', background: '#1a3a8f', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+          >Setup →</a>
+        )}
+      </div>
+
+      {/* ── MOBILE: bottom sheet backdrop ── */}
+      {sheetOpen && (
+        <div className="mobile-only" onClick={() => setSheetOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 190 }}
+        />
+      )}
+
+      {/* ── MOBILE: bottom sheet ── */}
+      <div className="mobile-only" style={{
+        position: 'fixed', left: 0, right: 0, bottom: 60, zIndex: 195,
+        height: '72vh',
+        background: '#0d0d0d',
+        borderTop: '1px solid #2a2a2a',
+        borderRadius: '16px 16px 0 0',
+        display: 'flex', flexDirection: 'column',
+        transform: sheetOpen ? 'translateY(0)' : 'translateY(110%)',
+        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+        willChange: 'transform',
+        overflow: 'hidden',
+      }}>
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px', flexShrink: 0, cursor: 'pointer' }} onClick={() => setSheetOpen(false)}>
+          <div style={{ width: 36, height: 4, background: '#333', borderRadius: 2 }} />
+        </div>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #1a1a1a', flexShrink: 0 }}>
+          {(['style', 'layers'] as const).map((tab) => (
+            <button key={tab} onClick={() => setSheetTab(tab)} style={{
+              flex: 1, padding: '10px', border: 'none', background: 'none',
+              color: sheetTab === tab ? '#fff' : '#555',
+              borderBottom: sheetTab === tab ? '2px solid #fff' : '2px solid transparent',
+              fontSize: 13, fontWeight: sheetTab === tab ? 600 : 400, cursor: 'pointer',
+            }}>
+              {tab === 'style' ? 'Style' : 'Layers'}
+            </button>
+          ))}
+        </div>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 32px' }}>
+          {sheetTab === 'style' ? (
+            <StylePanel
+              config={config} onConfigChange={updateConfig}
+              layers={config.layers || []} selectedLayerId={selectedLayerId}
+              onSelectLayer={setSelectedLayerId} onDeleteLayer={deleteLayer}
+              onToggleVisibility={toggleVisibility} onReorderLayers={reorderLayers}
+              onAddPhoto={() => { setSheetOpen(false); setShowUploadModal(true); }}
+              lifeEvents={config.lifeEvents || []} onRemoveEvent={removeEvent}
+              onSave={handleSave} onSaveAndSetup={handleSaveAndSetup}
+              saveState={saveState} hideLayers hideSaveButton
+            />
+          ) : (
+            <LayerPanel
+              layers={config.layers || []} selectedLayerId={selectedLayerId}
+              onSelectLayer={setSelectedLayerId} onDeleteLayer={deleteLayer}
+              onToggleVisibility={toggleVisibility} onReorder={reorderLayers}
+              onAddPhoto={() => { setSheetOpen(false); setShowUploadModal(true); }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* CSS */}
       <style>{`
         @media (min-width: 768px) {
           .desktop-layout { display: flex !important; }
-          .mobile-layout { display: none !important; }
+          .mobile-only { display: none !important; }
         }
         @media (max-width: 767px) {
           .desktop-layout { display: none !important; }
-          .mobile-layout { display: flex !important; }
+          .mobile-only { display: flex !important; }
         }
       `}</style>
       <style>{`
