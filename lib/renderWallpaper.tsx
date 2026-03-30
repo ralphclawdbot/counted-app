@@ -41,12 +41,12 @@ export function symbolSvgUri(name: string, color: string): string {
 // ── Daily Quotes ──
 import { QUOTES } from './quotes';
 
-function getDailyQuote(tz?: string): string {
+function getDailyQuote(tz?: string): { text: string; author: string } {
   const epoch = new Date('2026-01-01T00:00:00');
   const now = nowInTz(tz);
   const dayIndex = Math.floor((now.getTime() - epoch.getTime()) / (24 * 60 * 60 * 1000));
   const q = QUOTES[((dayIndex % QUOTES.length) + QUOTES.length) % QUOTES.length];
-  return `${q.text} — ${q.author}`;
+  return { text: q.text, author: q.author };
 }
 
 // ── Dot Rendering Helpers ──
@@ -528,14 +528,35 @@ export async function renderWallpaper(
         <div
           style={{
             display: 'flex',
-            color: hexToRgba(config.dotFilled, 65),
-            fontSize: _quoteFontPx,
-            fontStyle: 'italic',
-            textAlign: 'center',
-            fontFamily,
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: Math.round(_quoteFontPx * 0.35),
           }}
         >
-          {quote}
+          <div
+            style={{
+              display: 'flex',
+              color: hexToRgba(config.dotFilled, 65),
+              fontSize: _quoteFontPx,
+              fontStyle: 'italic',
+              textAlign: 'center',
+              fontFamily,
+            }}
+          >
+            {quote.text}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              color: hexToRgba(config.dotFilled, 45),
+              fontSize: Math.round(_quoteFontPx * 0.85),
+              fontStyle: 'normal',
+              textAlign: 'center',
+              fontFamily,
+            }}
+          >
+            {quote.author}
+          </div>
         </div>
       </div>
     );
