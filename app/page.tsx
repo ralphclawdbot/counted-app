@@ -29,9 +29,10 @@ const SCR_L = 120, SCR_T = 120, SCR_R = 1299, SCR_B = 2676;
 
 const DEMO_WALLPAPER =
   '/api/wallpaper?type=year&width=1179&height=2556' +
-  '&bg=050505&dotFilled=ffffff&dotEmpty=ffffff' +
-  '&dotCurrent=ffffff&dotFilledOpacity=88&dotEmptyOpacity=10' +
-  '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1';
+  '&bg=050505&dotFilled=e8e8e8&dotEmpty=ffffff' +
+  '&dotCurrent=FFD166&dotFilledOpacity=75&dotEmptyOpacity=9' +
+  '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1' +
+  '&showQuote=true';
 
 // Live time + date helpers (same as Canvas.tsx)
 function getTimeLabel() {
@@ -422,18 +423,53 @@ export default function LandingPage() {
 
       {/* ── FEATURES ────────────────────────────────────── */}
       <section className="lp-section-pad" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.textLow, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
           Features
         </div>
-        <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 40 }}>
+        <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 12 }}>
           Everything you need.
         </h2>
+        <p style={{ fontSize: 17, color: C.textMid, lineHeight: 1.6, maxWidth: 540, marginBottom: 48 }}>
+          Most people have no idea how many days they have left this year. Counted puts that number on your lock screen — unavoidable, every single morning.
+        </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
           {[
-            { Icon: CalendarDays, title: '365 days, one dot each', body: 'Every dot is one day of your year. Filled = gone. Bright = today. Empty = still yours. It\'s the clearest possible picture of where you are in the year.' },
-            { Icon: Sliders, title: 'Make it yours', body: 'Color themes, photo backdrop layers, dot styles, gradient fills. Live PNG preview so you see exactly what your lock screen will look like before you save.' },
-            { Icon: RefreshCw, title: 'One fewer dot every morning', body: 'At midnight, your wallpaper pulls a fresh render. You wake up and one more dot is filled. No manual updates, no stale numbers — always accurate.' },
-            { Icon: MessageSquareQuote, title: 'Daily quote', body: 'A rotating quote between the flashlight and camera buttons. One fresh line of perspective every morning to go with your day count.' },
+            {
+              Icon: CalendarDays,
+              hook: 'See your whole year at once.',
+              title: '365 dots. One per day.',
+              body: 'Filled = gone. Bright = today. Empty = still yours. The clearest possible picture of exactly where you are in the year — no guessing.',
+            },
+            {
+              Icon: RefreshCw,
+              hook: 'One fewer dot every morning.',
+              title: 'Auto-updates at midnight.',
+              body: 'iOS Shortcuts or MacroDroid fetches a fresh wallpaper render at midnight. You wake up and another dot is filled. Set it once, never touch it again.',
+            },
+            {
+              Icon: MessageSquareQuote,
+              hook: 'Start every day with intention.',
+              title: 'Daily rotating quote.',
+              body: 'A fresh quote sits between the flashlight and camera buttons — right where your eyes land. One line of perspective to anchor your morning.',
+            },
+            {
+              Icon: Sliders,
+              hook: 'Yours, not everyone\'s.',
+              title: 'Full visual editor.',
+              body: 'Pick colors, dot styles, shapes, and photo backdrop layers. Live PNG preview updates as you design. What you see is exactly what hits your screen.',
+            },
+            {
+              Icon: Link2,
+              hook: 'One link. Always current.',
+              title: 'Permanent wallpaper URL.',
+              body: 'Save your config and get a permanent URL. That link always returns today\'s render — fresh count, current dot, right quote. No app, no account.',
+            },
+            {
+              Icon: CalendarDays,
+              hook: 'Beyond the year.',
+              title: 'Life & goal modes too.',
+              body: 'Switch to Life mode to see your entire life in weeks. Or set a Goal — a custom countdown to any deadline. Each dot tells a different story.',
+            },
           ].map((f) => (
             <div key={f.title} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
               <div style={{
@@ -444,6 +480,7 @@ export default function LandingPage() {
               }}>
                 <f.Icon size={18} strokeWidth={1.5} color={C.textMid} />
               </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.textLow, marginBottom: 6, letterSpacing: 0.3 }}>{f.hook}</div>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{f.title}</h3>
               <p style={{ fontSize: 13, color: C.textMid, lineHeight: 1.65 }}>{f.body}</p>
             </div>
