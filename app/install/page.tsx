@@ -269,16 +269,16 @@ function InstallContent() {
                       text: <>Tap <strong>Get Contents of URL</strong> — it gets added as an action</>,
                     },
                     {
-                      img: '/setup-screenshots/step3d.jpg',
-                      text: <>Tap the blue <strong>URL</strong> pill — the keyboard appears. Paste your wallpaper URL (copied in step 1) — tap <strong>Done</strong></>,
+                      imgs: ['/setup-screenshots/step3d.jpg', '/setup-screenshots/step_url_paste.jpg'],
+                      text: <>Tap the blue <strong>URL</strong> pill — keyboard appears. Paste your wallpaper URL (copied in step 1) — tap the blue <strong>✓</strong> on the keyboard</>,
                     },
                     {
-                      img: '/setup-screenshots/step6.jpg',
-                      text: <>Tap <strong>Search Actions</strong> again — search <strong>&quot;Set Wallpaper Photo&quot;</strong> → add it → select <strong>Lock Screen</strong></>,
+                      imgs: ['/setup-screenshots/step_search_actions.jpg', '/setup-screenshots/step_set_wall_search.jpg'],
+                      text: <>Tap <strong>Search Actions</strong> at the bottom — search <strong>&quot;Set wall&quot;</strong> — tap <strong>Set Wallpaper Photo</strong> to add it</>,
                     },
                     {
-                      img: '/setup-screenshots/step7.jpg',
-                      text: <>Tap the blue <strong>✓</strong> checkmark — done! Your wallpaper will update every night at midnight.</>,
+                      imgs: ['/setup-screenshots/step_both_actions.jpg', '/setup-screenshots/step7.jpg'],
+                      text: <>Both actions are now added. Tap the blue <strong>✓</strong> checkmark at the top right — done! Your wallpaper will update every night at midnight.</>,
                     },
                   ].map((s, i) => (
                     <div key={i} style={{
