@@ -77,7 +77,7 @@ function InstallContent() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <StepNum n={1} />
                 <span style={{ fontWeight: 600, fontSize: 15 }}>Your wallpaper URL</span>
-                <span style={{ marginLeft: 'auto', fontSize: 12, color: '#16a34a', fontWeight: 600 }}>✓ Ready</span>
+                <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>✓ Ready</span>
               </div>
               <div style={{ fontFamily: 'monospace', fontSize: 11, color: C.textMid, wordBreak: 'break-all', padding: '10px 12px', background: '#080808', borderRadius: 8, marginBottom: 10, border: `1px solid ${C.border}` }}>
                 {wallpaperUrl}
