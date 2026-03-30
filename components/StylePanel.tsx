@@ -193,9 +193,9 @@ export default function StylePanel({
               }}
               style={{
                 flex: 1, padding: '7px 0', borderRadius: 8, cursor: 'pointer',
-                background: platform === p ? '#ff5722' : '#1a1a1a',
-                border: platform === p ? '1px solid #ff5722' : '1px solid #333',
-                color: platform === p ? '#fff' : '#888',
+                background: platform === p ? '#ffffff' : '#1a1a1a',
+                border: platform === p ? '1px solid #ffffff' : '1px solid #333',
+                color: platform === p ? '#000' : '#888',
                 fontSize: 13, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
