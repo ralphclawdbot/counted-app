@@ -251,41 +251,41 @@ function InstallContent() {
                   {/* Screenshot steps */}
                   {[
                     {
-                      img: '/setup-screenshots/step1.jpg',
+                      imgs: ['/setup-screenshots/step1.jpg', '/setup-screenshots/step2.jpg'],
                       text: <>Open <strong>Shortcuts</strong> → tap <strong>Automation</strong> at the bottom → tap <strong>+</strong> → <strong>New Automation</strong> → choose <strong>Time of Day</strong></>,
                     },
                     {
-                      img: '/setup-screenshots/step2.jpg',
                       imgs: ['/setup-screenshots/step2.jpg', '/setup-screenshots/step3.jpg'],
                       text: <>Set time to <strong>12:00 AM</strong> — select <strong>Daily</strong> — select <strong>Run Immediately</strong> (not &quot;Run After Confirmation&quot;) — tap <strong>Next</strong></>,
                     },
                     {
-                      img: '/setup-screenshots/step4.jpg',
                       imgs: ['/setup-screenshots/step4.jpg', '/setup-screenshots/step3a.jpg'],
-                      text: <>You&apos;ll see <strong>&quot;Add actions from below&quot;</strong>. Tap <strong>Search Actions</strong> — type <strong>&quot;Get content&quot;</strong></>,
+                      text: <>Select <strong>Create new Shortcut</strong> → tap <strong>Search Action</strong> → type <strong>&quot;Get content&quot;</strong></>,
                     },
                     {
-                      imgs: ['/setup-screenshots/step3b.jpg', '/setup-screenshots/step3c.jpg'],
-                      text: <>Tap <strong>Get Contents of URL</strong> — it gets added as an action</>,
+                      grid: [
+                        '/setup-screenshots/step3b.jpg',
+                        '/setup-screenshots/step3c.jpg',
+                        '/setup-screenshots/step3d.jpg',
+                        '/setup-screenshots/step_url_paste.jpg',
+                      ],
+                      text: <>Tap <strong>Get Contents of URL</strong> — it gets added. Tap the blue <strong>URL</strong> pill — paste your wallpaper URL (copied in step 1) — tap <strong>Done</strong></>,
                     },
                     {
-                      imgs: ['/setup-screenshots/step3d.jpg', '/setup-screenshots/step_url_paste.jpg'],
-                      text: <>Tap the blue <strong>URL</strong> pill — keyboard appears. Paste your wallpaper URL (copied in step 1) — tap the blue <strong>✓</strong> on the keyboard</>,
-                    },
-                    {
-                      imgs: ['/setup-screenshots/step_search_actions.jpg', '/setup-screenshots/step_set_wall_search.jpg'],
-                      text: <>Tap <strong>Search Actions</strong> at the bottom — search <strong>&quot;Set wall&quot;</strong> — tap <strong>Set Wallpaper Photo</strong> to add it</>,
-                    },
-                    {
-                      imgs: ['/setup-screenshots/step_both_actions.jpg', '/setup-screenshots/step7.jpg'],
-                      text: <>Both actions are now added. Tap the blue <strong>✓</strong> checkmark at the top right — done! Your wallpaper will update every night at midnight.</>,
+                      grid: [
+                        '/setup-screenshots/step_search_actions.jpg',
+                        '/setup-screenshots/step_set_wall_search.jpg',
+                        '/setup-screenshots/step_both_actions.jpg',
+                        '/setup-screenshots/step7.jpg',
+                      ],
+                      text: <>Tap <strong>Search Actions</strong> again — search <strong>&quot;Set wall&quot;</strong> — tap <strong>Set Wallpaper Photo</strong>. Both actions now appear. Tap the blue <strong>✓</strong> at the top right — done!</>,
                     },
                   ].map((s, i) => (
                     <div key={i} style={{
                       display: 'flex', gap: 14, alignItems: 'flex-start',
-                      marginBottom: i < 6 ? 20 : 0,
-                      paddingBottom: i < 6 ? 20 : 0,
-                      borderBottom: i < 6 ? `1px solid ${C.border}` : 'none',
+                      marginBottom: i < 4 ? 20 : 0,
+                      paddingBottom: i < 4 ? 20 : 0,
+                      borderBottom: i < 4 ? `1px solid ${C.border}` : 'none',
                     }}>
                       {/* Step number */}
                       <div style={{
@@ -301,16 +301,20 @@ function InstallContent() {
                       <div style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65 }}>
                         {s.text}
                         {/* Two-screenshot pair for step 2 */}
-                        {s.imgs ? (
+                        {'grid' in s && s.grid ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+                            {s.grid.map((src, j) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={j} src={src} alt="" style={{ width: '100%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
+                            ))}
+                          </div>
+                        ) : 'imgs' in s && s.imgs ? (
                           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                             {s.imgs.map((src, j) => (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img key={j} src={src} alt="" style={{ width: '45%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
                             ))}
                           </div>
-                        ) : s.img ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.img} alt="" style={{ marginTop: 10, width: '55%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
                         ) : null}
                       </div>
                     </div>
