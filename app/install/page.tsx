@@ -97,7 +97,6 @@ function InstallContent() {
   const [copied, setCopied] = useState(false);
   const [platform] = useState<'ios' | 'android'>(platformParam ?? 'ios');
   const [config, setConfig] = useState<WallpaperConfig | null>(null);
-  const [showManual, setShowManual] = useState(false);
   const [showTrouble, setShowTrouble] = useState(false);
 
   // Fetch config for preview + specs
@@ -241,56 +240,72 @@ function InstallContent() {
             {platform === 'ios' && (
               <>
                 <div style={stepStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                     <StepNum n={2} />
-                    <span style={{ fontWeight: 700, fontSize: 14 }}>Add the Shortcut</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>Create the daily automation</div>
+                      <div style={{ fontSize: 12, color: C.textLow, marginTop: 2 }}>Takes about 2 minutes. Do it once, runs forever.</div>
+                    </div>
                   </div>
-                  <a
-                    href={SHORTCUT_ICLOUD_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ display: 'block', padding: '13px 20px', background: '#ffffff', color: '#000', textDecoration: 'none', borderRadius: 10, textAlign: 'center', fontSize: 15, fontWeight: 800, marginBottom: 10, letterSpacing: -0.2 }}
-                  >
-                    Add Shortcut to iPhone →
-                  </a>
-                  <p style={{ fontSize: 12, color: C.textLow, lineHeight: 1.6 }}>Opens Shortcuts app → Tap &quot;Add Shortcut&quot; → Open it and paste your URL when prompted.</p>
-                </div>
 
-                <div style={stepStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <StepNum n={3} />
-                    <span style={{ fontWeight: 700, fontSize: 14 }}>Create the daily automation</span>
-                  </div>
-                  <p style={{ fontSize: 12, color: C.textMid, marginBottom: 12, lineHeight: 1.6 }}>Apple doesn&apos;t allow sharing automations — takes 2 minutes to set up manually.</p>
-                  <ol style={{ paddingLeft: 20, fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 2.1, margin: 0 }}>
-                    <li>Open <strong style={{ color: '#fff' }}>Shortcuts</strong> → <strong style={{ color: '#fff' }}>Automation</strong> tab → <strong style={{ color: '#fff' }}>+</strong></li>
-                    <li><strong style={{ color: '#fff' }}>Time of Day</strong> → 12:00 AM (midnight) → Daily → <strong style={{ color: '#fff' }}>Run Immediately</strong></li>
-                    <li>Turn off &quot;Ask Before Running&quot;</li>
-                    <li>Add action: <strong style={{ color: '#fff' }}>Get File</strong> (from iCloud / Shortcuts / <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3, fontSize: 11 }}>counted-url.txt</code>)</li>
-                    <li>Add action: <strong style={{ color: '#fff' }}>Get Contents of URL</strong></li>
-                    <li>Add action: <strong style={{ color: '#fff' }}>Set Wallpaper Photo</strong> → Lock Screen → Crop to Subject: <strong style={{ color: '#fff' }}>OFF</strong></li>
-                    <li>Tap <strong style={{ color: '#fff' }}>Done</strong></li>
-                  </ol>
-                </div>
+                  {/* Screenshot steps */}
+                  {[
+                    {
+                      img: '/setup-screenshots/step1.jpg',
+                      text: <>Open <strong>Shortcuts</strong> → tap <strong>Automation</strong> at the bottom → tap <strong>+</strong> → <strong>New Automation</strong> → choose <strong>Time of Day</strong></>,
+                    },
+                    {
+                      img: '/setup-screenshots/step2.jpg',
+                      imgs: ['/setup-screenshots/step2.jpg', '/setup-screenshots/step3.jpg'],
+                      text: <>Set time to <strong>12:00 AM</strong> — select <strong>Daily</strong> — select <strong>Run Immediately</strong> (not &quot;Run After Confirmation&quot;) — tap <strong>Next</strong></>,
+                    },
+                    {
+                      img: '/setup-screenshots/step4.jpg',
+                      text: <>Tap <strong>Search Actions</strong> at the bottom — type <strong>&quot;Get Contents of URL&quot;</strong> — tap it to add</>,
+                    },
+                    {
+                      img: '/setup-screenshots/step6.jpg',
+                      text: <>Tap the blue <strong>URL</strong> pill in the action — paste your wallpaper URL (copied above). Then tap <strong>+</strong> → search <strong>&quot;Set Wallpaper Photo&quot;</strong> → add it → select <strong>Lock Screen</strong></>,
+                    },
+                    {
+                      img: '/setup-screenshots/step7.jpg',
+                      text: <>Tap the blue <strong>✓</strong> checkmark — done! Your wallpaper will update every night at midnight.</>,
+                    },
+                  ].map((s, i) => (
+                    <div key={i} style={{
+                      display: 'flex', gap: 14, alignItems: 'flex-start',
+                      marginBottom: i < 4 ? 20 : 0,
+                      paddingBottom: i < 4 ? 20 : 0,
+                      borderBottom: i < 4 ? `1px solid ${C.border}` : 'none',
+                    }}>
+                      {/* Step number */}
+                      <div style={{
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, fontWeight: 700, color: C.textMid,
+                        flexShrink: 0, marginTop: 2,
+                      }}>{i + 1}</div>
 
-                <div style={{ ...stepStyle, background: 'transparent', border: `1px solid ${C.border}` }}>
-                  <button
-                    onClick={() => setShowManual(!showManual)}
-                    style={{ background: 'none', border: 'none', color: C.textMid, cursor: 'pointer', fontSize: 13, padding: 0, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <span>Set up manually instead</span>
-                    <span style={{ fontSize: 10 }}>{showManual ? '▲' : '▼'}</span>
-                  </button>
-                  {showManual && (
-                    <ol style={{ paddingLeft: 20, fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 2, marginTop: 14 }}>
-                      <li>Open <strong style={{ color: '#ccc' }}>Shortcuts</strong> → tap <strong style={{ color: '#ccc' }}>+</strong></li>
-                      <li>Add: <strong style={{ color: '#ccc' }}>URL</strong> → paste your wallpaper URL</li>
-                      <li>Add: <strong style={{ color: '#ccc' }}>Get Contents of URL</strong></li>
-                      <li>Add: <strong style={{ color: '#ccc' }}>Set Wallpaper Photo</strong> → Lock Screen</li>
-                      <li>Name it &quot;Counted&quot; → Done</li>
-                      <li>Automation tab → + → Time of Day → 12:00 AM → Run Immediately → Run Shortcut &quot;Counted&quot;</li>
-                    </ol>
-                  )}
+                      {/* Text */}
+                      <div style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65 }}>
+                        {s.text}
+                        {/* Two-screenshot pair for step 2 */}
+                        {s.imgs ? (
+                          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                            {s.imgs.map((src, j) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={j} src={src} alt="" style={{ width: '45%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
+                            ))}
+                          </div>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={s.img} alt="" style={{ marginTop: 10, width: '55%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div style={{ ...stepStyle, background: 'transparent', border: `1px solid ${C.border}` }}>
@@ -304,10 +319,10 @@ function InstallContent() {
                   {showTrouble && (
                     <div style={{ marginTop: 14, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
                       {[
-                        ['Shortcut asks every morning', 'Settings → Shortcuts → [name] → Allow Running Without Asking'],
-                        ['Wallpaper looks cropped', 'Crop to Subject must be OFF in the Set Wallpaper action.'],
-                        ['Shortcut stopped working', 'Re-run the setup shortcut manually once to re-authorize.'],
-                        ['I updated my design — do I need to redo this?', 'No. Same URL, wallpaper regenerates automatically.'],
+                        ['Automation asks me to confirm every morning', 'Make sure you selected "Run Immediately" (not "Run After Confirmation") in step 2.'],
+                        ['Wallpaper looks cropped or zoomed in', 'In the Set Wallpaper action, make sure Perspective Zoom is set to OFF.'],
+                        ['Automation stopped running', 'Check Settings → Battery → MacroDroid (or Shortcuts) and disable battery optimization.'],
+                        ['I redesigned my wallpaper — do I need to redo this?', 'No. Your URL stays the same. Just save in the editor and the wallpaper updates automatically.'],
                       ].map(([q, a]) => (
                         <div key={q} style={{ marginBottom: 14 }}>
                           <div style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: 3 }}>&quot;{q}&quot;</div>
