@@ -270,10 +270,14 @@ function Counter({ end, label }: { end: number | string; label: string }) {
 }
 
 // ── Days remaining in the current year ───────────────────────
+// Matches renderWallpaper: totalDots - filledDots = daysInYear - dayOfYear
 function daysLeftInYear(): number {
   const now = new Date();
-  const end = new Date(now.getFullYear(), 11, 31);
-  return Math.ceil((end.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+  const start = new Date(now.getFullYear(), 0, 1);
+  const dayIndex = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+  const year = now.getFullYear();
+  const total = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
+  return total - dayIndex;
 }
 
 // ── Main landing page ─────────────────────────────────────────
@@ -388,7 +392,7 @@ export default function LandingPage() {
           padding: '32px 40px',
           display: 'flex', justifyContent: 'space-around', gap: 32, flexWrap: 'wrap',
         }}>
-          <Counter end={365} label="days in a year" />
+          <Counter end={365 + (new Date().getFullYear() % 4 === 0 && (new Date().getFullYear() % 100 !== 0 || new Date().getFullYear() % 400 === 0) ? 1 : 0)} label="days in a year" />
           <Counter end={daysLeft} label="days left in this year" />
           {userCount !== null && userCount > 0
             ? <Counter end={userCount} label="wallpapers created" />

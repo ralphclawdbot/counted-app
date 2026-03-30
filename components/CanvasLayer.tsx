@@ -43,11 +43,12 @@ function BgLayerComponent({
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: layer.zIndex,
+        // bg is rendered in the PNG — sit above it (zIndex 11) so drag/selection works,
+        // but the div itself is transparent (no background, no img)
+        zIndex: 11,
         cursor: isSelected ? 'grab' : 'pointer',
         outline: isSelected ? '2px dashed rgba(255,255,255,0.7)' : 'none',
         overflow: 'hidden',
-        opacity: layer.visible ? layer.opacity / 100 : 0,
         // Prevent browser scroll/zoom interference during drag on touch
         touchAction: 'none',
         userSelect: 'none',
@@ -76,24 +77,7 @@ function BgLayerComponent({
         window.addEventListener('pointerup', handleUp);
       }}
     >
-      {!imgLoaded && (
-        <div style={{ width: '100%', height: '100%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: 12 }}>
-          Loading...
-        </div>
-      )}
-      <img
-        src={layer.url}
-        alt=""
-        onLoad={() => setImgLoaded(true)}
-        onError={() => setImgLoaded(true)}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: `${layer.panX}% ${layer.panY}%`,
-          display: imgLoaded ? 'block' : 'none',
-        }}
-      />
+      {/* bg image is rendered server-side into the PNG — this div is a transparent drag zone only */}
     </div>
   );
 }

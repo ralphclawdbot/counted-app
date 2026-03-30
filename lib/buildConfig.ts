@@ -3,7 +3,8 @@ import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/
 /**
  * Serialize a WallpaperConfig into URLSearchParams for the /api/wallpaper endpoint.
  * Used by both the Canvas live preview and the download link in page.tsx.
- * NOTE: photo layers are intentionally excluded — they're rendered via CSS CanvasLayer.
+ * bg layers are included so the server renders them into the PNG.
+ * cutout layers are included so the server renders them into the PNG.
  */
 export function configToWallpaperParams(config: WallpaperConfig): URLSearchParams {
   const p = new URLSearchParams({
@@ -44,6 +45,20 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
   if (config.lifeEvents?.length) {
     p.set('lifeEvents', config.lifeEvents.map((e) => `${e.date}:${e.icon}`).join(','));
   }
+
+  // Include bg layer in params so the server renders it behind the dots in the PNG.
+  // Cutout layers are intentionally kept as CSS overlays (Canvas.tsx) for real-time drag UX.
+  const bgLayer = config.layers?.find((l) => l.type === 'bg' && l.visible) as BgLayer | undefined;
+  if (bgLayer) {
+    p.set('bgUrl',     bgLayer.url);
+    p.set('bgScale',   String(bgLayer.layerSize));
+    p.set('bgOpacity', String(bgLayer.opacity));
+    p.set('bgPanX',    String(bgLayer.panX ?? 50));
+    p.set('bgPanY',    String(bgLayer.panY ?? 50));
+    p.set('bgW',       String(bgLayer.naturalW ?? 100));
+    p.set('bgH',       String(bgLayer.naturalH ?? 100));
+  }
+
   return p;
 }
 

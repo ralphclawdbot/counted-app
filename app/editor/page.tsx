@@ -417,7 +417,8 @@ export default function EditorPage() {
       }
       const data = await res.json();
 
-      const maxZ = (config.layers || []).reduce((max, l) => Math.max(max, l.zIndex), -1);
+      // Cutout layers need zIndex > 11 (bg interaction layer) and > 10 (PNG zIndex in Canvas)
+      const maxZ = Math.max(11, (config.layers || []).reduce((max, l) => Math.max(max, l.zIndex), 11));
 
       let newLayer: PhotoLayer;
       if (type === 'bg') {

@@ -33,6 +33,10 @@ export function weeksLived(birthday: string, tz?: string): number {
 /**
  * Day of year (0-indexed: Jan 1 = 0) in the user's timezone.
  */
+export function daysInYear(year: number): number {
+  return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
+}
+
 export function dayOfYear(tz?: string): number {
   const d = nowInTz(tz);
   const start = new Date(d.getFullYear(), 0, 1);

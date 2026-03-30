@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { WallpaperConfig, BgLayer, CutoutLayer, LifeEvent } from '@/types';
-import { weeksLived, dayOfYear, goalProgress, nowInTz } from './calculations';
+import { weeksLived, dayOfYear, daysInYear, goalProgress, nowInTz } from './calculations';
 import { lifeEventWeekIndex } from './buildConfig';
 
 import { hexToRgba, lerpHex } from './colors';
@@ -93,8 +93,8 @@ export async function renderWallpaper(
       currentDot = filledDots;
     }
   } else if (config.type === 'year') {
-    totalDots = 365;
     filledDots = dayOfYear(config.timezone);
+    totalDots = daysInYear(new Date().getFullYear());
     currentDot = filledDots;
   } else if (config.type === 'goal') {
     if (config.goalStart && config.deadline) {
