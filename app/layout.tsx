@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Counted — Your Life, Counted.',
-  description: 'Visualize your life as a grid of dots and get an auto-updating iPhone lock screen wallpaper.',
+  title: 'Counted — Your Year, Counted.',
+  description: 'A dot for every day. See exactly how many days you have left this year — auto-updates on your lock screen every morning.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+  },
 };
 
 export const viewport = {

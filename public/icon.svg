@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- White rounded square background -->
+  <rect width="512" height="512" rx="115" fill="white"/>
+
+  <!-- Dot grid: 4 cols x 3 rows, centered -->
+  <!-- Grid math: 4 cols, 3 rows, dot radius=38, gap=30 -->
+  <!-- Cell = 38*2 + 30 = 106. Total grid W = 4*76 + 3*30 = 394. Offset X = (512-394)/2 = 59 -->
+  <!-- Total grid H = 3*76 + 2*30 = 288. Offset Y = (512-288)/2 = 112 -->
+
+  <!-- Row 1 — filled (past days) -->
+  <circle cx="97"  cy="150" r="38" fill="rgba(0,0,0,0.80)"/>
+  <circle cx="203" cy="150" r="38" fill="rgba(0,0,0,0.80)"/>
+  <circle cx="309" cy="150" r="38" fill="rgba(0,0,0,0.80)"/>
+  <circle cx="415" cy="150" r="38" fill="rgba(0,0,0,0.80)"/>
+
+  <!-- Row 2 — filled -->
+  <circle cx="97"  cy="256" r="38" fill="rgba(0,0,0,0.80)"/>
+  <circle cx="203" cy="256" r="38" fill="rgba(0,0,0,0.80)"/>
+  <!-- Current day dot — slightly larger, full black -->
+  <circle cx="309" cy="256" r="44" fill="rgba(0,0,0,1.0)"/>
+  <!-- Empty dot -->
+  <circle cx="415" cy="256" r="38" fill="rgba(0,0,0,0.13)"/>
+
+  <!-- Row 3 — empty (future days) -->
+  <circle cx="97"  cy="362" r="38" fill="rgba(0,0,0,0.13)"/>
+  <circle cx="203" cy="362" r="38" fill="rgba(0,0,0,0.13)"/>
+  <circle cx="309" cy="362" r="38" fill="rgba(0,0,0,0.13)"/>
+  <circle cx="415" cy="362" r="38" fill="rgba(0,0,0,0.13)"/>
+</svg>
