@@ -567,6 +567,20 @@ export default function EditorPage() {
     window.location.href = '/';
   }, [isDirty]);
 
+  const handleSaveAndSetup = useCallback(async () => {
+    // Save first, then navigate to install page
+    await handleSave();
+    // handleSave is async but setSaveState is async too — read token after a tick
+    setTimeout(() => {
+      setSaveState((s) => {
+        if (s.token) {
+          window.location.href = `/install?token=${s.token}&platform=${config.platform || 'ios'}`;
+        }
+        return s;
+      });
+    }, 200);
+  }, [handleSave, config.platform]);
+
   const handleCopy = useCallback(() => {
     if (saveState.url) {
       navigator.clipboard.writeText(saveState.url);
@@ -634,11 +648,6 @@ export default function EditorPage() {
         backdropFilter: 'blur(14px)',
         borderBottom: '1px solid #1a1a1a',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 11, color: '#555', letterSpacing: 0.3 }}>
-            {isDirty ? <span style={{ color: '#888' }}>● Unsaved changes</span> : null}
-          </div>
-        </div>
         <button
           onClick={handleNavigateHome}
           style={{
@@ -649,6 +658,9 @@ export default function EditorPage() {
         >
           counted<span style={{ color: '#ffffff' }}>.</span>
         </button>
+        <div style={{ fontSize: 11, color: '#666', letterSpacing: 0.3 }}>
+          {isDirty ? <span style={{ color: '#777' }}>● Unsaved</span> : null}
+        </div>
       </div>
 
       {/* ── DESKTOP LAYOUT (≥768px) ── */}
@@ -692,6 +704,7 @@ export default function EditorPage() {
           lifeEvents={config.lifeEvents || []}
           onRemoveEvent={removeEvent}
           onSave={handleSave}
+          onSaveAndSetup={handleSaveAndSetup}
           saveState={saveState}
         />
 
@@ -788,6 +801,7 @@ export default function EditorPage() {
               lifeEvents={config.lifeEvents || []}
               onRemoveEvent={removeEvent}
               onSave={handleSave}
+              onSaveAndSetup={handleSaveAndSetup}
               saveState={saveState}
               hideLayers
               hideSaveButton

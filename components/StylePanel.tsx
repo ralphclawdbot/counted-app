@@ -32,6 +32,7 @@ interface StylePanelProps {
   lifeEvents: LifeEvent[];
   onRemoveEvent: (weekIndex: number) => void;
   onSave: () => void;
+  onSaveAndSetup?: () => void;
   saveState: { token: string | null; url: string | null; saving: boolean; copied: boolean };
   hideLayers?: boolean;
   hideSaveButton?: boolean;
@@ -95,6 +96,7 @@ export default function StylePanel({
   lifeEvents,
   onRemoveEvent,
   onSave,
+  onSaveAndSetup,
   saveState,
   hideLayers = false,
   hideSaveButton = false,
@@ -111,12 +113,6 @@ export default function StylePanel({
 
   return (
     <div style={{ width: 360, height: '100vh', overflowY: 'auto', padding: '16px', borderLeft: '1px solid #1a1a1a', background: '#0a0a0a' }}>
-      {/* Header */}
-      <div style={separatorStyle}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 2, color: '#fff' }}>Counted</h1>
-        <p style={{ fontSize: 12, color: '#555', margin: 0 }}>Your life, counted.</p>
-      </div>
-
       {/* Calendar Type */}
       <div style={separatorStyle}>
         <span style={sectionLabelStyle}>Calendar Type</span>
@@ -556,62 +552,77 @@ export default function StylePanel({
         </div>
       )}
 
-      {/* Save Button */}
+      {/* Save Buttons */}
       {!hideSaveButton && (
         <div style={{ marginBottom: 32 }}>
-          <button
-            onClick={onSave}
-            disabled={saveState.saving}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: saveState.saving ? '#333' : '#fff',
-              color: saveState.saving ? '#888' : '#000',
-              border: 'none',
-              borderRadius: 20,
-              cursor: saveState.saving ? 'not-allowed' : 'pointer',
-              fontSize: 15,
-              fontWeight: 700,
-            }}
-          >
-            {saveState.saving ? 'Saving...' : 'Save & Get My URL'}
-          </button>
+          {/* Two-button row */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: saveState.url ? 12 : 0 }}>
+            <button
+              onClick={onSave}
+              disabled={saveState.saving}
+              style={{
+                flex: 1,
+                padding: '11px 12px',
+                background: '#1a1a1a',
+                color: saveState.saving ? '#555' : '#aaa',
+                border: '1px solid #2a2a2a',
+                borderRadius: 10,
+                cursor: saveState.saving ? 'not-allowed' : 'pointer',
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              {saveState.saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              onClick={onSaveAndSetup}
+              disabled={saveState.saving}
+              style={{
+                flex: 2,
+                padding: '11px 12px',
+                background: saveState.saving ? '#333' : '#fff',
+                color: saveState.saving ? '#888' : '#000',
+                border: 'none',
+                borderRadius: 10,
+                cursor: saveState.saving ? 'not-allowed' : 'pointer',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              {saveState.saving ? 'Saving…' : 'Save & Setup →'}
+            </button>
+          </div>
 
+          {/* URL strip shown after first save */}
           {saveState.url && (
-            <div style={{ marginTop: 12, padding: 12, background: '#111', borderRadius: 8, border: '1px solid #222' }}>
-              <div style={{ fontSize: 11, color: '#555', marginBottom: 4 }}>Your Counted link:</div>
-              <div style={{ fontSize: 12, color: '#ddd', wordBreak: 'break-all', marginBottom: 8, fontFamily: 'monospace' }}>
+            <div style={{ padding: '10px 12px', background: '#0d0d0d', borderRadius: 8, border: '1px solid #1c1c1c' }}>
+              <div style={{ fontSize: 11, color: '#444', marginBottom: 6, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase' }}>Your link</div>
+              <div style={{ fontSize: 11, color: '#666', wordBreak: 'break-all', marginBottom: 8, fontFamily: 'monospace', lineHeight: 1.5 }}>
                 {saveState.url}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
                   style={{
-                    padding: '6px 14px',
-                    background: saveState.copied ? '#333' : '#ffffff',
-                    color: saveState.copied ? '#aaa' : '#000',
-                    border: 'none',
-                    borderRadius: 4,
+                    padding: '5px 12px',
+                    background: saveState.copied ? '#1a1a1a' : '#ffffff',
+                    color: saveState.copied ? '#22c55e' : '#000',
+                    border: saveState.copied ? '1px solid rgba(34,197,94,0.35)' : 'none',
+                    borderRadius: 6,
                     cursor: 'pointer',
                     fontSize: 12,
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
-                  {saveState.copied ? 'Copied! ✓' : 'Copy'}
+                  {saveState.copied ? '✓ Copied' : 'Copy'}
                 </button>
                 <a
                   href={saveState.token ? `/api/w/${saveState.token}` : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ padding: '6px 14px', background: '#1a1a1a', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', fontWeight: 500 }}
+                  style={{ padding: '5px 12px', background: '#1a1a1a', color: '#666', borderRadius: 6, fontSize: 12, textDecoration: 'none', fontWeight: 500, border: '1px solid #222' }}
                 >
-                  Preview PNG →
-                </a>
-                <a
-                  href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`}
-                  style={{ padding: '6px 14px', background: '#1a1a1a', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', fontWeight: 500 }}
-                >
-                  Setup →
+                  Preview ↗
                 </a>
               </div>
             </div>
