@@ -46,18 +46,11 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
     p.set('lifeEvents', config.lifeEvents.map((e) => `${e.date}:${e.icon}`).join(','));
   }
 
-  // Include bg layer in params so the server renders it behind the dots in the PNG.
-  // Cutout layers are intentionally kept as CSS overlays (Canvas.tsx) for real-time drag UX.
-  const bgLayer = config.layers?.find((l) => l.type === 'bg' && l.visible) as BgLayer | undefined;
-  if (bgLayer) {
-    p.set('bgUrl',     bgLayer.url);
-    p.set('bgScale',   String(bgLayer.layerSize));
-    p.set('bgOpacity', String(bgLayer.opacity));
-    p.set('bgPanX',    String(bgLayer.panX ?? 50));
-    p.set('bgPanY',    String(bgLayer.panY ?? 50));
-    p.set('bgW',       String(bgLayer.naturalW ?? 100));
-    p.set('bgH',       String(bgLayer.naturalH ?? 100));
-  }
+  // When a bg layer exists, request a transparent-background PNG from the server.
+  // The CSS BgLayerComponent renders the actual image beneath the PNG in the editor.
+  // Cutout layers are CSS overlays (CanvasLayer.tsx) for real-time drag UX.
+  const hasBgLayer = config.layers?.some((l) => l.type === 'bg' && l.visible);
+  if (hasBgLayer) p.set('transparentBg', 'true');
 
   return p;
 }
@@ -90,6 +83,7 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
   if (params.get('dotSymbol')) config.dotSymbol = params.get('dotSymbol')!;
   if (params.get('bgBlur')) config.bgBlur = parseInt(params.get('bgBlur')!, 10);
   if (params.get('bgDim')) config.bgDim = parseInt(params.get('bgDim')!, 10);
+  if (params.get('transparentBg') === 'true') config.transparentBg = true;
   if (params.get('gradientMode') === 'true') {
     config.gradientMode = true;
     config.gradientStart = (params.get('gradientStart') || 'FF0000').replace(/^#/, '');

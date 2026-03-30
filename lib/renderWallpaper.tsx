@@ -569,7 +569,7 @@ export async function renderWallpaper(
         flexDirection: 'column',
         width,
         height,
-        background: `#${config.bg}`,
+        background: config.transparentBg ? 'transparent' : `#${config.bg}`,
         position: 'relative',
         overflow: 'hidden',
       }}

@@ -67,6 +67,7 @@ export interface WallpaperConfig {
   dotSymbol?: string;
   bgBlur?: number;
   bgDim?: number;
+  transparentBg?: boolean;
   dotRowAlign?: DotRowAlign;
   deviceName?: string;
   safeLayout?: boolean;

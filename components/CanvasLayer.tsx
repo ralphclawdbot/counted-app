@@ -43,9 +43,8 @@ function BgLayerComponent({
         left: 0,
         width: '100%',
         height: '100%',
-        // bg is rendered in the PNG — sit above it (zIndex 11) so drag/selection works,
-        // but the div itself is transparent (no background, no img)
-        zIndex: 11,
+        // bg sits below the transparent PNG (zIndex 10) so it shows through behind the dots
+        zIndex: 2,
         cursor: isSelected ? 'grab' : 'pointer',
         outline: isSelected ? '2px dashed rgba(255,255,255,0.7)' : 'none',
         overflow: 'hidden',
@@ -77,7 +76,19 @@ function BgLayerComponent({
         window.addEventListener('pointerup', handleUp);
       }}
     >
-      {/* bg image is rendered server-side into the PNG — this div is a transparent drag zone only */}
+      <img
+        src={layer.url}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: `${layer.panX ?? 50}% ${layer.panY ?? 50}%`,
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   );
 }
