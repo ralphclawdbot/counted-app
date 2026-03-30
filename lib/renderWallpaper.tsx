@@ -61,11 +61,11 @@ function getBorderRadius(shape: string, dotSize: number): string {
 }
 
 function getDotShadow(dotStyle: string, color: string, isFilled?: boolean): string | undefined {
+  void isFilled;
   switch (dotStyle) {
     case 'glow': return `0 0 4px ${color}`;
     case 'neon': return `0 0 4px ${color}, 0 0 8px ${color}`;
-    // Outlined: ring only on filled dots (empty dots render as plain flat — no border perf hit)
-    case 'outlined': return isFilled ? `0 0 0 1.5px ${color}` : undefined;
+    // 'outlined': Satori doesn't support box-shadow spread-radius; render same as flat for now
     default: return undefined;
   }
 }
