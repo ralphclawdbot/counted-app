@@ -269,7 +269,7 @@ export default function EditorPage() {
     const token = urlToken || localToken;
     if (!token) return;
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || window.location.origin;
     const editUrl = `${appUrl}/editor?token=${token}`;
 
     if (urlToken) {
@@ -531,7 +531,7 @@ export default function EditorPage() {
       const data = await res.json();
 
       if (data.token) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || window.location.origin;
         const editUrl = `${appUrl}/editor?token=${data.token}`;
         localStorage.setItem('counted_token', data.token);
         setSaveState({ token: data.token, url: editUrl, saving: false, copied: false });
@@ -694,9 +694,9 @@ export default function EditorPage() {
           <div style={{ padding: '8px 16px', background: '#0d0d0d', borderTop: '1px solid #1c1c1c', borderBottom: '1px solid #1c1c1c', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveState.url}</span>
             <button
-              onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
-              style={{ padding: '4px 10px', background: saveState.copied ? '#333' : '#ffffff', color: saveState.copied ? '#fff' : '#000', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
-            >{saveState.copied ? '✓' : 'Copy'}</button>
+              onClick={handleCopy}
+              style={{ padding: '4px 10px', background: saveState.copied ? '#333' : '#ffffff', color: saveState.copied ? '#fff' : '#000', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32, cursor: 'pointer' }}
+            >{saveState.copied ? '✓ Copied' : 'Copy'}</button>
             <a href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
               Setup →
             </a>

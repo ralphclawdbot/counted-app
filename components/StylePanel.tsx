@@ -3,6 +3,7 @@
 import React from 'react';
 import { WallpaperConfig, CalendarType, DotShape, DotStyle, DotMode, LifeEvent } from '@/types';
 import { DEVICES, ANDROID_DEVICES, DEFAULT_ANDROID_DEVICE } from '@/lib/devices';
+import { Smartphone, TabletSmartphone } from 'lucide-react';
 import { THEME_PRESETS } from '@/lib/presets';
 import ColorPicker from './ColorPicker';
 import LayerPanel from './LayerPanel';
@@ -200,7 +201,11 @@ export default function StylePanel({
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
             >
-              {p === 'ios' ? '🍎' : '🤖'} {p === 'ios' ? 'iPhone' : 'Android'}
+              {p === 'ios'
+                ? <Smartphone size={14} strokeWidth={1.8} />
+                : <TabletSmartphone size={14} strokeWidth={1.8} />
+              }
+              {p === 'ios' ? 'iPhone' : 'Android'}
             </button>
           ))}
         </div>
