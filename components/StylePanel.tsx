@@ -3,7 +3,17 @@
 import React from 'react';
 import { WallpaperConfig, CalendarType, DotShape, DotStyle, DotMode, LifeEvent } from '@/types';
 import { DEVICES, ANDROID_DEVICES, DEFAULT_ANDROID_DEVICE } from '@/lib/devices';
-import { Smartphone, TabletSmartphone } from 'lucide-react';
+// Apple and Android SVG icons (inline — no external dependency)
+const AppleIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 814 1000" fill="currentColor">
+    <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.5 135.4-317.5 269-317.5 70.1 0 128.4 46.4 172.5 46.4 43.2 0 111.1-49 192.6-49 34.2 0 124.4 3.2 186.7 96.3zm-161.3-180.3c32.5-38.7 55.8-92.4 55.8-146.1 0-7.5-.6-15.1-1.9-22-.5-2.6-1.1-5.3-1.8-8-36.2 14-78.1 37.2-103.2 67.4-26.5 31.5-54.9 85.2-54.9 139.7 0 8.2.9 15.9 1.5 18.3 1.4.4 2.9.6 4.4.6 31.8 0 72.5-21.3 99.6-49.9z"/>
+  </svg>
+);
+const AndroidIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M6.18 15.64a2.18 2.18 0 0 1-2.18 2.18C2.9 17.82 2 16.92 2 15.64V8.36a2.18 2.18 0 0 1 4.36 0v7.28zm11.64 0a2.18 2.18 0 0 0 4.36 0V8.36a2.18 2.18 0 0 0-4.36 0v7.28zM3.31 7.43A8.69 8.69 0 0 1 20.69 7.43v11.75a1.13 1.13 0 0 1-1.13 1.13H4.44a1.13 1.13 0 0 1-1.13-1.13V7.43zM8.5 2.82l-1.36-1.36a.38.38 0 0 0-.54.54L8 3.4a8.59 8.59 0 0 1 8 0L17.4 2a.38.38 0 0 0-.54-.54L15.5 2.82A8.45 8.45 0 0 0 12 2a8.45 8.45 0 0 0-3.5.82zM9 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+  </svg>
+);
 import { THEME_PRESETS } from '@/lib/presets';
 import ColorPicker from './ColorPicker';
 import LayerPanel from './LayerPanel';
@@ -201,10 +211,7 @@ export default function StylePanel({
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
             >
-              {p === 'ios'
-                ? <Smartphone size={14} strokeWidth={1.8} />
-                : <TabletSmartphone size={14} strokeWidth={1.8} />
-              }
+              {p === 'ios' ? <AppleIcon /> : <AndroidIcon />}
               {p === 'ios' ? 'iPhone' : 'Android'}
             </button>
           ))}

@@ -319,8 +319,7 @@ export async function renderWallpaper(
               width: dotSize,
               height: dotSize,
               borderRadius,
-              border: `1px solid ${hexToRgba(dotColor, dotOpacity)}`,
-              background: 'transparent',
+              boxShadow: `inset 0 0 0 1.5px ${hexToRgba(dotColor, dotOpacity)}`,
             }}
           />
         );
