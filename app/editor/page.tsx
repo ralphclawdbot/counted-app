@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useReducer, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useReducer, useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/types';
 import { DEFAULT_DEVICE } from '@/lib/devices';
 import { configToWallpaperParams } from '@/lib/buildConfig';
@@ -535,6 +535,8 @@ export default function EditorPage() {
         const editUrl = `${appUrl}/editor?token=${data.token}`;
         localStorage.setItem('counted_token', data.token);
         setSaveState({ token: data.token, url: editUrl, saving: false, copied: false });
+        lastSaveHistoryLen.current = history.past.length;
+        lastSavedToken.current = data.token;
         // Update browser URL so the current tab IS the edit link
         window.history.replaceState({}, '', `/editor?token=${data.token}`);
       } else {
@@ -545,6 +547,25 @@ export default function EditorPage() {
       setSaveState((s) => ({ ...s, saving: false }));
     }
   }, [config, saveState.token]);
+
+  // ── Dirty / unsaved changes ──
+  const lastSavedToken = useRef<string | null>(null);
+  // Track save completions to know when history was last cleared
+  const lastSaveHistoryLen = useRef(0);
+  const isDirty = useMemo(
+    () => history.past.length > lastSaveHistoryLen.current,
+    [history.past.length]
+  );
+
+  const handleNavigateHome = useCallback(() => {
+    if (isDirty) {
+      const ok = window.confirm(
+        'You have unsaved changes. Leave the editor?\n\nHit "Cancel" then Save first to keep your latest design.'
+      );
+      if (!ok) return;
+    }
+    window.location.href = '/';
+  }, [isDirty]);
 
   const handleCopy = useCallback(() => {
     if (saveState.url) {
@@ -603,31 +624,58 @@ export default function EditorPage() {
 
   return (
     <>
+      {/* ── SHARED TOP BAR ── */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        height: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
+        background: 'rgba(5,5,5,0.92)',
+        backdropFilter: 'blur(14px)',
+        borderBottom: '1px solid #1a1a1a',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 11, color: '#555', letterSpacing: 0.3 }}>
+            {isDirty ? <span style={{ color: '#888' }}>● Unsaved changes</span> : null}
+          </div>
+        </div>
+        <button
+          onClick={handleNavigateHome}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 16, fontWeight: 800, letterSpacing: -0.5, color: '#fff',
+            padding: '4px 0',
+          }}
+        >
+          counted<span style={{ color: '#ffffff' }}>.</span>
+        </button>
+      </div>
+
       {/* ── DESKTOP LAYOUT (≥768px) ── */}
-      <div className="desktop-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <div className="desktop-layout" style={{ display: 'flex', height: '100vh', overflow: 'hidden', paddingTop: 50 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Toolbar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #1a1a1a' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: 24 }}>
+            {canvasEl}
+          </div>
+
+          {/* Bottom toolbar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderTop: '1px solid #1a1a1a', flexShrink: 0 }}>
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={history.past.length === 0}
-              style={{ padding: '4px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
-            >Undo</button>
+              style={{ padding: '5px 12px', background: '#1a1a1a', color: history.past.length === 0 ? '#333' : '#aaa', border: '1px solid #2a2a2a', borderRadius: 6, cursor: history.past.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
+            >↩ Undo</button>
             <button
               onClick={() => dispatch({ type: 'REDO' })}
               disabled={history.future.length === 0}
-              style={{ padding: '4px 10px', background: '#222', color: history.future.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 4, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
-            >Redo</button>
+              style={{ padding: '5px 12px', background: '#1a1a1a', color: history.future.length === 0 ? '#333' : '#aaa', border: '1px solid #2a2a2a', borderRadius: 6, cursor: history.future.length === 0 ? 'not-allowed' : 'pointer', fontSize: 12 }}
+            >↪ Redo</button>
             <div style={{ flex: 1 }} />
             {uploadProgress && <span style={{ fontSize: 12, color: '#888' }}>{uploadProgress}</span>}
             <button
               onClick={() => { if (confirm('Reset all settings to defaults?')) { dispatch({ type: 'SET', state: { config: DEFAULT_CONFIG } }); setSelectedLayerId(null); } }}
-              style={{ padding: '4px 10px', background: '#222', color: '#888', border: '1px solid #333', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+              style={{ padding: '5px 12px', background: '#1a1a1a', color: '#666', border: '1px solid #2a2a2a', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
             >Reset</button>
-          </div>
-
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: 24 }}>
-            {canvasEl}
           </div>
         </div>
 
@@ -651,29 +699,32 @@ export default function EditorPage() {
       </div>
 
       {/* ── MOBILE LAYOUT (<768px) ── */}
-      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
-        {/* Sticky header */}
+      <div className="mobile-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', paddingTop: 50 }}>
+        {/* Sticky action bar below the shared top bar */}
         <div style={{
-          position: 'sticky', top: 0, zIndex: 100,
+          position: 'sticky', top: 50, zIndex: 90,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 16px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a',
+          padding: '8px 16px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a',
+          gap: 8,
         }}>
-          <div>
-            <span style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>Counted</span>
-            {uploadProgress && <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>{uploadProgress}</span>}
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={history.past.length === 0}
-              style={{ padding: '6px 10px', background: '#222', color: history.past.length === 0 ? '#444' : '#aaa', border: '1px solid #333', borderRadius: 6, fontSize: 13, minHeight: 36 }}
+              style={{ padding: '6px 10px', background: '#1a1a1a', color: history.past.length === 0 ? '#333' : '#aaa', border: '1px solid #2a2a2a', borderRadius: 6, fontSize: 13, minHeight: 36 }}
             >↩</button>
             <button
-              onClick={handleSave}
-              disabled={saveState.saving}
-              style={{ padding: '6px 16px', background: saveState.saving ? '#333' : '#ffffff', color: saveState.saving ? '#888' : '#000', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36 }}
-            >{saveState.saving ? '...' : 'Save'}</button>
+              onClick={() => dispatch({ type: 'REDO' })}
+              disabled={history.future.length === 0}
+              style={{ padding: '6px 10px', background: '#1a1a1a', color: history.future.length === 0 ? '#333' : '#aaa', border: '1px solid #2a2a2a', borderRadius: 6, fontSize: 13, minHeight: 36 }}
+            >↪</button>
           </div>
+          {uploadProgress && <span style={{ fontSize: 11, color: '#666', flex: 1 }}>{uploadProgress}</span>}
+          <button
+            onClick={handleSave}
+            disabled={saveState.saving}
+            style={{ padding: '6px 18px', background: saveState.saving ? '#333' : '#ffffff', color: saveState.saving ? '#888' : '#000', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36, cursor: 'pointer' }}
+          >{saveState.saving ? 'Saving…' : 'Save'}</button>
         </div>
 
         {/* Phone frame preview — same as desktop editor */}
@@ -770,6 +821,10 @@ export default function EditorPage() {
             --mobile-canvas-scale: calc((100vw - 32px) / 398);
           }
         }
+      `}</style>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #050505; color: #fff; }
       `}</style>
     </>
   );

@@ -27,12 +27,19 @@ const C = {
 const FRAME_W = 1419, FRAME_H = 2796;
 const SCR_L = 120, SCR_T = 120, SCR_R = 1299, SCR_B = 2676;
 
-const DEMO_WALLPAPER =
-  '/api/wallpaper?type=year&width=1179&height=2556' +
-  '&bg=050505&dotFilled=e8e8e8&dotEmpty=ffffff' +
-  '&dotCurrent=FFD166&dotFilledOpacity=75&dotEmptyOpacity=9' +
-  '&widgetPosition=none&dotShape=circle&dotStyle=flat&dotGapScale=1' +
-  '&showQuote=true';
+// 5 wallpaper presets for the landing slideshow — each showcases a different customization
+const DEMO_WALLPAPERS = [
+  // 1 — Classic dark: gold today dot, flat circles
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=050505&dotFilled=e8e8e8&dotEmpty=ffffff&dotCurrent=FFD166&dotFilledOpacity=75&dotEmptyOpacity=9&dotShape=circle&dotStyle=flat&dotGapScale=1&showQuote=true',
+  // 2 — Ocean: deep blue bg, cyan today dot, glow
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=010a18&dotFilled=4A9EFF&dotEmpty=2255AA&dotCurrent=00E5FF&dotFilledOpacity=80&dotEmptyOpacity=14&dotShape=circle&dotStyle=glow&dotGapScale=1',
+  // 3 — Ember: near-black bg, amber tones, glow
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=0d0603&dotFilled=E07B39&dotEmpty=ffffff&dotCurrent=FFBB55&dotFilledOpacity=80&dotEmptyOpacity=8&dotShape=circle&dotStyle=glow&dotGapScale=1',
+  // 4 — Minimal mono: pure black, white dots, square shape
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=000000&dotFilled=ffffff&dotEmpty=ffffff&dotCurrent=ffffff&dotFilledOpacity=92&dotEmptyOpacity=7&dotShape=rounded&dotStyle=flat&dotGapScale=1',
+  // 5 — Neon: dark bg, neon green, neon style
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=020803&dotFilled=39FF14&dotEmpty=ffffff&dotCurrent=C6FF00&dotFilledOpacity=80&dotEmptyOpacity=6&dotShape=circle&dotStyle=neon&dotGapScale=1',
+];
 
 // Live time + date helpers (same as Canvas.tsx)
 function getTimeLabel() {
@@ -174,6 +181,9 @@ function IOSChrome({ w, h }: { w: number; h: number }) {
   );
 }
 
+const SLIDE_INTERVAL_MS = 3800;
+const SLIDE_LABELS = ['Classic', 'Ocean', 'Ember', 'Minimal', 'Neon'];
+
 function PhoneMockup() {
   const DISPLAY_W = 260;
   const scale     = DISPLAY_W / FRAME_W;
@@ -183,24 +193,50 @@ function PhoneMockup() {
   const scrW      = Math.round((SCR_R - SCR_L) * scale);
   const scrH      = Math.round((SCR_B - SCR_T) * scale);
 
+  const [slide, setSlide] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  // Preload all wallpaper images
+  useEffect(() => {
+    DEMO_WALLPAPERS.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, []);
+
+  // Auto-advance slideshow
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setSlide((s) => (s + 1) % DEMO_WALLPAPERS.length);
+        setFading(false);
+      }, 400);
+    }, SLIDE_INTERVAL_MS);
+    return () => clearInterval(t);
+  }, []);
+
+  const glowColors = ['rgba(255,209,102,0.07)', 'rgba(0,229,255,0.07)', 'rgba(255,140,0,0.07)', 'rgba(255,255,255,0.05)', 'rgba(57,255,20,0.07)'];
+
   return (
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      {/* Glow behind phone */}
+    <div style={{ position: 'relative', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+      {/* Animated glow behind phone — color shifts with slide */}
       <div style={{
-        position: 'absolute', top: '50%', left: '50%',
+        position: 'absolute', top: '40%', left: '50%',
         transform: 'translate(-50%, -50%)',
         width: 340, height: 340, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 68%)',
+        background: `radial-gradient(circle, ${glowColors[slide]} 0%, transparent 70%)`,
+        transition: 'background 0.8s ease',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* Phone container */}
-      <div style={{
+      {/* Phone container — float animation */}
+      <div className="phone-float" style={{
         position: 'relative', zIndex: 1,
         width: DISPLAY_W, height: DISPLAY_H,
         filter: 'drop-shadow(0 32px 64px rgba(0,0,0,0.8))',
       }}>
-        {/* Screen area wrapper — clips iOS chrome to screen bounds */}
+        {/* Screen area */}
         <div style={{
           position: 'absolute',
           top: scrTop, left: scrLeft,
@@ -208,28 +244,47 @@ function PhoneMockup() {
           borderRadius: 38, overflow: 'hidden',
           zIndex: 1,
         }}>
-          {/* Wallpaper */}
+          {/* Wallpaper — crossfade */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={DEMO_WALLPAPER}
+            key={slide}
+            src={DEMO_WALLPAPERS[slide]}
             alt="wallpaper preview"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              opacity: fading ? 0 : 1,
+              transition: 'opacity 0.4s ease',
+            }}
           />
           {/* iOS chrome overlay */}
           <IOSChrome w={scrW} h={scrH} />
         </div>
 
-        {/* Frame overlay — on top of everything */}
+        {/* Frame overlay */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/frames/apple-iphone-15-pro-black-titanium-portrait.png"
           alt=""
-          style={{
-            position: 'absolute', top: 0, left: 0,
-            width: DISPLAY_W, height: DISPLAY_H,
-            zIndex: 2, pointerEvents: 'none',
-          }}
+          style={{ position: 'absolute', top: 0, left: 0, width: DISPLAY_W, height: DISPLAY_H, zIndex: 2, pointerEvents: 'none' }}
         />
+      </div>
+
+      {/* Slide indicator dots */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', position: 'relative', zIndex: 2 }}>
+        {DEMO_WALLPAPERS.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => { setFading(true); setTimeout(() => { setSlide(i); setFading(false); }, 200); }}
+            title={SLIDE_LABELS[i]}
+            style={{
+              width: i === slide ? 20 : 6,
+              height: 6, borderRadius: 3, border: 'none',
+              background: i === slide ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)',
+              cursor: 'pointer', padding: 0,
+              transition: 'all 0.3s ease',
+            }}
+          />
+        ))}
       </div>
     </div>
   );
@@ -260,7 +315,7 @@ function Counter({ end, label }: { end: number | string; label: string }) {
   }, [end]);
 
   return (
-    <div ref={ref} style={{ textAlign: 'center' }}>
+    <div ref={ref} className="lp-stat-item" style={{ textAlign: 'center' }}>
       <div style={{ fontSize: 36, fontWeight: 800, color: C.text, letterSpacing: -1 }}>
         {typeof end === 'number' ? val.toLocaleString() : end}
       </div>
@@ -316,6 +371,64 @@ export default function LandingPage() {
           .lp-h2          { font-size: 30px !important; }
           .lp-stats-bar   { padding: 28px 20px !important; }
         }
+
+        /* ── Micro interactions ── */
+        @keyframes phone-float {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-10px); }
+        }
+        .phone-float { animation: phone-float 4s ease-in-out infinite; }
+
+        @keyframes badge-pop {
+          0%   { opacity: 0; transform: scale(0.88) translateY(4px); }
+          60%  { transform: scale(1.04); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .badge-pop { animation: badge-pop 0.55s ease forwards; }
+
+        .lp-card {
+          transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+        .lp-card:hover {
+          transform: translateY(-3px);
+          border-color: rgba(255,255,255,0.14) !important;
+          background: rgba(255,255,255,0.04) !important;
+        }
+
+        .lp-icon-wrap {
+          transition: background 0.18s ease, border-color 0.18s ease;
+        }
+        .lp-card:hover .lp-icon-wrap {
+          background: rgba(255,255,255,0.1) !important;
+          border-color: rgba(255,255,255,0.25) !important;
+        }
+
+        .lp-cta-btn {
+          transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .lp-cta-btn:hover {
+          transform: scale(1.03);
+          box-shadow: 0 0 28px rgba(255,255,255,0.18);
+        }
+        .lp-cta-btn:active { transform: scale(0.98); }
+
+        .lp-nav-cta {
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        .lp-nav-cta:hover { transform: scale(1.04); }
+
+        .lp-stat-item {
+          transition: transform 0.2s ease;
+        }
+        .lp-stat-item:hover { transform: scale(1.04); }
+
+        .lp-how-card {
+          transition: transform 0.18s ease, border-color 0.18s ease;
+        }
+        .lp-how-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(255,255,255,0.18) !important;
+        }
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────── */}
@@ -331,11 +444,11 @@ export default function LandingPage() {
         <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.5 }}>
           counted<span style={{ color: C.accent }}>.</span>
         </span>
-        <Link href="/editor" style={{
+        <Link href="/editor" className="lp-nav-cta" style={{
           background: C.accent, color: '#000',
           padding: '7px 18px', borderRadius: 20,
           fontSize: 13, fontWeight: 700, textDecoration: 'none',
-          letterSpacing: 0.1,
+          letterSpacing: 0.1, display: 'inline-block',
         }}>
           Start for free
         </Link>
@@ -351,7 +464,7 @@ export default function LandingPage() {
       }}>
         {/* Left text */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
+          <div className="badge-pop" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             background: C.accentDim, border: `1px solid ${C.accentBorder}`,
             color: C.textMid, fontSize: 11, fontWeight: 600,
@@ -415,7 +528,7 @@ export default function LandingPage() {
             { num: '02', Icon: Link2, title: 'Save your permanent link', body: 'Hit save and get a permanent URL. That link always returns your latest wallpaper, freshly generated every morning from your config.' },
             { num: '03', Icon: Zap, title: 'Wake up to today\'s count', body: 'iOS Shortcuts or MacroDroid fetches your URL at midnight and sets it as your lock screen. Every morning you see exactly how many days are left. No app, no login, no friction.' },
           ].map((s) => (
-            <div key={s.num} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
+            <div key={s.num} className="lp-how-card" style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
               <s.Icon size={22} strokeWidth={1.5} color={C.textMid} style={{ marginBottom: 16 }} />
               <div style={{ fontSize: 11, fontWeight: 600, color: C.textLow, marginBottom: 8, letterSpacing: 0.5 }}>{s.num}</div>
               <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{s.title}</h3>
@@ -475,8 +588,8 @@ export default function LandingPage() {
               body: 'Switch to Life mode to see your entire life in weeks. Or set a Goal — a custom countdown to any deadline. Each dot tells a different story.',
             },
           ].map((f) => (
-            <div key={f.title} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
-              <div style={{
+            <div key={f.title} className="lp-card" style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
+              <div className="lp-icon-wrap" style={{
                 width: 40, height: 40, borderRadius: 10,
                 background: C.accentDim, border: `1px solid ${C.accentBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -510,7 +623,7 @@ export default function LandingPage() {
         <p style={{ fontSize: 16, color: C.textMid, marginBottom: 36 }}>
           Free. No account. Works on iPhone & Android, forever.
         </p>
-        <Link href="/editor" style={{
+        <Link href="/editor" className="lp-cta-btn" style={{
           display: 'inline-block',
           background: C.accent, color: '#000',
           padding: '15px 44px', borderRadius: 14,
