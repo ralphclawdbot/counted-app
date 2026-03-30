@@ -268,10 +268,18 @@ function Counter({ end, label }: { end: number | string; label: string }) {
   );
 }
 
+// ── Days remaining in the current year ───────────────────────
+function daysLeftInYear(): number {
+  const now = new Date();
+  const end = new Date(now.getFullYear(), 11, 31);
+  return Math.ceil((end.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+}
+
 // ── Main landing page ─────────────────────────────────────────
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [userCount, setUserCount] = useState<number | null>(null);
+  const daysLeft = daysLeftInYear();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -348,11 +356,11 @@ export default function LandingPage() {
             Free · No sign-up · iPhone & Android
           </div>
           <h1 style={{ fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 800, lineHeight: 1.03, letterSpacing: -2.5, marginBottom: 20 }}>
-            Your life,<br />
+            Your year,<br />
             <span style={{ color: C.accent }}>counted.</span>
           </h1>
           <p style={{ fontSize: 18, color: C.textMid, lineHeight: 1.65, maxWidth: 400, marginBottom: 36 }}>
-            A dot for every week. See exactly how much time you have left — and make it mean something. Auto-updates on your lock screen every morning.
+            A dot for every day. See exactly how many days you have left this year — and make every one count. Auto-updates on your lock screen every morning.
           </p>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <Link href="/editor" style={{
@@ -360,10 +368,10 @@ export default function LandingPage() {
               padding: '13px 28px', borderRadius: 12,
               fontSize: 15, fontWeight: 700, textDecoration: 'none',
             }}>
-              Build my calendar →
+              See my year →
             </Link>
             <a href="#how" style={{ fontSize: 14, color: C.textMid, textDecoration: 'none' }}>
-              See how it works ↓
+              How it works ↓
             </a>
           </div>
         </div>
@@ -379,11 +387,11 @@ export default function LandingPage() {
           padding: '32px 40px',
           display: 'flex', justifyContent: 'space-around', gap: 32, flexWrap: 'wrap',
         }}>
-          <Counter end={4160} label="weeks in 80 years" />
-          <Counter end={1} label="dot = 1 week of your life" />
+          <Counter end={365} label="days in a year" />
+          <Counter end={daysLeft} label="days left in this year" />
           {userCount !== null && userCount > 0
             ? <Counter end={userCount} label="wallpapers created" />
-            : <Counter end="∞" label="reasons to make them count" />
+            : <Counter end={1} label="dot = 1 day of your year" />
           }
         </div>
       </div>
@@ -394,13 +402,13 @@ export default function LandingPage() {
           How it works
         </div>
         <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.2, marginBottom: 48 }}>
-          Three steps to clarity.
+          Up in two minutes.
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
           {[
-            { num: '01', Icon: Paintbrush, title: 'Design your calendar', body: 'Pick life, year, or goal mode. Choose colors, photo layers, dot style, and theme. The canvas updates live — what you see is what hits your lock screen.' },
+            { num: '01', Icon: Paintbrush, title: 'Build your year view', body: 'Pick your colors, dot style, and theme. 365 dots — one for each day of the year. Filled dots are gone. The bright one is today. The canvas updates live.' },
             { num: '02', Icon: Link2, title: 'Save your permanent link', body: 'Hit save and get a permanent URL. That link always returns your latest wallpaper, freshly generated every morning from your config.' },
-            { num: '03', Icon: Zap, title: 'Set up in 2 minutes', body: 'iOS Shortcuts or MacroDroid (Android). An automation fetches your URL at midnight and sets it as your lock screen — so the new dot is ready the moment the day changes. No app, no login, no friction.' },
+            { num: '03', Icon: Zap, title: 'Wake up to today\'s count', body: 'iOS Shortcuts or MacroDroid fetches your URL at midnight and sets it as your lock screen. Every morning you see exactly how many days are left. No app, no login, no friction.' },
           ].map((s) => (
             <div key={s.num} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
               <s.Icon size={22} strokeWidth={1.5} color={C.textMid} style={{ marginBottom: 16 }} />
@@ -422,10 +430,10 @@ export default function LandingPage() {
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
           {[
-            { Icon: CalendarDays, title: 'Three calendar modes', body: 'Life (every week from birth to 80), Year (days left this year), or Goal (custom countdown to any deadline). Each dot tells a different story.' },
-            { Icon: Sliders, title: 'Full visual editor', body: 'Color themes, photo backdrop layers, dot styles, gradient fills. Live PNG preview so you see exactly what your lock screen will look like.' },
-            { Icon: RefreshCw, title: 'Auto-updates daily', body: 'Your dot count changes every single day. iOS Shortcuts or MacroDroid pulls a fresh render at midnight — your wallpaper is always accurate, always current.' },
-            { Icon: MessageSquareQuote, title: 'Daily quotes', body: 'Optional rotating quote on your lock screen. A fresh line of perspective every day, sitting right between the flashlight and camera buttons.' },
+            { Icon: CalendarDays, title: '365 days, one dot each', body: 'Every dot is one day of your year. Filled = gone. Bright = today. Empty = still yours. It\'s the clearest possible picture of where you are in the year.' },
+            { Icon: Sliders, title: 'Make it yours', body: 'Color themes, photo backdrop layers, dot styles, gradient fills. Live PNG preview so you see exactly what your lock screen will look like before you save.' },
+            { Icon: RefreshCw, title: 'One fewer dot every morning', body: 'At midnight, your wallpaper pulls a fresh render. You wake up and one more dot is filled. No manual updates, no stale numbers — always accurate.' },
+            { Icon: MessageSquareQuote, title: 'Daily quote', body: 'A rotating quote between the flashlight and camera buttons. One fresh line of perspective every morning to go with your day count.' },
           ].map((f) => (
             <div key={f.title} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
               <div style={{
@@ -447,16 +455,16 @@ export default function LandingPage() {
       <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.surface }}>
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '56px 40px', textAlign: 'center' }}>
           <div className="lp-quote" style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.4, color: C.text, marginBottom: 12 }}>
-            &ldquo;The two most important days in your life are the day you are born and the day you find out why.&rdquo;
+            &ldquo;A year from now you may wish you had started today.&rdquo;
           </div>
-          <div style={{ fontSize: 13, color: C.textLow }}>— Mark Twain</div>
+          <div style={{ fontSize: 13, color: C.textLow }}>Karen Lamb</div>
         </div>
       </div>
 
       {/* ── CTA ─────────────────────────────────────────── */}
       <section className="lp-cta-section" style={{ textAlign: 'center', padding: '88px 40px' }}>
         <h2 style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 800, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 16 }}>
-          Start counting<br />your weeks.
+          {daysLeft} days left.<br />Make them count.
         </h2>
         <p style={{ fontSize: 16, color: C.textMid, marginBottom: 36 }}>
           Free. No account. Works on iPhone & Android, forever.
@@ -467,7 +475,7 @@ export default function LandingPage() {
           padding: '15px 44px', borderRadius: 14,
           fontSize: 17, fontWeight: 700, textDecoration: 'none',
         }}>
-          Build my calendar →
+          See my year →
         </Link>
         <div style={{ fontSize: 13, color: C.textLow, marginTop: 14 }}>
           Takes about 2 minutes to set up.
@@ -479,7 +487,7 @@ export default function LandingPage() {
         <span style={{ fontSize: 14, fontWeight: 700 }}>
           counted<span style={{ color: C.accent }}>.</span>
         </span>
-        <span style={{ fontSize: 13, color: C.textLow }}>Your life, counted.</span>
+        <span style={{ fontSize: 13, color: C.textLow }}>Your year, counted.</span>
         <Link href="/editor" style={{ fontSize: 13, color: C.textLow, textDecoration: 'none' }}>Open editor →</Link>
       </footer>
 
