@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useReducer, useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useReducer, useCallback, useState, useEffect, useRef } from 'react';
 import { WallpaperConfig, PhotoLayer, BgLayer, CutoutLayer, LifeEvent } from '@/types';
 import { DEFAULT_DEVICE } from '@/lib/devices';
 import { configToWallpaperParams } from '@/lib/buildConfig';
@@ -535,8 +535,8 @@ export default function EditorPage() {
         const editUrl = `${appUrl}/editor?token=${data.token}`;
         localStorage.setItem('counted_token', data.token);
         setSaveState({ token: data.token, url: editUrl, saving: false, copied: false });
-        lastSaveHistoryLen.current = history.past.length;
         lastSavedToken.current = data.token;
+        setIsDirty(false);
         // Update browser URL so the current tab IS the edit link
         window.history.replaceState({}, '', `/editor?token=${data.token}`);
       } else {
@@ -549,13 +549,15 @@ export default function EditorPage() {
   }, [config, saveState.token]);
 
   // ── Dirty / unsaved changes ──
+  // Use a ref for the saved token so handleSaveAndSetup can read it synchronously
   const lastSavedToken = useRef<string | null>(null);
-  // Track save completions to know when history was last cleared
-  const lastSaveHistoryLen = useRef(0);
-  const isDirty = useMemo(
-    () => history.past.length > lastSaveHistoryLen.current,
-    [history.past.length]
-  );
+  // State-based dirty flag: true whenever config changes, false after successful save
+  const [isDirty, setIsDirty] = useState(false);
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    setIsDirty(true);
+  }, [config]);
 
   const handleNavigateHome = useCallback(() => {
     if (isDirty) {
@@ -568,17 +570,12 @@ export default function EditorPage() {
   }, [isDirty]);
 
   const handleSaveAndSetup = useCallback(async () => {
-    // Save first, then navigate to install page
     await handleSave();
-    // handleSave is async but setSaveState is async too — read token after a tick
-    setTimeout(() => {
-      setSaveState((s) => {
-        if (s.token) {
-          window.location.href = `/install?token=${s.token}&platform=${config.platform || 'ios'}`;
-        }
-        return s;
-      });
-    }, 200);
+    // lastSavedToken.current is set synchronously inside handleSave after a successful fetch
+    const token = lastSavedToken.current;
+    if (token) {
+      window.location.href = `/install?token=${token}&platform=${config.platform || 'ios'}`;
+    }
   }, [handleSave, config.platform]);
 
   const handleCopy = useCallback(() => {

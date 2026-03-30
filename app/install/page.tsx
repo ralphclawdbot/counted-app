@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { WallpaperConfig } from '@/types';
 import { configToWallpaperParams } from '@/lib/buildConfig';
 
-const SHORTCUT_ICLOUD_URL = 'https://www.icloud.com/shortcuts/PLACEHOLDER_UPDATE_AFTER_PUBLISHING';
-
 const C = {
   bg:          '#050505',
   surface:     '#0d0d0d',
@@ -129,12 +127,26 @@ function InstallContent() {
 
   return (
     <div style={{ background: C.bg, color: C.text, minHeight: '100vh', fontFamily: "-apple-system, 'Helvetica Neue', sans-serif" }}>
-      <div style={{ maxWidth: 560, margin: '0 auto', padding: '28px 20px 80px' }}>
-
-        {/* Back */}
-        <Link href="/editor" style={{ fontSize: 13, color: C.textLow, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 28 }}>
+      {/* Top bar — matches editor */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        height: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
+        background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(14px)',
+        borderBottom: `1px solid ${C.border}`,
+      }}>
+        <Link href="/" style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.5, color: C.text, textDecoration: 'none' }}>
+          counted.
+        </Link>
+        <Link
+          href={token ? `/editor?token=${token}` : '/editor'}
+          style={{ fontSize: 13, color: C.textLow, textDecoration: 'none' }}
+        >
           ← Back to editor
         </Link>
+      </div>
+
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: '28px 20px 80px' }}>
 
         {/* ── Hero: wallpaper thumbnail + summary ── */}
         {token && (

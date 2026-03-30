@@ -508,7 +508,7 @@ export default function LandingPage() {
           <Counter end={365 + (new Date().getFullYear() % 4 === 0 && (new Date().getFullYear() % 100 !== 0 || new Date().getFullYear() % 400 === 0) ? 1 : 0)} label="days in a year" />
           <Counter end={daysLeft} label="days left in this year" />
           {userCount !== null && userCount > 0
-            ? <Counter end={userCount} label="wallpapers created" />
+            ? <Counter end={userCount} label={userCount === 1 ? 'wallpaper created' : 'wallpapers created'} />
             : <Counter end={1} label="dot = 1 day of your year" />
           }
         </div>
