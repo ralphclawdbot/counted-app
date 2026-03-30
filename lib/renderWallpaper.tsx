@@ -60,10 +60,12 @@ function getBorderRadius(shape: string, dotSize: number): string {
   }
 }
 
-function getDotShadow(dotStyle: string, color: string): string | undefined {
+function getDotShadow(dotStyle: string, color: string, isFilled?: boolean): string | undefined {
   switch (dotStyle) {
     case 'glow': return `0 0 4px ${color}`;
     case 'neon': return `0 0 4px ${color}, 0 0 8px ${color}`;
+    // Outlined: ring only on filled dots (empty dots render as plain flat — no border perf hit)
+    case 'outlined': return isFilled ? `0 0 0 1.5px ${color}` : undefined;
     default: return undefined;
   }
 }
@@ -256,7 +258,7 @@ export async function renderWallpaper(
       }
 
       const borderRadius = getBorderRadius(config.dotShape, dotSize);
-      const shadow = getDotShadow(config.dotStyle, hexToRgba(dotColor, dotOpacity));
+      const shadow = getDotShadow(config.dotStyle, hexToRgba(dotColor, dotOpacity), isFilled);
 
       // Symbol mode for events
       if (isEvent && config.dotMode !== 'emoji') {
@@ -307,19 +309,6 @@ export async function renderWallpaper(
               borderRadius,
               background: hexToRgba(config.dotCurrent, 100),
               ...(shadow ? { boxShadow: shadow } : {}),
-            }}
-          />
-        );
-      } else if (config.dotStyle === 'outlined' && !isFilled && !isEvent) {
-        dotsInRow.push(
-          <div
-            key={idx}
-            style={{
-              display: 'flex',
-              width: dotSize,
-              height: dotSize,
-              borderRadius,
-              boxShadow: `inset 0 0 0 1.5px ${hexToRgba(dotColor, dotOpacity)}`,
             }}
           />
         );
