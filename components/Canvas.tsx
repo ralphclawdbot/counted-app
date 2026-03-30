@@ -185,26 +185,13 @@ export default function Canvas({
             );
           })}
 
-          {/* DotGrid — instant CSS preview (visible while PNG is loading), invisible once PNG ready */}
+          {/* DotGrid — single instance: CSS preview when PNG is loading, click handler always active.
+               opacity:0 still receives pointer events so dot clicks work even when PNG is showing. */}
           <div style={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
             opacity: previewStale || !previewUrl ? 1 : 0,
             transition: 'opacity 0.2s ease',
-            zIndex: 5, pointerEvents: 'none',
-          }}>
-            <DotGrid
-              config={config}
-              canvasScale={canvasScale}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              onDotClick={undefined}
-            />
-          </div>
-
-          {/* Invisible DotGrid overlay — purely for dot-click interaction */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            opacity: 0, zIndex: 20, pointerEvents: 'auto',
+            zIndex: 20, pointerEvents: 'auto',
           }}>
             <DotGrid
               config={config}

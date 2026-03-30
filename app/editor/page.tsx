@@ -35,6 +35,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   bgBlur: 0,
   bgDim: 0,
   dotGapScale: 1,
+  fontFamily: 'Inter',
   lifeEvents: [],
   layers: [],
 };
@@ -575,6 +576,8 @@ export default function EditorPage() {
     const token = lastSavedToken.current;
     if (token) {
       window.location.href = `/install?token=${token}&platform=${config.platform || 'ios'}`;
+    } else {
+      alert('Save failed. Please try again.');
     }
   }, [handleSave, config.platform]);
 

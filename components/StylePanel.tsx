@@ -3,6 +3,7 @@
 import React from 'react';
 import { WallpaperConfig, CalendarType, DotShape, DotStyle, DotMode, LifeEvent } from '@/types';
 import { DEVICES, ANDROID_DEVICES, DEFAULT_ANDROID_DEVICE } from '@/lib/devices';
+import { SYMBOL_PATHS } from '@/lib/symbols';
 // Apple and Android SVG icons (inline — no external dependency)
 const AppleIcon = () => (
   <svg width="14" height="14" viewBox="0 0 814 1000" fill="currentColor">
@@ -525,12 +526,14 @@ export default function StylePanel({
               {lifeEvents
                 .sort((a, b) => a.weekIndex - b.weekIndex)
                 .map((evt) => {
-                  const iconMap: Record<string, string> = { heart: '❤️', star: '⭐', leaf: '🍃', flower: '🌸', moon: '🌙', snow: '❄️' };
+                  const pathD = SYMBOL_PATHS[evt.icon] || SYMBOL_PATHS.star;
                   const d = new Date(evt.date);
                   const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                   return (
                     <div key={evt.weekIndex} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#ccc' }}>
-                      <span>{iconMap[evt.icon] || '⭐'}</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+                        <path d={pathD} fill="#aaa" />
+                      </svg>
                       <span style={{ flex: 1 }}>Week of {dateStr}</span>
                       <button
                         onClick={() => onRemoveEvent(evt.weekIndex)}
