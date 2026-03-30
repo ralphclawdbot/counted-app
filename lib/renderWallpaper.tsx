@@ -616,7 +616,7 @@ export async function renderWallpaper(
     height,
     fonts: [
       { name: 'Inter', data: fontData, style: 'normal', weight: 400 },
-      ...(extraFonts ?? []).map((f) => ({ name: f.name, data: f.data, style: 'normal' as const, weight: 400 })),
+      ...(extraFonts ?? []).map((f) => ({ name: f.name, data: f.data, style: 'normal' as const, weight: 400 as const })),
     ],
   });
 }
