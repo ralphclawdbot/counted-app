@@ -251,8 +251,8 @@ function InstallContent() {
                   {/* Screenshot steps */}
                   {[
                     {
-                      imgs: ['/setup-screenshots/step1.jpg', '/setup-screenshots/step2.jpg'],
-                      text: <>Open <strong>Shortcuts</strong> → tap <strong>Automation</strong> at the bottom → tap <strong>+</strong> → <strong>New Automation</strong> → choose <strong>Time of Day</strong></>,
+                      imgs: ['/setup-screenshots/step_automation_tab.jpg', '/setup-screenshots/step1.jpg'],
+                      text: <>Open <strong>Shortcuts</strong> → tap <strong>Automation</strong> at the bottom → tap <strong>New Automation</strong> → choose <strong>Time of Day</strong></>,
                     },
                     {
                       imgs: ['/setup-screenshots/step2.jpg', '/setup-screenshots/step3.jpg'],
