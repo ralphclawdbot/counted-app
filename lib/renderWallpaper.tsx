@@ -297,7 +297,7 @@ export async function renderWallpaper(
       }
 
       if (isCurrent && !isEvent) {
-        // Solid accent dot for today (no hollow ring — matches reference aesthetic)
+        // Solid accent dot for today
         const shadow = getDotShadow(config.dotStyle, hexToRgba(config.dotCurrent, 100));
         dotsInRow.push(
           <div
@@ -309,6 +309,21 @@ export async function renderWallpaper(
               borderRadius,
               background: hexToRgba(config.dotCurrent, 100),
               ...(shadow ? { boxShadow: shadow } : {}),
+            }}
+          />
+        );
+      } else if (config.dotStyle === 'outlined' && !isFilled) {
+        // Outlined style: empty dots render as hollow rings with a border (satori supports border)
+        dotsInRow.push(
+          <div
+            key={idx}
+            style={{
+              display: 'flex',
+              width: dotSize,
+              height: dotSize,
+              borderRadius,
+              border: `1px solid ${hexToRgba(dotColor, dotOpacity)}`,
+              background: 'transparent',
             }}
           />
         );

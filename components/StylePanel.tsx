@@ -371,18 +371,20 @@ export default function StylePanel({
         </div>
       </div>
 
-      {/* Background */}
-      <div style={separatorStyle}>
-        <span style={sectionLabelStyle}>Background</span>
-        <div style={{ marginBottom: 8 }}>
-          <span style={{ fontSize: 11, color: '#666' }}>Blur ({config.bgBlur || 0}px)</span>
-          <input type="range" min={0} max={20} value={config.bgBlur || 0} onChange={(e) => onConfigChange({ bgBlur: parseInt(e.target.value) })} style={{ width: '100%', accentColor: '#fff' }} />
+      {/* Background — only show blur/dim when a bg photo layer exists */}
+      {layers.some((l) => l.type === 'bg' && l.visible) && (
+        <div style={separatorStyle}>
+          <span style={sectionLabelStyle}>Background</span>
+          <div style={{ marginBottom: 8 }}>
+            <span style={{ fontSize: 11, color: '#666' }}>Blur ({config.bgBlur || 0}px)</span>
+            <input type="range" min={0} max={20} value={config.bgBlur || 0} onChange={(e) => onConfigChange({ bgBlur: parseInt(e.target.value) })} style={{ width: '100%', accentColor: '#fff' }} />
+          </div>
+          <div>
+            <span style={{ fontSize: 11, color: '#666' }}>Dim ({config.bgDim || 0}%)</span>
+            <input type="range" min={0} max={100} value={config.bgDim || 0} onChange={(e) => onConfigChange({ bgDim: parseInt(e.target.value) })} style={{ width: '100%', accentColor: '#fff' }} />
+          </div>
         </div>
-        <div>
-          <span style={{ fontSize: 11, color: '#666' }}>Dim ({config.bgDim || 0}%)</span>
-          <input type="range" min={0} max={100} value={config.bgDim || 0} onChange={(e) => onConfigChange({ bgDim: parseInt(e.target.value) })} style={{ width: '100%', accentColor: '#fff' }} />
-        </div>
-      </div>
+      )}
 
       {/* Row Alignment */}
       <div style={separatorStyle}>
@@ -494,15 +496,7 @@ export default function StylePanel({
       {/* Font */}
       <div style={separatorStyle}>
         <span style={sectionLabelStyle}>Font</span>
-        <select
-          style={selectStyle}
-          value={config.fontFamily || 'Inter'}
-          onChange={(e) => onConfigChange({ fontFamily: e.target.value })}
-        >
-          {['Inter', 'Georgia', 'Helvetica Neue', 'Courier New'].map((f) => (
-            <option key={f} value={f}>{f}</option>
-          ))}
-        </select>
+        <div style={{ fontSize: 13, color: '#555', padding: '6px 0' }}>Inter <span style={{ fontSize: 11, color: '#3a3a3a' }}>· More fonts coming soon</span></div>
       </div>
 
       {/* Layer Panel */}
