@@ -46,11 +46,17 @@ export function configToWallpaperParams(config: WallpaperConfig): URLSearchParam
     p.set('lifeEvents', config.lifeEvents.map((e) => `${e.date}:${e.icon}`).join(','));
   }
 
-  // When a bg layer exists, request a transparent-background PNG from the server.
-  // The CSS BgLayerComponent renders the actual image beneath the PNG in the editor.
+  // Pass bg layer image URL to the API so it bakes the photo into the PNG.
   // Cutout layers are CSS overlays (CanvasLayer.tsx) for real-time drag UX.
-  const hasBgLayer = config.layers?.some((l) => l.type === 'bg' && l.visible);
-  if (hasBgLayer) p.set('transparentBg', 'true');
+  const bgLayer = config.layers?.find((l) => l.type === 'bg' && l.visible) as BgLayer | undefined;
+  if (bgLayer) {
+    p.set('bgImage', bgLayer.url);
+    p.set('bgOffsetX', String(bgLayer.panX ?? 50));
+    p.set('bgOffsetY', String(bgLayer.panY ?? 50));
+    if (bgLayer.opacity !== undefined && bgLayer.opacity !== 100) {
+      p.set('bgOpacity', String(bgLayer.opacity));
+    }
+  }
 
   return p;
 }
@@ -114,7 +120,7 @@ export function parseConfigFromParams(params: URLSearchParams): WallpaperConfig 
       type: 'bg',
       url: params.get('bgImage')!,
       layerSize: 100,
-      opacity: 100,
+      opacity: params.get('bgOpacity') ? parseInt(params.get('bgOpacity')!, 10) : 100,
       naturalW: 0,
       naturalH: 0,
       zIndex: 0,

@@ -80,8 +80,7 @@ export default function Canvas({
     return [...config.layers].filter((l) => l.visible).sort((a, b) => a.zIndex - b.zIndex);
   }, [config.layers]);
 
-  // BG dim overlay
-  const hasBgLayer = config.layers?.some((l) => l.type === 'bg' && l.visible);
+  // (hasBgLayer removed — bg image is now baked into the PNG by the API)
 
   // ── Live PNG preview — fetches actual /api/wallpaper with 400ms debounce ──
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -171,19 +170,25 @@ export default function Canvas({
           )}
 
           {/* Photo layer interaction handles — on top of PNG for drag/resize */}
-          {sortedLayers.map((layer) => (
-            <CanvasLayer
-              key={layer.id}
-              layer={layer}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              canvasScale={canvasScale}
-              isSelected={selectedLayerId === layer.id}
-              onSelect={() => onSelectLayer(layer.id)}
-              onUpdate={(updates) => onUpdateLayer(layer.id, updates)}
-              onDragEnd={onDragEnd}
-            />
-          ))}
+          {sortedLayers.map((layer) => {
+            // bg layers are now baked into the PNG by the API — only render CSS layer
+            // as a placeholder when the PNG hasn't loaded yet (first render).
+            // Cutout layers remain as CSS overlays for drag/resize interaction.
+            if (layer.type === 'bg' && previewUrl) return null;
+            return (
+              <CanvasLayer
+                key={layer.id}
+                layer={layer}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
+                canvasScale={canvasScale}
+                isSelected={selectedLayerId === layer.id}
+                onSelect={() => onSelectLayer(layer.id)}
+                onUpdate={(updates) => onUpdateLayer(layer.id, updates)}
+                onDragEnd={onDragEnd}
+              />
+            );
+          })}
 
           {/* Invisible DotGrid — purely for dot-click interaction, PNG is the visual */}
           <div style={{
