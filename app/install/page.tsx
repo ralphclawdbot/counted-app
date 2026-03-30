@@ -261,11 +261,20 @@ function InstallContent() {
                     },
                     {
                       img: '/setup-screenshots/step4.jpg',
-                      text: <>Tap <strong>Search Actions</strong> at the bottom — type <strong>&quot;Get Contents of URL&quot;</strong> — tap it to add</>,
+                      imgs: ['/setup-screenshots/step4.jpg', '/setup-screenshots/step3a.jpg'],
+                      text: <>You&apos;ll see <strong>&quot;Add actions from below&quot;</strong>. Tap <strong>Search Actions</strong> — type <strong>&quot;Get content&quot;</strong></>,
+                    },
+                    {
+                      imgs: ['/setup-screenshots/step3b.jpg', '/setup-screenshots/step3c.jpg'],
+                      text: <>Tap <strong>Get Contents of URL</strong> — it gets added as an action</>,
+                    },
+                    {
+                      img: '/setup-screenshots/step3d.jpg',
+                      text: <>Tap the blue <strong>URL</strong> pill — the keyboard appears. Paste your wallpaper URL (copied in step 1) — tap <strong>Done</strong></>,
                     },
                     {
                       img: '/setup-screenshots/step6.jpg',
-                      text: <>Tap the blue <strong>URL</strong> pill in the action — paste your wallpaper URL (copied above). Then tap <strong>+</strong> → search <strong>&quot;Set Wallpaper Photo&quot;</strong> → add it → select <strong>Lock Screen</strong></>,
+                      text: <>Tap <strong>Search Actions</strong> again — search <strong>&quot;Set Wallpaper Photo&quot;</strong> → add it → select <strong>Lock Screen</strong></>,
                     },
                     {
                       img: '/setup-screenshots/step7.jpg',
@@ -274,9 +283,9 @@ function InstallContent() {
                   ].map((s, i) => (
                     <div key={i} style={{
                       display: 'flex', gap: 14, alignItems: 'flex-start',
-                      marginBottom: i < 4 ? 20 : 0,
-                      paddingBottom: i < 4 ? 20 : 0,
-                      borderBottom: i < 4 ? `1px solid ${C.border}` : 'none',
+                      marginBottom: i < 6 ? 20 : 0,
+                      paddingBottom: i < 6 ? 20 : 0,
+                      borderBottom: i < 6 ? `1px solid ${C.border}` : 'none',
                     }}>
                       {/* Step number */}
                       <div style={{
@@ -299,10 +308,10 @@ function InstallContent() {
                               <img key={j} src={src} alt="" style={{ width: '45%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
                             ))}
                           </div>
-                        ) : (
+                        ) : s.img ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={s.img} alt="" style={{ marginTop: 10, width: '55%', borderRadius: 10, border: `1px solid ${C.borderHi}`, display: 'block' }} />
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ))}
