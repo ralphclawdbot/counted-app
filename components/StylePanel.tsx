@@ -418,20 +418,6 @@ export default function StylePanel({
         </div>
       </div>
 
-      {/* Gradient Mode */}
-      <div style={separatorStyle}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#aaa', cursor: 'pointer', marginBottom: config.gradientMode ? 10 : 0 }}>
-          <input type="checkbox" checked={config.gradientMode || false} onChange={(e) => onConfigChange({ gradientMode: e.target.checked })} />
-          Gradient Mode
-        </label>
-        {config.gradientMode && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <ColorPicker label="Start" value={config.gradientStart || 'FF0000'} onChange={(v) => onConfigChange({ gradientStart: v })} />
-            <ColorPicker label="End" value={config.gradientEnd || '0000FF'} onChange={(v) => onConfigChange({ gradientEnd: v })} />
-          </div>
-        )}
-      </div>
-
       {/* Daily Quote */}
       <div style={separatorStyle}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#aaa', cursor: 'pointer' }}>

@@ -60,7 +60,8 @@ export default function DotGrid({ config, canvasScale, canvasWidth, canvasHeight
       columns = 52;
       const cellByW = Math.floor(availW / columns);
       const lifeTotalRows = Math.ceil(totalDots / columns);
-      const cellByH = Math.floor(usableH / lifeTotalRows);
+      const maxLifeH = Math.round(fullHeight * 0.54);
+      const cellByH = Math.floor(Math.min(usableH, maxLifeH) / lifeTotalRows);
       cellSize = Math.min(cellByW, cellByH);
     } else {
       const maxCs = Math.min(availW, usableH);

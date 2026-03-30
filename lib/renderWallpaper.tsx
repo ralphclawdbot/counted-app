@@ -21,22 +21,15 @@ export async function fetchAsDataUri(url: string): Promise<string | null> {
   }
 }
 
-// ── Symbol SVG Map ──
-
-const SYMBOLS: Record<string, string> = {
-  heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
-  star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
-  leaf: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.71c.83.33 1.72.53 2.64.58.39.02.78.01 1.16-.04C13.72 19.2 20 14.22 20 6c-1 0-2.3.39-3 1z"/></svg>',
-  flower: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5zM3 13c0 4.97 4.03 9 9 9 0-4.97-4.03-9-9-9z"/></svg>',
-  moon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.37 5.51A7.35 7.35 0 0 0 9.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 1.99-.27A7.014 7.014 0 0 1 12 19c-3.86 0-7-3.14-7-7 0-2.93 1.81-5.45 4.37-6.49zM12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>',
-  snow: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 11h-4.17l2.54-2.54-1.42-1.42L15 11h-2V9l3.96-3.96-1.42-1.42L13 6.17V2h-2v4.17L8.46 3.63 7.04 5.04 11 9v2H9L5.04 7.04 3.63 8.46 6.17 11H2v2h4.17l-2.54 2.54 1.42 1.42L9 13h2v2l-3.96 3.96 1.42 1.42L11 17.83V22h2v-4.17l2.54 2.54 1.42-1.42L13 15v-2h2l3.96 3.96 1.42-1.42L17.83 13H22z"/></svg>',
+// ── Symbol path map (inline SVG — satori renders SVG paths natively) ──
+export const SYMBOL_PATHS: Record<string, string> = {
+  heart:  'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+  star:   'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  leaf:   'M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.71c.83.33 1.72.53 2.64.58.39.02.78.01 1.16-.04C13.72 19.2 20 14.22 20 6c-1 0-2.3.39-3 1z',
+  flower: 'M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5zM3 13c0 4.97 4.03 9 9 9 0-4.97-4.03-9-9-9z',
+  moon:   'M9.37 5.51A7.35 7.35 0 0 0 9.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 1.99-.27A7.014 7.014 0 0 1 12 19c-3.86 0-7-3.14-7-7 0-2.93 1.81-5.45 4.37-6.49zM12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
+  snow:   'M22 11h-4.17l2.54-2.54-1.42-1.42L15 11h-2V9l3.96-3.96-1.42-1.42L13 6.17V2h-2v4.17L8.46 3.63 7.04 5.04 11 9v2H9L5.04 7.04 3.63 8.46 6.17 11H2v2h4.17l-2.54 2.54 1.42 1.42L9 13h2v2l-3.96 3.96 1.42 1.42L11 17.83V22h2v-4.17l2.54 2.54 1.42-1.42L13 15v-2h2l3.96 3.96 1.42-1.42L17.83 13H22z',
 };
-
-export function symbolSvgUri(name: string, color: string): string {
-  const svg = SYMBOLS[name] || SYMBOLS.star;
-  const colored = svg.replace('currentColor', `#${color}`);
-  return `data:image/svg+xml;base64,${btoa(colored)}`;
-}
 
 // ── Daily Quotes ──
 import { QUOTES } from './quotes';
@@ -157,11 +150,13 @@ export async function renderWallpaper(
   let cellSize: number;
 
   if (config.type === 'life') {
-    // Life calendar: fixed 52 cols (1 year per row); derive cellSize from the tighter axis
+    // Life calendar: fixed 52 cols (1 year per row); constrain height to ~54% of wallpaper
+    // so it has similar visual breathing room to the year type grid
     columns = 52;
     const cellByW = Math.floor(availW / columns);
     const lifeTotalRows = Math.ceil(totalDots / columns);
-    const cellByH = Math.floor(usableH / lifeTotalRows);
+    const maxLifeH = Math.round(height * 0.54);
+    const cellByH = Math.floor(Math.min(usableH, maxLifeH) / lifeTotalRows);
     cellSize = Math.min(cellByW, cellByH);
   } else {
     // Year / goal: find largest square cellSize where all dots fit in safe zone
@@ -269,16 +264,11 @@ export async function renderWallpaper(
       // Symbol mode for events
       if (isEvent && config.dotMode !== 'emoji') {
         const icon = eventMap.get(idx) || 'star';
-        const svgUri = symbolSvgUri(icon, 'FFD700');
+        const pathD = SYMBOL_PATHS[icon] || SYMBOL_PATHS.star;
         dotsInRow.push(
-          <img
-            key={idx}
-            alt=""
-            src={svgUri}
-            width={dotSize}
-            height={dotSize}
-            style={{ width: dotSize, height: dotSize }}
-          />
+          <svg key={idx} width={dotSize} height={dotSize} viewBox="0 0 24 24">
+            <path d={pathD} fill="#FFD700" />
+          </svg>
         );
         continue;
       }
@@ -293,11 +283,13 @@ export async function renderWallpaper(
         );
         continue;
       }
-      // Symbol mode
+      // Symbol mode — inline SVG (satori renders paths natively, no data URI needed)
       if (config.dotMode === 'symbol') {
-        const svgUri = symbolSvgUri(config.dotSymbol || 'heart', dotColor);
+        const pathD = SYMBOL_PATHS[config.dotSymbol || 'heart'] || SYMBOL_PATHS.heart;
         dotsInRow.push(
-          <img key={idx} alt="" src={svgUri} width={dotSize} height={dotSize} style={{ width: dotSize, height: dotSize, opacity: dotOpacity / 100 }} />
+          <svg key={idx} width={dotSize} height={dotSize} viewBox="0 0 24 24" style={{ opacity: dotOpacity / 100 }}>
+            <path d={pathD} fill={`#${dotColor}`} />
+          </svg>
         );
         continue;
       }
@@ -444,7 +436,22 @@ export async function renderWallpaper(
 
   const fontFamily = config.fontFamily || 'Inter';
 
-  // Goal name element (shown above stats if goal type)
+  // ── Bottom zone geometry (defined early — used by goal name + stats + quote) ──
+  const _btnSize   = Math.round(width * 0.155);
+  const _btnMargin = Math.round(width * 0.07);
+  const _btnGap    = Math.round(width * 0.07);
+  const _quoteFontPx  = Math.round(width * 0.024);
+  const _statsBottom = config.showQuote ? Math.round(height * 0.055) : Math.round(height * 0.075);
+  const _quoteBottom = Math.round(height * 0.085);
+
+  // Goal name element — stacks above quote when quote is enabled
+  // Layout from bottom: stats → quote → goal name
+  // Without quote: goal name at 10.5% from bottom (above stats at 7.5%)
+  // With quote: goal name sits above the quote block (~quote bottom + quote height + gap)
+  const _goalNameBottom = config.showQuote
+    ? Math.round(_quoteBottom + 2.6 * _quoteFontPx + 14)
+    : Math.round(height * 0.105);
+
   let goalNameElement: React.ReactElement | null = null;
   if (config.type === 'goal' && config.goalName) {
     goalNameElement = (
@@ -452,7 +459,7 @@ export async function renderWallpaper(
         style={{
           display: 'flex',
           position: 'absolute',
-          bottom: Math.round(height * 0.105),
+          bottom: _goalNameBottom,
           left: hPad,
           right: hPad,
           justifyContent: 'center',
@@ -475,19 +482,7 @@ export async function renderWallpaper(
     );
   }
 
-  // ── Bottom zone geometry (shared by stats + quote) ──────────────────────
-  // Horizontal: centered between the flashlight and camera buttons
-  const _btnSize   = Math.round(width * 0.155);
-  const _btnMargin = Math.round(width * 0.07);
-  const _btnGap    = Math.round(width * 0.07); // 7% extra gap each side (was 4.5%)
-  const _quoteFontPx  = Math.round(width * 0.024); // slightly smaller to fit quote + author
-  // Vertical positioning (Arthur's spec):
-  // • With quote: stats at 5%, quote at 8.5% from bottom
-  // • Without quote: stats at 7% from bottom
-  const _statsBottom = config.showQuote
-    ? Math.round(height * 0.055)
-    : Math.round(height * 0.075);
-  const _quoteBottom = Math.round(height * 0.085);
+  // (bottom zone geometry already defined above — used by goal name element)
 
   // Progress stats element (always shown if we have data)
   const statsElement: React.ReactElement | null = statsLine ? (

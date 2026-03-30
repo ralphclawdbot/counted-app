@@ -58,12 +58,31 @@ export const DEFAULT_DEVICE = DEVICES[3]; // iPhone 16 (1179×2556)
 
 // ── Android devices (no frame — CSS generic frame in Canvas) ─────────────────
 export const ANDROID_DEVICES: DeviceInfo[] = [
+  // Samsung Galaxy S25 series
+  { name: 'Samsung Galaxy S25 Ultra', width: 1440, height: 3120, frame: null as unknown as FrameInfo },
+  { name: 'Samsung Galaxy S25+',      width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  { name: 'Samsung Galaxy S25',       width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  // Samsung Galaxy S24 series
   { name: 'Samsung Galaxy S24 Ultra', width: 1440, height: 3088, frame: null as unknown as FrameInfo },
   { name: 'Samsung Galaxy S24+',      width: 1080, height: 2340, frame: null as unknown as FrameInfo },
   { name: 'Samsung Galaxy S24',       width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  // Samsung Galaxy A series (mid-range)
+  { name: 'Samsung Galaxy A55',       width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  { name: 'Samsung Galaxy A35',       width: 1080, height: 2340, frame: null as unknown as FrameInfo },
+  // Google Pixel 9 series
+  { name: 'Google Pixel 9 Pro XL',   width: 1344, height: 2992, frame: null as unknown as FrameInfo },
   { name: 'Google Pixel 9 Pro',       width: 1344, height: 2992, frame: null as unknown as FrameInfo },
   { name: 'Google Pixel 9',           width: 1080, height: 2424, frame: null as unknown as FrameInfo },
+  // Google Pixel 8 series
+  { name: 'Google Pixel 8 Pro',       width: 1344, height: 2992, frame: null as unknown as FrameInfo },
+  { name: 'Google Pixel 8',           width: 1080, height: 2400, frame: null as unknown as FrameInfo },
+  // Other flagships
+  { name: 'OnePlus 13',               width: 1440, height: 3168, frame: null as unknown as FrameInfo },
   { name: 'OnePlus 12',               width: 1440, height: 3168, frame: null as unknown as FrameInfo },
+  { name: 'Nothing Phone 2a',         width: 1080, height: 2412, frame: null as unknown as FrameInfo },
+  { name: 'Nothing Phone 3',          width: 1080, height: 2408, frame: null as unknown as FrameInfo },
+  { name: 'Xiaomi 14 Ultra',          width: 1440, height: 3200, frame: null as unknown as FrameInfo },
+  { name: 'Xiaomi 14',                width: 1200, height: 2670, frame: null as unknown as FrameInfo },
 ];
 
-export const DEFAULT_ANDROID_DEVICE = ANDROID_DEVICES[2]; // Samsung Galaxy S24
+export const DEFAULT_ANDROID_DEVICE = ANDROID_DEVICES[2]; // Samsung Galaxy S25
