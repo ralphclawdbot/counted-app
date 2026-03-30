@@ -4,10 +4,14 @@ import { NextRequest } from 'next/server';
 import { parseConfigFromParams } from '@/lib/buildConfig';
 import { renderWallpaper } from '@/lib/renderWallpaper';
 
-// Load font at module level for edge caching
-const fontPromise = fetch(
-  new URL('../../../public/fonts/inter.ttf', import.meta.url)
-).then((res) => res.arrayBuffer());
+// Load all fonts at module level for edge caching
+const fontPromise = fetch(new URL('../../../public/fonts/inter.ttf', import.meta.url)).then((r) => r.arrayBuffer());
+const extraFontPromises: { name: string; promise: Promise<ArrayBuffer> }[] = [
+  { name: 'Space Grotesk', promise: fetch(new URL('../../../public/fonts/space-grotesk.woff', import.meta.url)).then((r) => r.arrayBuffer()) },
+  { name: 'Playfair Display', promise: fetch(new URL('../../../public/fonts/playfair-display.woff', import.meta.url)).then((r) => r.arrayBuffer()) },
+  { name: 'DM Mono', promise: fetch(new URL('../../../public/fonts/dm-mono.woff', import.meta.url)).then((r) => r.arrayBuffer()) },
+  { name: 'Bebas Neue', promise: fetch(new URL('../../../public/fonts/bebas-neue.woff', import.meta.url)).then((r) => r.arrayBuffer()) },
+];
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,8 +28,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const fontData = await fontPromise;
-    const imageResponse = await renderWallpaper(config, fontData);
+    const [fontData, ...extraFontData] = await Promise.all([
+      fontPromise,
+      ...extraFontPromises.map((f) => f.promise),
+    ]);
+    const extraFonts = extraFontPromises.map((f, i) => ({ name: f.name, data: extraFontData[i] }));
+    const imageResponse = await renderWallpaper(config, fontData, extraFonts);
     return imageResponse;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';

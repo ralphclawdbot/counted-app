@@ -29,16 +29,22 @@ const SCR_L = 120, SCR_T = 120, SCR_R = 1299, SCR_B = 2676;
 
 // 5 wallpaper presets for the landing slideshow — each showcases a different customization
 const DEMO_WALLPAPERS = [
-  // 1 — Classic dark: gold today dot, flat circles
+  // 1 — Classic: gold today, flat circles, quote
   '/api/wallpaper?type=year&width=1179&height=2556&bg=050505&dotFilled=e8e8e8&dotEmpty=ffffff&dotCurrent=FFD166&dotFilledOpacity=75&dotEmptyOpacity=9&dotShape=circle&dotStyle=flat&dotGapScale=1&showQuote=true',
-  // 2 — Ocean: deep blue bg, cyan today dot, glow
+  // 2 — Ocean: deep blue, cyan glow
   '/api/wallpaper?type=year&width=1179&height=2556&bg=010a18&dotFilled=4A9EFF&dotEmpty=2255AA&dotCurrent=00E5FF&dotFilledOpacity=80&dotEmptyOpacity=14&dotShape=circle&dotStyle=glow&dotGapScale=1',
-  // 3 — Ember: near-black bg, amber tones, glow
+  // 3 — Emoji: trees & moons
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=050505&dotFilled=ffffff&dotEmpty=ffffff&dotCurrent=FFD166&dotFilledOpacity=80&dotEmptyOpacity=10&dotShape=circle&dotStyle=flat&dotGapScale=1&dotMode=emoji&emojiLived=%F0%9F%8C%B3&emojiEmpty=%F0%9F%8C%91',
+  // 4 — Neon green square
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=020803&dotFilled=39FF14&dotEmpty=ffffff&dotCurrent=C6FF00&dotFilledOpacity=80&dotEmptyOpacity=6&dotShape=square&dotStyle=neon&dotGapScale=1',
+  // 5 — Diamond rose
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=0d0508&dotFilled=FF6B9D&dotEmpty=ffffff&dotCurrent=FFB3D1&dotFilledOpacity=85&dotEmptyOpacity=8&dotShape=diamond&dotStyle=flat&dotGapScale=1',
+  // 6 — Ember: amber glow
   '/api/wallpaper?type=year&width=1179&height=2556&bg=0d0603&dotFilled=E07B39&dotEmpty=ffffff&dotCurrent=FFBB55&dotFilledOpacity=80&dotEmptyOpacity=8&dotShape=circle&dotStyle=glow&dotGapScale=1',
-  // 4 — Minimal mono: pure black, white dots, square shape
-  '/api/wallpaper?type=year&width=1179&height=2556&bg=000000&dotFilled=ffffff&dotEmpty=ffffff&dotCurrent=ffffff&dotFilledOpacity=92&dotEmptyOpacity=7&dotShape=rounded&dotStyle=flat&dotGapScale=1',
-  // 5 — Neon: dark bg, neon green, neon style
-  '/api/wallpaper?type=year&width=1179&height=2556&bg=020803&dotFilled=39FF14&dotEmpty=ffffff&dotCurrent=C6FF00&dotFilledOpacity=80&dotEmptyOpacity=6&dotShape=circle&dotStyle=neon&dotGapScale=1',
+  // 7 — Minimal outlined mono
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=000000&dotFilled=ffffff&dotEmpty=ffffff&dotCurrent=ffffff&dotFilledOpacity=90&dotEmptyOpacity=15&dotShape=rounded&dotStyle=outlined&dotGapScale=1',
+  // 8 — Photo bg + gold dots
+  '/api/wallpaper?type=year&width=1179&height=2556&bg=050505&dotFilled=FFD700&dotEmpty=ffffff&dotCurrent=FFFFFF&dotFilledOpacity=90&dotEmptyOpacity=12&dotShape=circle&dotStyle=flat&dotGapScale=1&bgImage=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1469474968028-56623f02e42e%3Fw%3D1200%26q%3D80&bgOffsetX=50&bgOffsetY=50&bgDim=55',
 ];
 
 // Live time + date helpers (same as Canvas.tsx)
@@ -181,8 +187,8 @@ function IOSChrome({ w, h }: { w: number; h: number }) {
   );
 }
 
-const SLIDE_INTERVAL_MS = 3800;
-const SLIDE_LABELS = ['Classic', 'Ocean', 'Ember', 'Minimal', 'Neon'];
+const SLIDE_INTERVAL_MS = 2500;
+const SLIDE_LABELS = ['Classic', 'Ocean', 'Emoji', 'Neon', 'Diamond', 'Ember', 'Outlined', 'Photo'];
 
 function PhoneMockup() {
   const DISPLAY_W = 260;

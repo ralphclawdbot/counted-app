@@ -72,9 +72,15 @@ function getDotShadow(dotStyle: string, color: string, isFilled?: boolean): stri
 
 // ── Main Render Function ──
 
+export interface FontEntry {
+  name: string;
+  data: ArrayBuffer;
+}
+
 export async function renderWallpaper(
   config: WallpaperConfig,
-  fontData: ArrayBuffer
+  fontData: ArrayBuffer,
+  extraFonts?: FontEntry[]
 ): Promise<ImageResponse> {
   const { width, height } = config;
 
@@ -609,12 +615,8 @@ export async function renderWallpaper(
     width,
     height,
     fonts: [
-      {
-        name: 'Inter',
-        data: fontData,
-        style: 'normal',
-        weight: 400,
-      },
+      { name: 'Inter', data: fontData, style: 'normal', weight: 400 },
+      ...(extraFonts ?? []).map((f) => ({ name: f.name, data: f.data, style: 'normal' as const, weight: 400 })),
     ],
   });
 }

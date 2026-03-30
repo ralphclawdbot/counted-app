@@ -7,9 +7,18 @@ import { renderWallpaper } from '@/lib/renderWallpaper';
 import fs from 'fs';
 import path from 'path';
 
-// Load font at module level
+// Load all fonts at module level
 const fontPath = path.join(process.cwd(), 'public', 'fonts', 'inter.ttf');
 const fontData: ArrayBuffer = fs.readFileSync(fontPath).buffer as ArrayBuffer;
+const EXTRA_FONTS = [
+  { name: 'Space Grotesk', file: 'space-grotesk.woff' },
+  { name: 'Playfair Display', file: 'playfair-display.woff' },
+  { name: 'DM Mono', file: 'dm-mono.woff' },
+  { name: 'Bebas Neue', file: 'bebas-neue.woff' },
+].map(({ name, file }) => ({
+  name,
+  data: fs.readFileSync(path.join(process.cwd(), 'public', 'fonts', file)).buffer as ArrayBuffer,
+}));
 
 export async function GET(
   request: NextRequest,
@@ -42,7 +51,7 @@ export async function GET(
       ...(raw.gradientEnd   && { gradientEnd:   stripHash(raw.gradientEnd) }),
     };
 
-    const imageResponse = await renderWallpaper(config, fontData);
+    const imageResponse = await renderWallpaper(config, fontData, EXTRA_FONTS);
 
     // Convert ImageResponse to a plain Response with proper headers
     const imageBuffer = await imageResponse.arrayBuffer();

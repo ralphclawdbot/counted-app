@@ -496,7 +496,21 @@ export default function StylePanel({
       {/* Font */}
       <div style={separatorStyle}>
         <span style={sectionLabelStyle}>Font</span>
-        <div style={{ fontSize: 13, color: '#555', padding: '6px 0' }}>Inter <span style={{ fontSize: 11, color: '#3a3a3a' }}>· More fonts coming soon</span></div>
+        <select
+          style={selectStyle}
+          value={config.fontFamily || 'Inter'}
+          onChange={(e) => onConfigChange({ fontFamily: e.target.value })}
+        >
+          {[
+            { value: 'Inter',           label: 'Inter — modern sans' },
+            { value: 'Space Grotesk',   label: 'Space Grotesk — geometric' },
+            { value: 'Playfair Display',label: 'Playfair Display — elegant serif' },
+            { value: 'DM Mono',         label: 'DM Mono — minimal mono' },
+            { value: 'Bebas Neue',      label: 'Bebas Neue — bold display' },
+          ].map((f) => (
+            <option key={f.value} value={f.value}>{f.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Layer Panel */}

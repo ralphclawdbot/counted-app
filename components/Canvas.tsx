@@ -104,7 +104,7 @@ export default function Canvas({
         setPreviewUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return url; });
       } catch { /* keep showing last good frame */ }
       finally { setPreviewStale(false); }
-    }, 400);
+    }, 150);
     return () => clearTimeout(timer);
   }, [config]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -127,6 +127,7 @@ export default function Canvas({
           }}
         >
           {/* ── Actual wallpaper PNG — exact match of the exported file ── */}
+          {/* PNG — full-quality render, fades in when ready */}
           {previewUrl && (
             <img
               src={previewUrl}
@@ -139,30 +140,24 @@ export default function Canvas({
                 objectFit: 'fill',
                 display: 'block',
                 pointerEvents: 'none',
-                opacity: previewStale ? 0.35 : 1,
-                transition: 'opacity 0.15s ease',
+                opacity: previewStale ? 0 : 1,
+                transition: 'opacity 0.2s ease',
                 zIndex: 10,
               }}
             />
           )}
 
-          {/* Spinner — shown on first load (no image yet) or while refetching */}
-          {(!previewUrl || previewStale) && (
+          {/* Small loading dot in corner — only on very first load before any PNG exists */}
+          {!previewUrl && (
             <div style={{
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              position: 'absolute', bottom: 8, right: 8,
               pointerEvents: 'none', zIndex: 15,
-              background: previewUrl ? 'transparent' : 'rgba(255,255,255,0.03)',
             }}>
-              <style>{`
-                @keyframes _canvas_spin {
-                  to { transform: rotate(360deg); }
-                }
-              `}</style>
+              <style>{`@keyframes _canvas_spin { to { transform: rotate(360deg); } }`}</style>
               <div style={{
-                width: 28, height: 28,
-                border: '2.5px solid rgba(255,255,255,0.12)',
-                borderTopColor: 'rgba(255,255,255,0.75)',
+                width: 16, height: 16,
+                border: '2px solid rgba(255,255,255,0.12)',
+                borderTopColor: 'rgba(255,255,255,0.6)',
                 borderRadius: '50%',
                 animation: '_canvas_spin 0.7s linear infinite',
               }} />
@@ -190,7 +185,23 @@ export default function Canvas({
             );
           })}
 
-          {/* Invisible DotGrid — purely for dot-click interaction, PNG is the visual */}
+          {/* DotGrid — instant CSS preview (visible while PNG is loading), invisible once PNG ready */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            opacity: previewStale || !previewUrl ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+            zIndex: 5, pointerEvents: 'none',
+          }}>
+            <DotGrid
+              config={config}
+              canvasScale={canvasScale}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              onDotClick={undefined}
+            />
+          </div>
+
+          {/* Invisible DotGrid overlay — purely for dot-click interaction */}
           <div style={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
             opacity: 0, zIndex: 20, pointerEvents: 'auto',
