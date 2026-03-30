@@ -10,7 +10,7 @@ const C = {
   bg:       '#050505',
   surface:  '#0d0d0d',
   border:   '#1c1c1c',
-  accent:   '#ff5722',
+  accent:   '#ffffff',
   text:     '#ffffff',
   textMid:  'rgba(255,255,255,0.55)',
   textLow:  'rgba(255,255,255,0.3)',
@@ -26,7 +26,7 @@ const step: React.CSSProperties = {
 
 function StepNum({ n }: { n: number }) {
   return (
-    <div style={{ width: 26, height: 26, borderRadius: 13, background: C.accent, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+    <div style={{ width: 26, height: 26, borderRadius: 13, background: '#ffffff', color: '#000', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
       {n}
     </div>
   );
@@ -64,9 +64,9 @@ function InstallContent() {
 
         {/* No token warning */}
         {!token && (
-          <div style={{ padding: 20, background: 'rgba(255,87,34,0.08)', border: `1px solid rgba(255,87,34,0.25)`, borderRadius: 12, marginBottom: 24 }}>
-            <p style={{ color: '#ff7043', fontSize: 14, marginBottom: 8 }}>No wallpaper saved yet.</p>
-            <Link href="/editor" style={{ fontSize: 13, color: C.accent }}>← Build your calendar first</Link>
+          <div style={{ padding: 20, background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.12)`, borderRadius: 12, marginBottom: 24 }}>
+            <p style={{ color: C.textMid, fontSize: 14, marginBottom: 8 }}>No wallpaper saved yet.</p>
+            <Link href="/editor" style={{ fontSize: 13, color: C.text }}>← Build your calendar first</Link>
           </div>
         )}
 
@@ -83,7 +83,7 @@ function InstallContent() {
                 {wallpaperUrl}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={handleCopy} style={{ padding: '7px 16px', background: copied ? '#16a34a' : C.accent, color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                <button onClick={handleCopy} style={{ padding: '7px 16px', background: copied ? '#333' : '#ffffff', color: copied ? '#fff' : '#000', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
                   {copied ? '✓ Copied' : 'Copy URL'}
                 </button>
                 <a href={wallpaperUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '7px 14px', background: '#1a1a1a', color: C.textMid, borderRadius: 8, fontSize: 13, textDecoration: 'none' }}>
@@ -104,8 +104,8 @@ function InstallContent() {
                   onClick={() => setPlatform('ios')}
                   style={{
                     padding: '24px 16px', borderRadius: 12, cursor: 'pointer',
-                    background: platform === 'ios' ? 'rgba(255,87,34,0.1)' : '#111',
-                    border: platform === 'ios' ? `1.5px solid ${C.accent}` : `1.5px solid ${C.border}`,
+                    background: platform === 'ios' ? 'rgba(255,255,255,0.06)' : '#111',
+                    border: platform === 'ios' ? `1.5px solid rgba(255,255,255,0.6)` : `1.5px solid ${C.border}`,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
                     transition: 'all 0.15s',
                   }}
@@ -125,8 +125,8 @@ function InstallContent() {
                   onClick={() => setPlatform('android')}
                   style={{
                     padding: '24px 16px', borderRadius: 12, cursor: 'pointer',
-                    background: platform === 'android' ? 'rgba(255,87,34,0.1)' : '#111',
-                    border: platform === 'android' ? `1.5px solid ${C.accent}` : `1.5px solid ${C.border}`,
+                    background: platform === 'android' ? 'rgba(255,255,255,0.06)' : '#111',
+                    border: platform === 'android' ? `1.5px solid rgba(255,255,255,0.6)` : `1.5px solid ${C.border}`,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
                     transition: 'all 0.15s',
                   }}
@@ -155,9 +155,9 @@ function InstallContent() {
                     href={SHORTCUT_ICLOUD_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: 'block', padding: '14px 20px', background: C.accent, color: 'white', textDecoration: 'none', borderRadius: 10, textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 10, boxShadow: '0 4px 20px rgba(255,87,34,0.3)' }}
+                    style={{ display: 'block', padding: '14px 20px', background: '#ffffff', color: '#000', textDecoration: 'none', borderRadius: 10, textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 10 }}
                   >
-                    📱 Add Shortcut to iPhone
+                    Add Shortcut to iPhone
                   </a>
                   <p style={{ fontSize: 12, color: C.textLow }}>Opens Shortcuts app → Tap &quot;Add Shortcut&quot; → Open it and paste your URL when prompted.</p>
                 </div>
@@ -232,9 +232,9 @@ function InstallContent() {
                     href="https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: 'block', padding: '14px 20px', background: '#1a7c3e', color: 'white', textDecoration: 'none', borderRadius: 10, textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 10, boxShadow: '0 4px 20px rgba(26,124,62,0.3)' }}
+                    style={{ display: 'block', padding: '14px 20px', background: '#ffffff', color: '#000', textDecoration: 'none', borderRadius: 10, textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 10 }}
                   >
-                    ▶ Download MacroDroid (Free)
+                    Download MacroDroid (Free)
                   </a>
                   <p style={{ fontSize: 12, color: C.textLow }}>Free on the Google Play Store. No subscription needed for this use case.</p>
                 </div>

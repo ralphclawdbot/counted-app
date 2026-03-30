@@ -436,30 +436,51 @@ export default function StylePanel({
         <div style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>
           Used to calculate the correct day on your wallpaper.
         </div>
-        <input
-          type="text"
+        <select
           value={config.timezone || (typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC')}
           onChange={(e) => onConfigChange({ timezone: e.target.value })}
-          onFocus={(e) => {
-            // Auto-fill device timezone if still empty
-            if (!config.timezone) {
-              onConfigChange({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-              e.target.select();
-            }
-          }}
-          placeholder="e.g. America/New_York"
           style={{
-            width: '100%', padding: '8px 10px',
+            width: '100%', padding: '10px 12px',
             background: '#111', border: '1px solid #333', borderRadius: 6,
-            color: '#ddd', fontSize: 16, fontFamily: 'monospace', // 16px prevents iOS zoom
+            color: '#ddd', fontSize: 16, // 16px prevents iOS zoom
+            appearance: 'none', WebkitAppearance: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+            paddingRight: 32,
           }}
-        />
-        <button
-          onClick={() => onConfigChange({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
-          style={{ marginTop: 6, fontSize: 11, color: '#555', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          ↺ Reset to device timezone ({typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : '…'})
-        </button>
+          {[
+            ['Pacific/Midway', 'UTC−11 — Midway Island'],
+            ['Pacific/Honolulu', 'UTC−10 — Hawaii'],
+            ['America/Anchorage', 'UTC−9 — Alaska'],
+            ['America/Los_Angeles', 'UTC−8 — Los Angeles / Seattle'],
+            ['America/Denver', 'UTC−7 — Denver / Phoenix'],
+            ['America/Chicago', 'UTC−6 — Chicago / Dallas'],
+            ['America/New_York', 'UTC−5 — New York / Miami'],
+            ['America/Halifax', 'UTC−4 — Halifax / Puerto Rico'],
+            ['America/Sao_Paulo', 'UTC−3 — São Paulo / Buenos Aires'],
+            ['Atlantic/South_Georgia', 'UTC−2 — South Georgia'],
+            ['Atlantic/Azores', 'UTC−1 — Azores'],
+            ['UTC', 'UTC±0 — London (winter) / Reykjavik'],
+            ['Europe/London', 'UTC+0/+1 — London'],
+            ['Europe/Paris', 'UTC+1/+2 — Paris / Berlin / Rome'],
+            ['Europe/Helsinki', 'UTC+2/+3 — Helsinki / Athens / Cairo'],
+            ['Europe/Moscow', 'UTC+3 — Moscow / Istanbul'],
+            ['Asia/Dubai', 'UTC+4 — Dubai / Abu Dhabi'],
+            ['Asia/Karachi', 'UTC+5 — Karachi / Islamabad'],
+            ['Asia/Kolkata', 'UTC+5:30 — India'],
+            ['Asia/Dhaka', 'UTC+6 — Dhaka / Almaty'],
+            ['Asia/Bangkok', 'UTC+7 — Bangkok / Jakarta'],
+            ['Asia/Singapore', 'UTC+8 — Singapore / Beijing / Perth'],
+            ['Asia/Seoul', 'UTC+9 — Seoul / Tokyo'],
+            ['Australia/Sydney', 'UTC+10/+11 — Sydney / Melbourne'],
+            ['Pacific/Noumea', 'UTC+11 — Noumea'],
+            ['Pacific/Auckland', 'UTC+12/+13 — Auckland'],
+          ].map(([tz, label]) => (
+            <option key={tz} value={tz}>{label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Font */}
@@ -555,8 +576,8 @@ export default function StylePanel({
                   onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
                   style={{
                     padding: '6px 14px',
-                    background: saveState.copied ? '#16a34a' : '#1a1a1a',
-                    color: 'white',
+                    background: saveState.copied ? '#333' : '#ffffff',
+                    color: saveState.copied ? '#aaa' : '#000',
                     border: 'none',
                     borderRadius: 4,
                     cursor: 'pointer',

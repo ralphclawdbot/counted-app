@@ -22,7 +22,7 @@ const DEFAULT_CONFIG: WallpaperConfig = {
   bg: '000000',
   dotFilled: 'FFFFFF',
   dotEmpty: '888888',
-  dotCurrent: 'FF5722',
+  dotCurrent: 'FFD166',
   dotFilledOpacity: 100,
   dotEmptyOpacity: 35,
   dotShape: 'circle',
@@ -670,7 +670,7 @@ export default function EditorPage() {
             <button
               onClick={handleSave}
               disabled={saveState.saving}
-              style={{ padding: '6px 16px', background: saveState.saving ? '#333' : '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36 }}
+              style={{ padding: '6px 16px', background: saveState.saving ? '#333' : '#ffffff', color: saveState.saving ? '#888' : '#000', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700, minHeight: 36 }}
             >{saveState.saving ? '...' : 'Save'}</button>
           </div>
         </div>
@@ -690,11 +690,11 @@ export default function EditorPage() {
 
         {/* Saved URL strip */}
         {saveState.url && (
-          <div style={{ padding: '8px 16px', background: '#0a1628', borderTop: '1px solid #1a3a6a', borderBottom: '1px solid #1a3a6a', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 11, color: '#4a9eff', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveState.url}</span>
+          <div style={{ padding: '8px 16px', background: '#0d0d0d', borderTop: '1px solid #1c1c1c', borderBottom: '1px solid #1c1c1c', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 11, color: '#888', fontFamily: 'monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{saveState.url}</span>
             <button
               onClick={() => { navigator.clipboard.writeText(saveState.url!); }}
-              style={{ padding: '4px 10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
+              style={{ padding: '4px 10px', background: saveState.copied ? '#333' : '#ffffff', color: saveState.copied ? '#fff' : '#000', border: 'none', borderRadius: 4, fontSize: 12, fontWeight: 600, flexShrink: 0, minHeight: 32 }}
             >{saveState.copied ? '✓' : 'Copy'}</button>
             <a href={`/install?token=${saveState.token}&platform=${config.platform || 'ios'}`} style={{ padding: '4px 10px', background: '#333', color: '#aaa', borderRadius: 4, fontSize: 12, textDecoration: 'none', flexShrink: 0 }}>
               Setup →
@@ -711,7 +711,7 @@ export default function EditorPage() {
               style={{
                 flex: 1, padding: '10px', border: 'none', background: 'none',
                 color: mobileTab === tab ? '#fff' : '#555',
-                borderBottom: mobileTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+                borderBottom: mobileTab === tab ? '2px solid #ffffff' : '2px solid transparent',
                 fontSize: 13, fontWeight: mobileTab === tab ? 600 : 400, cursor: 'pointer',
               }}
             >
