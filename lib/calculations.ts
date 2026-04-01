@@ -1,22 +1,33 @@
 /**
+ * How many minutes to look ahead when computing "now".
+ * Wallpaper automations fire at midnight — we advance 3 minutes so the
+ * calendar image already reflects the new day starting at 11:57 PM,
+ * guaranteeing the correct date is shown when the automation triggers.
+ */
+const LOOKAHEAD_MINUTES = 3;
+
+/**
  * Get "now" as a plain Date whose year/month/day/hour reflects the given IANA timezone.
- * This lets all date calculations treat the user's local date as "today" rather than UTC.
+ * Advances time by LOOKAHEAD_MINUTES so near-midnight requests already show the next day.
  */
 export function nowInTz(tz?: string): Date {
-  if (!tz) return new Date();
+  // Advance wall-clock time by the lookahead offset
+  const lookahead = new Date(Date.now() + LOOKAHEAD_MINUTES * 60 * 1000);
+
+  if (!tz) return lookahead;
   try {
     const parts = new Intl.DateTimeFormat('en', {
       timeZone: tz,
       year: 'numeric', month: 'numeric', day: 'numeric',
       hour: 'numeric', minute: 'numeric', second: 'numeric',
       hour12: false,
-    }).formatToParts(new Date());
+    }).formatToParts(lookahead);
     const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value ?? '0', 10);
     // hour12:false can return 24 for midnight — normalise to 0
     const h = get('hour') === 24 ? 0 : get('hour');
     return new Date(get('year'), get('month') - 1, get('day'), h, get('minute'), get('second'));
   } catch {
-    return new Date(); // invalid tz — fallback to server time
+    return lookahead; // invalid tz — fallback to offset time
   }
 }
 
