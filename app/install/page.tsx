@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { WallpaperConfig } from '@/types';
 import { configToWallpaperParams } from '@/lib/buildConfig';
 
+const SHORTCUT_ICLOUD_URL = 'https://www.icloud.com/shortcuts/870511176c6645f48ee8c7c15e6166c5';
+
 const C = {
   bg:          '#050505',
   surface:     '#0d0d0d',
@@ -230,13 +232,23 @@ function InstallContent() {
               }}>
                 {wallpaperUrl}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
                   onClick={handleCopy}
                   style={{ padding: '8px 18px', background: copied ? '#1a1a1a' : '#ffffff', color: copied ? '#22c55e' : '#000', border: copied ? '1px solid rgba(34,197,94,0.4)' : 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.15s' }}
                 >
                   {copied ? '✓ Copied' : 'Copy URL'}
                 </button>
+                {platform === 'ios' && (
+                  <a
+                    href={SHORTCUT_ICLOUD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ padding: '8px 14px', background: '#ffffff', color: '#000', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 700 }}
+                  >
+                    Add Quick Add Shortcut ↗
+                  </a>
+                )}
                 <a
                   href={wallpaperUrl}
                   target="_blank"
@@ -246,6 +258,11 @@ function InstallContent() {
                   Preview ↗
                 </a>
               </div>
+              {platform === 'ios' && (
+                <p style={{ fontSize: 12, color: C.textLow, lineHeight: 1.6, marginTop: 10, marginBottom: 0 }}>
+                  Optional shortcut: install the Quick Add shortcut first, then use the copied wallpaper URL during setup below.
+                </p>
+              )}
             </div>
 
             {/* ── iOS Instructions ── */}
